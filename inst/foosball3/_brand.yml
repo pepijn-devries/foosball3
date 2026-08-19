@@ -1,0 +1,37 @@
+# _brand.yml
+meta:
+  name:
+    full: "Foosball 3.0"
+
+logo:
+  images:
+    arcade-light-bg: "www/logo-black.png"
+    arcade-dark-bg: "www/logo-white.png"
+    
+defaults:
+  shiny:
+    theme:
+      preset: shiny
+      rules: |
+        .navbar-brand { 
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .navbar-brand::before {
+          content: "";
+          display: inline-block;
+          height: 32px;
+          width: 32px;
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+
+        [data-bs-theme="light"] .navbar-brand::before {
+          background-image: url('/logo-black.png'); 
+        }
+        [data-bs-theme="dark"] .navbar-brand::before {
+          background-image: url('/logo-white.png');
+        }

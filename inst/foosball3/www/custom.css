@@ -1,0 +1,212 @@
+.foosball-news-flash {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  display: block;
+  padding: 6px 0;
+  height: 40px;
+  line-height: 40px;
+  padding: 0;
+  margin: 0;
+}
+
+.foosball-news-text {
+  display: inline-block;
+  white-space: nowrap;
+  transform: translateX(100vw);
+  margin: 0;
+  padding: 0;
+  vertical-align: top; 
+}
+
+.foosball-facemarker {
+  opacity: 0;
+  stroke: var(--bs-border-color);
+  fill: var(--bs-border-color);
+  font-family: var(--bs-body-font-family);
+  font-size: 8cqh;
+  transition: 0.6s;
+}
+
+.foosball-facemarker circle {
+  stroke-width: 1cqh;
+  fill: transparent;
+}
+.foosball-facemarker:hover {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.foosball-score {
+  font-weight: bold !important;
+  font-size: 40pt !important;
+}
+
+.foosball-table-side1,
+.foosball-table-side2 {
+  border-width: 3px !important;
+  border-style: solid !important;
+}
+
+.foosball-table-side1-body {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  text-align: right !important;
+}
+
+.foosball-table-side2-body {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+}
+
+.foosball-table-side1 {
+  background-color: var(--bg-ftable-side1, #88888800) !important;
+  border-color: var(--border-ftable-side1, #00000000) !important;
+}
+
+.foosball-table-side2 {
+  background-color: var(--bg-ftable-side2, #88888800) !important;
+  border-color: var(--border-ftable-side2, #00000000) !important;
+}
+
+.foosball-avatar1,
+.foosball-avatar2,
+.foosball-avatar {
+  border-width: 4px !important;
+  border-style: double !important;
+}
+
+.foosball-avatar {
+  border-color: var(--bs-border-color) !important;
+}
+
+.foosball-avatar1 {
+  border-color: var(--border-ftable-side1, #00000000) !important;
+}
+
+.foosball-avatar2 {
+  border-color: var(--border-ftable-side2, #00000000) !important;
+}
+
+#graph0 > g > a > polygon {
+  fill: transparent !important;
+  stroke: none !important;
+}
+
+.edge path, 
+.edge polygon {
+  stroke: var(--bs-border-color) !important;
+}
+
+.edge polygon {
+  fill: var(--bs-border-color) !important;
+}
+
+.node {
+  cursor: pointer !important;
+}
+
+.node polygon, 
+.node ellipse, 
+.node rect {
+  transition: stroke-width 0.15s ease-in-out, stroke 0.15s ease-in-out !important;
+}
+
+.node text,
+.edge text {
+  fill: var(--bs-body-color) !important;
+  font-size: 72% !important;
+  font-family: var(--bs-body-font-family) !important;
+}
+
+.node polygon:first-of-type {
+  fill: var(--bs-primary-bg-subtle) !important;
+}
+
+.node polygon:last-of-type {
+  stroke: var(--bs-border-color) !important;
+}
+
+.node polygon:not(:first-of-type):not(:last-of-type) {
+  fill: var(--bs-card-bg) !important;
+}
+
+.node:hover > polygon:last-of-type {
+  stroke-width: 3px !important;
+  stroke: var(--bs-secondary-border-subtle) !important;
+}
+
+.vscomp-toggle-button,
+.vscomp-dropbox-container,
+.vscomp-search-container,
+.vscomp-options-container,
+.vscomp-option,
+.vscomp-no-options,
+.vscomp-no-search-results {
+  background: var(--bs-card-bg) !important;
+  border-color: var(--bs-border-color) !important;
+  color: var(--bs-body-color) !important;
+}
+
+.vscomp-new-option-icon::before {
+  border-top-color: var(--bs-primary) !important;
+  border-right-color: var(--bs-primary) !important;
+}
+
+.vscomp-new-option-icon::after {
+  color: var(bs-white) !important;
+}
+
+.vscomp-option.selected .checkbox-icon::after,
+.vscomp-toggle-all-button.selected .checkbox-icon::after,
+.checkbox-icon.checked::after  {
+  border-right-color: var(--bs-primary) !important;
+  border-bottom-color: var(--bs-primary) !important;
+}
+
+div.shinybusy {
+  width: 33px !important;
+  height: 35px !important;
+  z-index: 1000 !important;
+}
+
+div.shinybusy .ff-container,
+div.shinybusy .ff-canvas,
+div.shinybusy .ff-image {
+  width: 33px !important;
+  height: 35px !important;
+  max-width: 33px !important;
+  max-height: 35px !important;
+  top: 0 !important;
+  left: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.foosball-timer-card {
+  background-color: var(--bs-primary-bg-subtle) !important;
+}
+
+.foosball-timer,
+.foosball-timer-precount,
+.foosball-timer-danger {
+  fill: var(--bs-body-color) !important;
+  font-size: 100px;
+  font-style: bold;
+  font-family: var(--bs-body-font-family) !important;
+}
+
+.foosball-timer {
+  color: var(--bs-body-color) !important;
+}
+
+.foosball-timer-precount {
+  color: var(--bs-success) !important;
+}
+
+.foosball-timer-danger {
+  color: var(--bs-danger) !important;
+}
