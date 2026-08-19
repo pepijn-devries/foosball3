@@ -7,6 +7,27 @@ Authors@R: c(person("Pepijn", "de Vries", role = c("aut", "cre", "dtc"),
 Author:
     Pepijn de Vries [aut, cre, dtc] (0000-0002-7961-6646)
 Description: TODO
+Imports:
+    base64enc,
+    bslib,
+    DiagrammeRsvg,
+    dplyr,
+    dm,
+    DT,
+    imager,
+    jpeg,
+    jsonlite,
+    knitr,
+    lubridate,
+    mirai,
+    rlang,
+    RSQLite,
+    shiny,
+    shinybusy,
+    shinyjs,
+    shinyvalidate,
+    shinyWidgets,
+    stringr
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
