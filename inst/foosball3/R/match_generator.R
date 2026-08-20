@@ -17,7 +17,7 @@ matchGeneratorUI <- function(id) {
         selected = "Qualification",
         bslib::nav_panel_hidden(
           "Qualification",
-          "Qualification"
+          qualGeneratorUI(ns("mod_qual"))
         ),
         bslib::nav_panel_hidden(
           "Semi final",
@@ -47,6 +47,10 @@ matchGeneratorServer <- function(id, matches) {
       shiny::observeEvent(matches(), {
         bslib::nav_select("phase-generator", matches()$selected_phase)
       })
+
+      mod_qual <- qualGeneratorServer("mod_qual", matches, shiny::reactive({ input$btnStart }))
+
+      shiny::observe({ mod_qual() })
       
       return( shiny::reactive({ "TODO" }) )
     }

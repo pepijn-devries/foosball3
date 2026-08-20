@@ -29,6 +29,7 @@ lookupServer <- function(id, label, db, initial, table, field_id, name, fmt = "%
           structure(look[[field_id]],
                     names = do.call(
                       sprintf, c(list(fmt = fmt), as.list(look[, name]) |> unname())))
+
         shiny::updateSelectizeInput(
           inputId = "selectLookup", choices = opts, selected = init
         )

@@ -36,7 +36,7 @@ matchesServer <- function(id, tournament, avatars) {
       mod_match <- matchServer("mod_match", get_selected_match, avatars)
       mod_gen   <- matchGeneratorServer("mod_gen", get_selected_match)
       
-      observe({ mod_match(); mod_gen()})
+      shiny::observe({ mod_match(); mod_gen()})
       
       get_matches <- shiny::reactive({
         shiny::req(input$selectPhase)

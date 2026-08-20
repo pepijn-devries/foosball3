@@ -3,7 +3,7 @@ matchSideUI <- function(id, side) { # Side is either 1L or 2L
   opposite_id <- stringr::str_replace_all(
     id, "[12]", \(x) ifelse(x == "1", "2", "1") )
   inputnum <- shiny::numericInput(
-    ns("numScore"), "Score", NA, 0L, 10L, 1L, width = "150px"
+    ns("numScore"), "Score", NULL, 0L, 10L, 1L, width = "150px"
   )
   inputnum$children[[1]] <- NULL
   inputnum$children[[1]] <-
@@ -162,7 +162,7 @@ matchSideServer <- function(id, match, side, avatars) {
         m <- get_selected_match()
         state <- get_tournament_state()
         shiny::req(m)
-        if (state == "ACT" &&
+        if (state == "ACT" && ### TODO this line caused a crash at one point perhaps state can be NA?
             m[[paste0("SCORE_", side)]] != input$numScore) {
           browser() #TODO check validity + tournament state and store in database
           #TODO store updated scores in database

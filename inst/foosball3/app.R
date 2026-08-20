@@ -6,12 +6,12 @@ ui <- bslib::page_navbar(
   header = shiny::tagList(
     newsUI("mod_news"),
     shinyjs::useShinyjs(),
-    shinyjs::extendShinyjs(script    = "shinyjs-extra.js",
+    shinyjs::extendShinyjs(script    = "js/shinyjs-extra.js",
                            functions = c("updateSideStyle",
                                          "updateNews")),
     tags$head(
       shiny::includeCSS("www/custom.css"),
-      shiny::tags$script(src = "extra.js")
+      shiny::tags$script(src = "js/extra.js")
     ),
     avatarUI("mod_avatar")
   ),
@@ -35,7 +35,7 @@ ui <- bslib::page_navbar(
     bslib::input_dark_mode(id = "dark_mode_toggle")
   ),
   bslib::nav_item(
-    shinybusy::add_busy_gif("banana.gif", 100, "top-right",
+    shinybusy::add_busy_gif("img/banana.gif", 100, "top-right",
                             width = "33px", height = "35px")
   ),
   footer = timerUI("mod_timer")

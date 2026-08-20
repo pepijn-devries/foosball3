@@ -1,0 +1,1 @@
+{"root":{"chance":1,"no_tournament_selected":{"chance":"calculated","chance_fun":"length_gt","chance_params":["selected_tournament",0,0]},"tournament_selected":{"chance":"calculated","chance_fun":"length_gt","chance_params":["selected_tournament",0,1],"tournament_news":{"chance":0.4},"match_news":{"chance":0.2},"person_news":{"chance":0.4}}}}

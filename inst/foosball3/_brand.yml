@@ -5,8 +5,8 @@ meta:
 
 logo:
   images:
-    arcade-light-bg: "www/logo-black.png"
-    arcade-dark-bg: "www/logo-white.png"
+    arcade-light-bg: "www/img/logo-black.png"
+    arcade-dark-bg: "www/img/logo-white.png"
     
 defaults:
   shiny:
@@ -30,8 +30,8 @@ defaults:
         }
 
         [data-bs-theme="light"] .navbar-brand::before {
-          background-image: url('/logo-black.png'); 
+          background-image: url('/img/logo-black.png'); 
         }
         [data-bs-theme="dark"] .navbar-brand::before {
-          background-image: url('/logo-white.png');
+          background-image: url('/img/logo-white.png');
         }

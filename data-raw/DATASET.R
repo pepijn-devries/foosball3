@@ -4,11 +4,13 @@ news_tree <-
       chance = 1,
       no_tournament_selected = list(
         chance = "calculated",
-        chance_param = "selected_tournament"
+        chance_fun = "length_gt",
+        chance_params = list("selected_tournament", 0, 0)
       ),
       tournament_selected = list(
         chance = "calculated",
-        chance_param = "selected_tournament",
+        chance_fun = "length_gt",
+        chance_params = list("selected_tournament", 0, 1),
         tournament_news = list(
           chance = 0.4
         ),
@@ -22,5 +24,5 @@ news_tree <-
     )
   )
 
-jsonlite::toJSON(news_tree) |>
-  writeLines("inst/foosball3/www/newstree.json")
+jsonlite::toJSON(news_tree, auto_unbox = TRUE) |>
+  writeLines("inst/foosball3/www/data/newstree.json")
