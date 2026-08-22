@@ -24,9 +24,7 @@ ui <- bslib::page_navbar(
                    icon = bsicons::bs_icon("trophy-fill")),
   bslib::nav_panel("Matches",          matchesUI("mod_matches"),
                    icon = bsicons::bs_icon("hammer")),
-  bslib::nav_panel("Stats",            "TODO",
-                   icon = bsicons::bs_icon("graph-up-arrow")),
-  bslib::nav_panel("People",           "TODO",
+  bslib::nav_panel("People",           peopleUI("mod_peops"),
                    icon = bsicons::bs_icon("people-fill")),
   bslib::nav_panel("About",            "TODO",
                    icon = bsicons::bs_icon("info-circle-fill")),
@@ -48,6 +46,7 @@ server <- function(input, output, session) {
   mod_matches    <-    matchesServer("mod_matches",    mod_tournament, mod_avatar)
   mod_news       <-       newsServer("mod_news",       mod_matches, mod_avatar)
   mod_timer      <-      timerServer("mod_timer",      mod_tournament, mod_matches)
+  mod_peops      <-     peopleServer("mod_peops",      mod_tournament, mod_avatar)
 
   shiny::observe({ mod_news(); mod_db(); mod_tournament(); mod_avatar();
     mod_matches(); mod_timer() })

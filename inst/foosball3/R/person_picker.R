@@ -9,7 +9,7 @@ personPickerUI <- function(id, ...) {
 }
 
 personPickerServer <- function(
-    id, people, db, init, avatars, validator, min_required = 0L) {
+    id, tournaments, init, avatars, validator, min_required = 0L) {
   
   shiny::moduleServer(
     id,
@@ -17,12 +17,21 @@ personPickerServer <- function(
       ns <- session$ns
       is_initialising <- shiny::reactiveVal()
 
+      get_people <-
+        shiny::reactive({
+          tournaments()$state() ## has been updated
+          con <- tournaments()$database()$connect()
+          on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+          dplyr::tbl(con, "persons") |>
+            dplyr::collect()
+        })
+      
       shiny::observeEvent(init(), {
         is_initialising(TRUE)
       })
       
-      shiny::observeEvent(list(people(), avatars(), init()), {
-        peops <- people()$data
+      shiny::observeEvent(list(get_people(), avatars(), init()), {
+        peops <- get_people()
         avt <- avatars()
         opts <- structure(peops$PERSON_ID, names = peops$PERSON_NAME)
         img <- lapply(as.numeric(opts), \(x) {
@@ -48,42 +57,45 @@ personPickerServer <- function(
         )
       })
       
-      validator$add_rule(
-        "selectPeople", \(value) {
-          if (length(value) < min_required) {
-            return(sprintf("At least %i people is/are required",
-                           min_required))
-          }
-          NULL
-        }
-      )
-      
-      validator$add_rule(
-        "selectPeople", \(value) {
-          peops <- people()$data$PERSON_ID
-          if (length(value) > length(peops)) {
-            if (grepl("[0-9]", value[[length(value)]], perl = TRUE)) {
-              return("Names should not contain numerics")
+      if (!is.null(validator)) {
+        validator$add_rule(
+          "selectPeople", \(value) {
+            if (length(value) < min_required) {
+              return(sprintf("At least %i people is/are required",
+                             min_required))
             }
+            NULL
           }
-          NULL
-        }
-      )
-
-      validator$enable()
+        )
+        
+        validator$add_rule(
+          "selectPeople", \(value) {
+            peops <- get_people()$PERSON_ID
+            if (length(value) > length(peops)) {
+              if (grepl("[0-9]", value[[length(value)]], perl = TRUE)) {
+                return("Names should not contain numerics")
+              }
+            }
+            NULL
+          }
+        )
+        
+        validator$enable()
+      }
       
       shiny::observeEvent(input$selectPeople, {
         shiny::req(input$selectPeople)
 
-        peops <- people()$data
+        peops <- get_people()
         current <- input$selectPeople
         id_match   <- match(input$selectPeople, as.character(peops$PERSON_ID))
         name_match <- match(tolower(input$selectPeople),
                             tolower(as.character(peops$PERSON_NAME)))
         new_peops <- input$selectPeople[is.na(name_match) & is.na(id_match)]
-        is_valid <- !any(grepl("numerics", validator$validate()[[ns("selectPeople")]]$message))
+        is_valid <- is.null(validator) ||
+          !any(grepl("numerics", validator$validate()[[ns("selectPeople")]]$message))
         if (length(new_peops) == 1 && is_valid) {
-          con <- db()$connect()
+          con <- tournaments()$database()$connect()
           on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
           new_row <-
             dplyr::tbl(con, "persons") |>
@@ -92,14 +104,14 @@ personPickerServer <- function(
             dplyr::summarise(
               PERSON_ID = max(.data$PERSON_ID) + 1L,
               PERSON_NAME = new_peops,
-              GENDER_CODE = NA_character_,
+              GENDER_CODE = "NS",
               QUALIFICATION_CODE = "H",
               HOME_BASE = NA_character_
             )
           dplyr::copy_to(
             con, new_row, "persons", append = TRUE
           )
-          people()$refresh()
+          tournaments()$trigger_refresh()
         }
       })
       

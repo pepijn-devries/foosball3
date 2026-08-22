@@ -33,15 +33,12 @@ tournamentEditorServer <- function(
       result <- shiny::reactiveVal()
       validator <- shinyvalidate::InputValidator$new()
 
-      mod_peops <- peopleServer("mod_peops", tournaments)
       mod_orgs <-
-        personPickerServer("mod_orgs", mod_peops,
-                           tournaments()$database,
+        personPickerServer("mod_orgs", tournaments,
                            tournament_people()$organisers,
                            avatars, validator, 1L)
       mod_part <-
-        personPickerServer("mod_part", mod_peops,
-                           tournaments()$database,
+        personPickerServer("mod_part", tournaments,
                            tournament_people()$participants,
                            avatars, validator, 4L)
       

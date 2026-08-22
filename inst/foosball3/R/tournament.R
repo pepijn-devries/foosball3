@@ -108,12 +108,18 @@ tournamentServer <- function(id, db, avatars) {
         )
         wait_for_update(FALSE)
       })
+
+      trigger_refresh = function() {
+        tournament_update((tournament_update() %||% 0L) + 1L)
+      }
       
       get_it_all <- shiny::reactive({
         list(
-          tournaments = get_tournaments,
-          selected    = get_selected,
-          database    = db
+          state           = tournament_update,
+          trigger_refresh = trigger_refresh,
+          tournaments     = get_tournaments,
+          selected        = get_selected,
+          database        = db
         )
       })
       
@@ -211,7 +217,9 @@ tournamentServer <- function(id, db, avatars) {
           dplyr::filter(dplyr::row_number() == -1L) |>
           dplyr::collect() |>
           dplyr::add_row(
-            TOURNAMENT_ID = id_new
+            TOURNAMENT_ID = id_new,
+            TOURN_TYPE_ID = 1L,
+            TOURNAMENT_STATE_CODE = "ACT",
           )
         dplyr::copy_to(con, empty,
                        name = "tournaments",
@@ -221,7 +229,7 @@ tournamentServer <- function(id, db, avatars) {
         current_organisers(pp)
         current_participants(pp)
         new_id(id_new)
-        tournament_update((tournament_update() %||% 0L) + 1L)
+        trigger_refresh()
         mode <- "new"
         attr(mode, "ts") <- Sys.time()
         wait_for_update(TRUE)

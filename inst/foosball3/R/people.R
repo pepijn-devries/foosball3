@@ -1,31 +1,37 @@
-## Server that tracks changes to the persons table in the database
-## It can also hand out person pickers to other modules
-peopleServer <- function(id, tournaments) {
+peopleUI <- function(id) {
+  ns <- shiny::NS(id)
+  bslib::navset_card_tab(
+    bslib::nav_panel(
+      "Edit records",
+      icon = bsicons::bs_icon("pencil-square"),
+      personPickerUI(ns("mod_peop_pick"),
+                     label = "People",
+                     multiple = FALSE,
+                     allowNewOption = TRUE),
+      recordUI(ns("mod_peop_rec"))
+    ),
+    bslib::nav_panel(
+      "Statistics",
+      icon = bsicons::bs_icon("graph-up-arrow"),
+      "TODO"
+    )
+  )
+}
+
+peopleServer <- function(id, tournaments, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      ns <- session$ns
-      refresh_trigger <- shiny::reactiveVal(0L)
+      mod_peop_pick <-
+        personPickerServer("mod_peop_pick", tournaments,
+                           \() NULL, avatars, NULL, 1L)
+      mod_peop_rec <-
+        recordServer("mod_peop_rec", tournaments, mod_peop_pick,
+                     \() "persons")
       
-      get_people <-
-        shiny::reactive({
-          refresh_trigger()
-          con <- tournaments()$database()$connect()
-          on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
-          dplyr::tbl(con, "persons") |>
-            dplyr::collect()
-        })
+      shiny::observe({ mod_peop_rec }) #TODO
       
-      trigger_refresh <- function() {
-        refresh_trigger(refresh_trigger() + 1)
-      }
-      
-      return( reactive({
-        list(
-          data = get_people(),
-          refresh = trigger_refresh
-        )
-      }))
+      return( shiny::reactive({ }) )
     }
   )
 }

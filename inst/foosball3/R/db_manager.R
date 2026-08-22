@@ -43,8 +43,8 @@ dbManagerUI <- function(id) {
 
 dbManagerServer <- function(id) {
   db_file <- tempfile(fileext = ".sqlite")
-  file.copy("www/foosball.sqlite", db_file, overwrite = TRUE)
-  
+  foosball3::create_foosball3_db(db_file)
+
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -85,9 +85,12 @@ dbManagerServer <- function(id) {
         con <- database()$connect()
         on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
         tbls <- RSQLite::dbListTables(con)
+        
         my_dm <- dm::dm_from_con(con, learn_keys = TRUE)
         all_tbls <- RSQLite::dbListTables(con)
         unreferenced <- setdiff(all_tbls, names(my_dm))
+        unreferenced <- unreferenced[!grepl("^sqlite_", unreferenced)]
+
         unreferenced <-
           lapply(unreferenced, dplyr::tbl, src = con) |>
           stats::setNames(unreferenced)
