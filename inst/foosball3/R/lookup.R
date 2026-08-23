@@ -61,7 +61,7 @@ lookupServer <- function(id, label, db, initial, table, field_id, name = NULL, f
       }
 
       return(
-        shiny::reactive({ print(id); input$selectLookup }) #TODO remove print
+        shiny::reactive({ input$selectLookup })
       )
     }
   )

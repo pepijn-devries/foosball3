@@ -24,6 +24,10 @@ avatarServer <- function(id, db) {
       ns <- session$ns
       
       observeEvent(get_picture_tags(), {
+        if (avatar_generator$status() == "running") {
+          bslib::hide_toast(ns("avatar_progress"))
+          browser() #TODO stop process if old on is still running
+        }
         avatar_generator$invoke(get_picture_tags())
         bslib::toast(
           div("Initiating avatars...", class = "avatar-progress-text", style = "margin-bottom: 8px;"),

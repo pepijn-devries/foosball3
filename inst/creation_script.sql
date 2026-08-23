@@ -1,81 +1,83 @@
-CREATE TABLE pictures(
-  PICTURE_ID INTEGER PRIMARY KEY NOT NULL,
-  TOURNAMENT_ID INTEGER NOT NULL,
-  PICTURE_DESCRIPTION TEXT,
-  PICTURE_WIDTH INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_W CHECK (PICTURE_WIDTH > 0),
-  PICTURE_HEIGHT INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_H CHECK (PICTURE_HEIGHT > 0),
-  JPG_DATA BLOB NOT NULL,
+PRAGMA journal_mode=WAL;
+PRAGMA user_version=1;
+CREATE TABLE pictures( --- Optional pictures of the tournament. Ideal for group photo's which are used for generating avatars.
+  PICTURE_ID INTEGER PRIMARY KEY NOT NULL, --- Unique identifier for each picture.
+  TOURNAMENT_ID INTEGER NOT NULL, --- The tournament where the picture was taken.
+  PICTURE_DESCRIPTION TEXT, --- An optional description of the picture.
+  PICTURE_WIDTH INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_W CHECK (PICTURE_WIDTH > 0), --- Pixel width of the picture.
+  PICTURE_HEIGHT INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_H CHECK (PICTURE_HEIGHT > 0), --- Pixel height of the picture.
+  JPG_DATA BLOB NOT NULL, --- Image binary data in JPG format. It should not exceed 600 KB in size.
   FOREIGN KEY(TOURNAMENT_ID) REFERENCES tournaments(TOURNAMENT_ID),
   CONSTRAINT CHECK_JPG_SIZE CHECK (length(JPG_DATA) <= 614400)
 );
-CREATE TABLE picture_tags(
-  TAG_ID INTEGER PRIMARY KEY NOT NULL,
-  PICTURE_ID INTEGER NOT NULL,
-  TAG_X INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_TX CHECK (TAG_X >= 0),
-  TAG_Y INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_TY CHECK (TAG_Y >= 0),
-  TAG_SIZE INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_TS CHECK (TAG_SIZE > 0),
-  PERSON_ID INTEGER NOT NULL,
+CREATE TABLE picture_tags( --- Table containing coordinates that tag faces inside photographs.
+  TAG_ID INTEGER PRIMARY KEY NOT NULL, --- Unique identifier for each tag.
+  PICTURE_ID INTEGER NOT NULL, --- Picture that is being tagged.
+  TAG_X INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_TX CHECK (TAG_X >= 0), --- x-Coordinate in pixels of the tag.
+  TAG_Y INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_TY CHECK (TAG_Y >= 0), --- y-Coordinate in pixels of the tag.
+  TAG_SIZE INTEGER NOT NULL CONSTRAINT CHECK_POSITIVE_TS CHECK (TAG_SIZE > 0), --- Radius of the tag in pixels.
+  PERSON_ID INTEGER NOT NULL, --- Person that is being tagged.
   FOREIGN KEY(PICTURE_ID) REFERENCES pictures(PICTURE_ID),
   FOREIGN KEY(PERSON_ID) REFERENCES persons(PERSON_ID),
   UNIQUE(PICTURE_ID, PERSON_ID)
 );
-CREATE TABLE periods(
-  PERIOD_ID INTEGER PRIMARY KEY NOT NULL,
-  PERIOD_START TEXT NOT NULL CONSTRAINT CHECK_START_DATE CHECK ( --- YYYY-MM-DD
+CREATE TABLE periods( --- Time periods. It is used to track when I table was located at which location.
+  PERIOD_ID INTEGER PRIMARY KEY NOT NULL, --- Unique identifier for a period.
+  PERIOD_START TEXT NOT NULL CONSTRAINT CHECK_START_DATE CHECK ( --- Start date of the period, formated as YYYY-MM-DD
     PERIOD_START GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
   ),
-  PERIOD_END TEXT NOT NULL CONSTRAINT CHECK_END_DATE CHECK ( --- YYYY-MM-DD
+  PERIOD_END TEXT CONSTRAINT CHECK_END_DATE CHECK ( --- End date of the period, formated as YYYY-MM-DD
     PERIOD_END GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
   ),
-  TABLE_CODE TEXT NOT NULL,
-  LOCATION_CODE TEXT NOT NULL,
-  PERIOD_COMMENT TEXT,
+  TABLE_CODE TEXT NOT NULL, --- Table to which the period applies.
+  LOCATION_CODE TEXT NOT NULL, --- Location where the table was at during the period.
+  PERIOD_COMMENT TEXT, --- An optional comment.
   FOREIGN KEY(TABLE_CODE) REFERENCES tables(TABLE_CODE)
   FOREIGN KEY(LOCATION_CODE) REFERENCES locations(LOCATION_CODE)
-  UNIQUE(LOCATION_CODE, PERIOD_START)
+  UNIQUE(LOCATION_CODE, TABLE_CODE, PERIOD_START)
 );
-CREATE TABLE locations(
-  LOC_CODE TEXT PRIMARY KEY NOT NULL,
-  LOCATION_NAME TEXT NOT NULL UNIQUE,
-  LOCATION_CITY TEXT NOT NULL,
-  LOCATION_STREET TEXT,
-  LOCATION_STR_NUMBER INTEGER
+CREATE TABLE locations( --- A table to manage locations. It is used to describe location of tables and the home base of players.
+  LOC_CODE TEXT PRIMARY KEY NOT NULL, --- A unique identifier for the location
+  LOCATION_NAME TEXT NOT NULL UNIQUE, --- The name of a location
+  LOCATION_CITY TEXT NOT NULL, --- The city associated with the location
+  LOCATION_STREET TEXT, --- Optionally, the street of the location.
+  LOCATION_STR_NUMBER INTEGER --- Optionally, the street number of the location.
 );
-CREATE TABLE brands(
-  BRAND_CODE TEXT PRIMARY KEY NOT NULL,
-  BRAND_NAME TEXT NOT NULL UNIQUE,
-  BRAND_COUNTRY TEXT CONSTRAINT CHECK_CNTRY CHECK ( --- ISO 3166 Alpha-2 code,
+CREATE TABLE brands( --- Brands of foosball tables.
+  BRAND_CODE TEXT PRIMARY KEY NOT NULL, --- A uniqe identifier of the brand.
+  BRAND_NAME TEXT NOT NULL UNIQUE, --- The name of a brand.
+  BRAND_COUNTRY TEXT CONSTRAINT CHECK_CNTRY CHECK ( --- Country associated with the brand (ISO 3166 Alpha-2 code).
     BRAND_COUNTRY GLOB '[A-Z][A-Z]'
   )
 );
-CREATE TABLE tables(
-  BRAND_CODE TEXT, 
-  TABLE_CODE TEXT PRIMARY KEY NOT NULL,
-  TABLE_NAME TEXT NOT NULL UNIQUE,
+CREATE TABLE tables( --- Foosball tables used in matches.
+  BRAND_CODE TEXT, --- Brand of the table.
+  TABLE_CODE TEXT PRIMARY KEY NOT NULL, --- A unique identifier of a table.
+  TABLE_NAME TEXT NOT NULL UNIQUE, --- A (knick)name for a specific table
   FOREIGN KEY(BRAND_CODE) REFERENCES brands(BRAND_CODE)
 );
-CREATE TABLE table_sides(
-  SIDE_ID INTEGER PRIMARY KEY NOT NULL,
-  SIDE TEXT
+CREATE TABLE table_sides( --- Descriptions of either side of the foosball table.
+  SIDE_ID INTEGER PRIMARY KEY NOT NULL, --- Unique codes for describing a table side.
+  SIDE TEXT --- A descriptive text indicating a table side.
 );
-CREATE TABLE side_properties(
-  SIDE_PROP_ID INTEGER PRIMARY KEY NOT NULL,
-  SIDE_ID INTEGER NOT NULL,
-  TABLE_CODE TEXT NOT NULL,
-  COLOR_NAME TEXT NOT NULL,
-  COLOR_RGB TEXT CONSTRAINT CHECK_COLOR CHECK (
+CREATE TABLE side_properties( --- Properties of any side of the foosball table. It is primarily used to document the colour of the players on a specific side.
+  SIDE_PROP_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier for each side property.
+  SIDE_ID INTEGER NOT NULL, --- Identifier of either side of the table.
+  TABLE_CODE TEXT NOT NULL, --- Identifier of a specific table.
+  COLOR_NAME TEXT NOT NULL, --- Name of the colour on the indicated side.
+  COLOR_RGB TEXT CONSTRAINT CHECK_COLOR CHECK ( --- RGB code of the colour on the indicated side. Should start with a hash sign, followed by 6 capitalised hexadecimal characters.
     COLOR_RGB GLOB '#[0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F]'
   ),
   FOREIGN KEY(SIDE_ID) REFERENCES table_sides(SIDE_ID),
   FOREIGN KEY(TABLE_CODE) REFERENCES tables(TABLE_CODE),
   UNIQUE(TABLE_CODE, SIDE_ID)
 );
-CREATE TABLE roles(
-  ROLE_CODE TEXT PRIMARY KEY NOT NULL,
-  ROLE TEXT NOT NULL
+CREATE TABLE roles( --- The roles a player can have (i.e., defense or strike).
+  ROLE_CODE TEXT PRIMARY KEY NOT NULL, --- A unique identifier for each role.
+  ROLE TEXT NOT NULL --- A short notation of the role.
 );
-CREATE TABLE positions(
-  POSITION_CODE TEXT PRIMARY KEY NOT NULL, 
+CREATE TABLE positions( --- A table of positions around the table. It is a combination of the role (strike or defense) and the side of a table.
+  POSITION_CODE TEXT PRIMARY KEY NOT NULL, --- TODO
   ROLE_CODE TEXT NOT NULL,
   SIDE_ID INTEGER NOT NULL,
   PSEUDO_SIDE_ID INTEGER NOT NULL,
@@ -85,15 +87,15 @@ CREATE TABLE positions(
   FOREIGN KEY(PSEUDO_SIDE_ID) REFERENCES table_sides(SIDE_ID), -- Side to use when the actual side is unknown
   UNIQUE(ROLE_CODE, SIDE_ID)
 );
-CREATE TABLE genders(
-  GENDER_CODE TEXT PRIMARY KEY NOT NULL,
-  GENDER TEXT NOT NULL
+CREATE TABLE genders( --- A list of genders that can optionally be associated with people
+  GENDER_CODE TEXT PRIMARY KEY NOT NULL DEFAULT 'NS',
+  GENDER TEXT NOT NULL DEFAULT 'Not specified'
 );
-CREATE TABLE persons(
+CREATE TABLE persons( --- A list of persons. It can also include spectators, or just anyone.
   PERSON_ID INTEGER PRIMARY KEY NOT NULL,
   PERSON_NAME TEXT NOT NULL UNIQUE,
-  GENDER_CODE TEXT NOT NULL,
-  QUALIFICATION_CODE TEXT NOT NULL,
+  GENDER_CODE TEXT NOT NULL DEFAULT 'NS',
+  QUALIFICATION_CODE TEXT NOT NULL DEFAULT 'H',
   HOME_BASE TEXT,
   FOREIGN KEY(GENDER_CODE) REFERENCES genders(GENDER_CODE),
   FOREIGN KEY(QUALIFICATION_CODE) REFERENCES qualifications(QUALIFICATION_CODE),
@@ -106,16 +108,16 @@ CREATE TABLE qualifications(
   QUALIFICATION_SUCCESS REAL NOT NULL,
   QUALIFICATION_DESCR TEXT
 );
-CREATE TABLE participants(
-  PARTICIPANT_ID INTEGER PRIMARY KEY NOT NULL,
-  TOURNAMENT_ID INTEGER NOT NULL,
-  PERSON_ID INTEGER NOT NULL,
-  PENALTY_POINTS INTEGER CONSTRAINT CHECK_POSITIVE_PENAL CHECK (PENALTY_POINTS >= 0),
+CREATE TABLE participants( --- A table of participants. A person will get a unique participation number for each tournament he/she joins. This will let you keep track of the person progress in a tournament, but will also let you keep track of historical performance.
+  PARTICIPANT_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier for each participant
+  TOURNAMENT_ID INTEGER NOT NULL, --- The tournament in which the person participates
+  PERSON_ID INTEGER NOT NULL, --- The unique identifier of the person participating
+  PENALTY_POINTS INTEGER CONSTRAINT CHECK_POSITIVE_PENAL CHECK (PENALTY_POINTS >= 0), --- Penalty points assigned to the participant during the tournament
   FOREIGN KEY(TOURNAMENT_ID) REFERENCES tournaments(TOURNAMENT_ID),
   FOREIGN KEY(PERSON_ID) REFERENCES persons(PERSON_ID),
   UNIQUE(TOURNAMENT_ID, PERSON_ID)
 );
-CREATE TABLE match_results(
+CREATE TABLE match_results( --- Table of results (i.e. score) for all matches
   MATCH_ID INTEGER NOT NULL,
   RESULT INTEGER CONSTRAINT CHECK_POSITIVE_RESULT CHECK (RESULT >= 0),
   SIDE_ID INTEGER NOT NULL,
@@ -123,16 +125,15 @@ CREATE TABLE match_results(
   FOREIGN KEY(SIDE_ID) REFERENCES table_sides(SIDE_ID),
   UNIQUE(MATCH_ID, SIDE_ID)
 );
-CREATE TABLE match_players(
+CREATE TABLE match_players( --- Participants that play in specific matches.
   MATCH_ID INTEGER NOT NULL,
   PARTICIPANT_ID INTEGER NOT NULL,
   POSITION_CODE TEXT NOT NULL,
   FOREIGN KEY(MATCH_ID) REFERENCES matches(MATCH_ID),
   FOREIGN KEY(PARTICIPANT_ID) REFERENCES participants(PARTICIPANT_ID)
-  UNIQUE(MATCH_ID, PARTICIPANT_ID),
-  UNIQUE(MATCH_ID, POSITION_CODE)
+  UNIQUE(MATCH_ID, PARTICIPANT_ID, POSITION_CODE)
 );
-CREATE TABLE matches(
+CREATE TABLE matches( --- A list of matches associated with a tournament
   MATCH_ID INTEGER PRIMARY KEY NOT NULL,
   TOURNAMENT_ID INTEGER NOT NULL,
   TOURN_PHASE_CODE TEXT NOT NULL,
@@ -144,12 +145,12 @@ CREATE TABLE matches(
   FOREIGN KEY(BALL_ID) REFERENCES balls(BALL_ID)
   UNIQUE(MATCH_ID, TOURNAMENT_ID)
 );
-CREATE TABLE balls(
+CREATE TABLE balls( --- Balls that can be used in a tournament.
   BALL_ID INTEGER PRIMARY KEY NOT NULL,
   BALL_DESCRIPTION TEXT NOT NULL UNIQUE
 );
 CREATE TABLE tournament_phase_flow(
-  TOURN_TYPE_ID INTEGER NOT NULL,
+  TOURN_TYPE_CODE TEXT NOT NULL DEFAULT 'I',
   PHASE_ORDER INTEGER NOT NULL CONSTRAINT PHASE_ORDER_CHECK CHECK (
     PHASE_ORDER > 0
   ),
@@ -157,17 +158,18 @@ CREATE TABLE tournament_phase_flow(
   IS_OPTIONAL INTEGER NOT NULL CONSTRAINT CHECK_IS_OPTIONAL CHECK(
     IS_OPTIONAL IN (0, 1)
   ),
-  PRIMARY KEY(TOURN_TYPE_ID, PHASE_ORDER),
-  FOREIGN KEY(TOURN_TYPE_ID) REFERENCES tournament_types(TOURN_TYPE_ID),
+  PRIMARY KEY(TOURN_TYPE_CODE, PHASE_ORDER),
+  FOREIGN KEY(TOURN_TYPE_CODE) REFERENCES tournament_types(TOURN_TYPE_CODE),
   FOREIGN KEY(TOURN_PHASE_CODE) REFERENCES tournament_phases(TOURN_PHASE_CODE)
 );
 CREATE TABLE tournament_types(
-  TOURN_TYPE_ID INTEGER PRIMARY KEY NOT NULL,
-  TOURNAMENT_TYPE TEXT NOT NULL UNIQUE
+  TOURN_TYPE_CODE TEXT PRIMARY KEY NOT NULL DEFAULT 'I',
+  TOURNAMENT_TYPE TEXT NOT NULL UNIQUE DEFAULT 'Individual',
+  TOURN_TYPE_DESCRIPTION TEXT
 );
-CREATE TABLE tournaments(
+CREATE TABLE tournaments( --- A list of tournaments.
   TOURNAMENT_ID INTEGER PRIMARY KEY NOT NULL,
-  TOURN_TYPE_ID INTEGER NOT NULL,
+  TOURN_TYPE_CODE TEXT NOT NULL DEFAULT 'I',
   TOURNAMENT_DATE TEXT CONSTRAINT CHECK_DATE CHECK ( --- YYYY-MM-DD
     TOURNAMENT_DATE GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
   ),
@@ -179,27 +181,27 @@ CREATE TABLE tournaments(
   TOURNAMENT_STATE_CODE TEXT NOT NULL,
   TOURNAMENT_COMMENTS TEXT,
   FOREIGN KEY(LOC_CODE) REFERENCES locations(LOC_CODE),
-  FOREIGN KEY(TOURN_TYPE_ID) REFERENCES tournament_types(TOURN_TYPE_ID),
+  FOREIGN KEY(TOURN_TYPE_CODE) REFERENCES tournament_types(TOURN_TYPE_CODE),
   FOREIGN KEY(POINT_SYSTEM_ID) REFERENCES point_systems(POINT_SYSTEM_ID),
   FOREIGN KEY(TOURNAMENT_STATE_CODE) REFERENCES tournament_states(TOURNAMENT_STATE_CODE)
 );
-CREATE TABLE tournament_states(
+CREATE TABLE tournament_states( --- States that can be applied to each tournament.
   TOURNAMENT_STATE_CODE TEXT PRIMARY KEY NOT NULL,
   TOURNAMENT_STATE TEXT NOT NULL UNIQUE
 );
-CREATE TABLE point_systems(
+CREATE TABLE point_systems( --- System for counting points based on match results during the tournament.
   POINT_SYSTEM_ID INTEGER PRIMARY KEY NOT NULL,
   PS_DESCRIPTION TEXT NOT NULL,
   MAX_POINTS_PER_MATCH INTEGER NOT NULL
 );
-CREATE TABLE tournament_organisers(
+CREATE TABLE tournament_organisers( --- People that organised a tournament
   TOURNAMENT_ID INTEGER NOT NULL,
   PERSON_ID INTEGER NOT NULL,
   FOREIGN KEY(TOURNAMENT_ID) REFERENCES tournaments(TOURNAMENT_ID),
   FOREIGN KEY(PERSON_ID) REFERENCES persons(PERSON_ID),
   UNIQUE(TOURNAMENT_ID, PERSON_ID)
 );
-CREATE TABLE tournament_phases(
+CREATE TABLE tournament_phases( --- Phases of matches in a tournament
   TOURN_PHASE_CODE TEXT PRIMARY KEY NOT NULL,
   TOURNAMENT_PHASE TEXT NOT NULL,
   IS_NESTED INTEGER NOT NULL CONSTRAINT CHECK_NESTED CHECK(
@@ -508,4 +510,3 @@ SELECT PLAYER_1, PLAYER_2, COMBI, TOURNAMENT_ID, TOURN_PHASE_CODE, COUNT(DISTINC
     SELECT MATCH_ID, PLAYER_STRIKE_2 PLAYER_1, PLAYER_DEFENSE_2 PLAYER_2, 'SwD' COMBI FROM match_positions
   ) LEFT JOIN matches USING(MATCH_ID)
 ) WHERE NOT PLAYER_1 = PLAYER_2 GROUP BY TOURNAMENT_ID, TOURN_PHASE_CODE, PLAYER_1, PLAYER_2, COMBI;
-PRAGMA journal_mode=WAL;

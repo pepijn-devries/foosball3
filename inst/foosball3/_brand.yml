@@ -27,11 +27,5 @@ defaults:
           background-size: contain;
           background-repeat: no-repeat;
           background-position: center;
-        }
-
-        [data-bs-theme="light"] .navbar-brand::before {
-          background-image: url('/img/logo-black.png'); 
-        }
-        [data-bs-theme="dark"] .navbar-brand::before {
-          background-image: url('/img/logo-white.png');
+          background-image: url('/img/web-app-manifest-192x192.png');
         }

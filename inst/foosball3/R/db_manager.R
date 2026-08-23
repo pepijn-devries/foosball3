@@ -43,7 +43,7 @@ dbManagerUI <- function(id) {
 
 dbManagerServer <- function(id) {
   db_file <- tempfile(fileext = ".sqlite")
-  foosball3::create_foosball3_db(db_file)
+  foosball3::foosball3_create_db(db_file)
 
   shiny::moduleServer(
     id,
@@ -57,10 +57,23 @@ dbManagerServer <- function(id) {
       
       shiny::observeEvent(input$uploadSQLite, {
         pt <- db_path()
-        file.copy(input$uploadSQLite$datapath, pt$path,
-                  overwrite = TRUE)
-        pt$update_counter <- pt$update_counter + 1
-        db_path(pt)
+        temp_path <- tempfile()
+        tryCatch({
+          foosball3_import_db(
+            input$uploadSQLite$datapath,
+            temp_path
+          )
+          file.copy(temp_path, pt$path, overwrite = TRUE)
+          pt$update_counter <- pt$update_counter + 1L
+          db_path(pt)
+          unlink(temp_path, TRUE, TRUE)
+        }, error = \(e) {
+          shinyWidgets::show_alert(
+            "Import failed",
+            paste(e$message, collapse = " "),
+            type = "error"
+          )
+        })
       })
       
       output$downloadSQLite <- shiny::downloadHandler(

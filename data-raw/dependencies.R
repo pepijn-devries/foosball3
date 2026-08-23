@@ -21,7 +21,7 @@ all_deps <-
 base_pkgs <- c("base", "compiler", "datasets", "graphics", "grDevices", 
                "grid", "methods", "parallel", "splines", "stats", 
                "stats4", "tcltk", "tools", "utils")
-exclude <- character()
+exclude <- c("foosball3")
 
 deps <- all_deps[!all_deps$Package %in% c(base_pkgs, exclude), ]
 deps <- deps[order(deps$Package, deps$Function),]
@@ -34,10 +34,11 @@ roxygen_lines <- by(deps, deps$Package, function(sub) {
 roxygen_lines <- as.character(roxygen_lines)
 
 file_content <- c(
-  "#' @title Internal Dummy Dependencies",
+  "## Generated automatically with data-raw/dependencies.R, do not edit by hand",
+  "#' @title Internal Shiny Dependencies",
   "#' @description This file automatically registers dependencies used only in inst/.",
   roxygen_lines,
-  "#' @importFrom rlang !!",
+  "#' @importFrom rlang !! := .data",
   "#' @noRd",
   "NULL"
 )

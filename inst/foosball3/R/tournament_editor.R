@@ -109,7 +109,7 @@ tournamentEditorServer <- function(
               ),
               by = "TOURNAMENT_ID"
             )
-          dplyr::copy_to(con, tnmt, "tournaments", overwrite = TRUE, temporary = FALSE)
+          dplyr::copy_to(con, tnmt, "tournaments", overwrite = TRUE, temporary = FALSE) ## TODO overwrite in copy_to may destroy keys and constraints!
           max_id <-
             dplyr::tbl(con, "participants") |>
             dplyr::summarise(
