@@ -72,6 +72,12 @@
   border-color: var(--border-ftable-side2, #00000000) !important;
 }
 
+.progress {
+  height: 18px !important;
+  background-color: var(--bs-toast-bg, rgba(255,255,255,0.85)) !important;
+  border-radius: var(--bs-border-radius-sm) !important;
+}
+
 .foosball-avatar1,
 .foosball-avatar2,
 .foosball-avatar {

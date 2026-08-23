@@ -7,10 +7,10 @@ timerUI <- function(id) {
       id = ns("timerPanel"),
       bottom = 20, left = 20, width = 400,
       draggable = TRUE, style = "z-index: 10000;",
+      style = "display: none;",
       bslib::card(
         class = "foosball-timer-card",
         bslib::accordion(
-          open = FALSE,
           bslib::accordion_panel(
             class = "foosball-timer-card",
             title = "Draggable Timer",
@@ -38,7 +38,11 @@ timerServer <- function(id, tournament, matches, show) {
       ns <- session$ns
       
       shiny::observe({
-        shinyjs::toggle("timerPanel", condition = show())
+        shinyjs::toggle(
+          "timerPanel", condition = show(),
+          anim = TRUE,
+          time = 0.25,
+          animType = "slide")
       })
       
       get_match_duration <- shiny::reactive({

@@ -48,6 +48,8 @@ dbManagerServer <- function(id) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      ns <- session$ns
+      
       db_path <- shiny::reactiveVal(
         list(
           path = db_file,
@@ -56,24 +58,46 @@ dbManagerServer <- function(id) {
       )
       
       shiny::observeEvent(input$uploadSQLite, {
+        bslib::show_toast(
+          bslib::toast(
+            "Please wait while importing data from uploaded file",
+            div(
+              class = "spinner-border text-primary flex-shrink-0", 
+              role = "status",
+              style = "width: 1.5rem; height: 1.5rem; border-width: 0.2em;",
+              tags$span(class = "visually-hidden", "Loading...")
+            ),
+            id = ns("import_toast"),
+            duration_s = NA,
+            position = "bottom-right"
+          )
+        )
         pt <- db_path()
         temp_path <- tempfile()
         tryCatch({
-          foosball3_import_db(
-            input$uploadSQLite$datapath,
-            temp_path
-          )
-          file.copy(temp_path, pt$path, overwrite = TRUE)
-          pt$update_counter <- pt$update_counter + 1L
-          db_path(pt)
-          unlink(temp_path, TRUE, TRUE)
+          withCallingHandlers({
+            foosball3_import_db(
+              input$uploadSQLite$datapath,
+              temp_path
+            )
+            file.copy(temp_path, pt$path, overwrite = TRUE)
+            pt$update_counter <- pt$update_counter + 1L
+            db_path(pt)
+            unlink(temp_path, TRUE, TRUE)
+          }, warning = \(w) {
+            shinyWidgets::show_alert(
+              "Please be aware of the following",
+              paste(w$message, collapse = " "),
+              type = "warning")
+            invokeRestart("muffleWarning")
+          })
         }, error = \(e) {
           shinyWidgets::show_alert(
             "Import failed",
             paste(e$message, collapse = " "),
-            type = "error"
-          )
+            type = "error")
         })
+        bslib::hide_toast(ns("import_toast"))
       })
       
       output$downloadSQLite <- shiny::downloadHandler(

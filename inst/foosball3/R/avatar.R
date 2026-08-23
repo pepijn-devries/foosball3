@@ -7,7 +7,7 @@ avatarUI <- function(id) {
 
     if (progressBar) {
       progressBar.style.width = data.pct + '%%';
-      progressBar.innerText = data.pct + '%%';
+      progressBar.innerText = '\u00a0' + data.pct + '%%';
     }
     if (progressText) {
       progressText.innerText = 'Generated ' + data.count + ' of ' + data.total + ' files...';
@@ -29,21 +29,26 @@ avatarServer <- function(id, db) {
           browser() #TODO stop process if old on is still running
         }
         avatar_generator$invoke(get_picture_tags())
-        bslib::toast(
-          div("Initiating avatars...", class = "avatar-progress-text", style = "margin-bottom: 8px;"),
-          shiny::div(
-            class = "progress",
+
+        bslib::show_toast(
+          bslib::toast(
             shiny::div(
-              class = "avatar-progress-bar progress-bar-striped progress-bar-animated bg-success",
-              style = "width: 0%;",
-              "0%"
-            )
-          ),
-          duration_s = NULL,
-          id = ns("avatar_progress"),
-          type = "primary",
-          position = "bottom-right") |>
-          bslib::show_toast()
+              class = "d-flex flex-column gap-2 w-100",
+              shiny::div("Initiating avatars...", class = "avatar-progress-text", style = "margin-bottom: 8px;"),
+              shiny::div(
+                class = "progress",
+                shiny::div(
+                  class = "avatar-progress-bar progress-bar-striped progress-bar-animated bg-primary",
+                  style = "width: 0%;",
+                  " 0%"
+                )
+              )
+            ),
+            duration_s = NA,
+            id = ns("avatar_progress"),
+            type = NULL,
+            position = "bottom-right")
+        )
         
       })
       

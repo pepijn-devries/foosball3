@@ -30,7 +30,7 @@ ui <- bslib::page_navbar(
                    icon = bsicons::bs_icon("info-circle-fill")),
   bslib::nav_spacer(),
   bslib::nav_item(
-    shiny::checkboxInput("checkTimer", "Show timer")
+    shiny::checkboxInput("checkTimer", shiny::span(bsicons::bs_icon("stopwatch-fill"), "Timer"))
   ),
   bslib::nav_item(
     bslib::input_dark_mode(id = "dark_mode_toggle")

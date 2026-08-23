@@ -15,7 +15,7 @@
 #' @importFrom lubridate as_datetime
 #' @importFrom mirai mirai
 #' @importFrom RSQLite dbConnect dbDisconnect dbExecute dbGetQuery dbListTables SQLite
-#' @importFrom shiny a absolutePanel actionButton checkboxInput div downloadButton downloadHandler ExtendedTask fileInput h2 HTML img includeCSS modalDialog moduleServer NS numericInput observe observeEvent p reactive reactiveTimer reactiveVal renderText renderUI req selectInput selectizeInput shinyApp showModal sliderInput tagList tags textInput textOutput uiOutput updateNumericInput updateSelectInput updateSelectizeInput
+#' @importFrom shiny a absolutePanel actionButton checkboxInput div downloadButton downloadHandler ExtendedTask fileInput h2 HTML img includeCSS modalDialog moduleServer NS numericInput observe observeEvent p reactive reactiveTimer reactiveVal renderText renderUI req selectInput selectizeInput shinyApp showModal sliderInput span tagList tags textInput textOutput uiOutput updateNumericInput updateSelectInput updateSelectizeInput
 #' @importFrom shinybusy add_busy_gif
 #' @importFrom shinyjs disable enable extendShinyjs html js toggle useShinyjs
 #' @importFrom shinyvalidate compose_rules InputValidator sv_between sv_gt sv_gte sv_integer sv_numeric sv_required

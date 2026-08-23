@@ -10,6 +10,7 @@
 #' @export
 foosball3_import_db <- function(file, target, ...) {
   foosball3_create_db(target)
+  warning_messages <- character()
   con_new <- RSQLite::dbConnect(RSQLite::SQLite(), target)
   on.exit({RSQLite::dbDisconnect(con_new)}, add = TRUE)
   con_imp <- RSQLite::dbConnect(RSQLite::SQLite(), file)
@@ -24,8 +25,11 @@ foosball3_import_db <- function(file, target, ...) {
   tb_known <- RSQLite::dbGetQuery(con_new, sql_code) |>
     dplyr::pull("name")
   unknown <- setdiff(tb_nms, tb_known)
-  if (length(unknown) > 0)
-    warning("Skipping unknown tables")
+  if (length(unknown) > 0) {
+    warning_messages <- c(warning_messages,
+                          sprintf("Skipping unknown tables: %s",
+                                  paste(unknown, collapse = ", ")))
+  }
   tb_imp <- intersect(tb_nms, tb_known)
   for (tb in tb_imp) {
     col_imp   <- dplyr::tbl(con_imp, tb) |> colnames()
@@ -33,7 +37,11 @@ foosball3_import_db <- function(file, target, ...) {
     dat <-
       dplyr::tbl(con_imp, tb) |>
       dplyr::collect()
-    if (any(duplicated(dat))) "TODO" #add warning about duplicates
+    if (any(duplicated(dat))) {
+      warning_messages <- c(
+        warning_messages,
+        sprintf("Removed duplicated records from '%s'", tb))
+    }
     dat <- dplyr::distinct(dat)
     dat_expected <-
       dplyr::tbl(con_new, tb) |>
@@ -51,7 +59,10 @@ foosball3_import_db <- function(file, target, ...) {
           if (is.character(default)) {
             default <- stringr::str_replace_all(default, "^'|'$", "")
           }
-          # TODO warn that missing values were replaced with default!
+          warning_messages <- c(
+            warning_messages,
+            sprintf("Missing fields were added with default values in '%s'",
+                    tb))
           d <- .as_sqlite(rep(default, nrow(dat)),
                           class(dat_expected[[cl]]))
         }
@@ -65,6 +76,8 @@ foosball3_import_db <- function(file, target, ...) {
     dplyr::copy_to(con_new, new_tb, tb, append = TRUE)
 
   }
+  warning(paste(warning_messages, collapse = "\n"))
+  invisible()
 }
 
 .as_sqlite <- function(object, Class, ...) {
