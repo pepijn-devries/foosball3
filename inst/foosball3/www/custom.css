@@ -19,22 +19,34 @@
   vertical-align: top; 
 }
 
+.foosball-picture {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+}
+
 .foosball-facemarker {
-  opacity: 0;
-  stroke: var(--bs-border-color);
+  opacity: 0 !important;
   fill: var(--bs-border-color);
-  font-family: var(--bs-body-font-family);
-  font-size: 8cqh;
-  transition: 0.6s;
+  font-family: var(--bs-body-font-family) !important;
+  font-size: calc(8px * (var(--vb-width, 5000) / 300)) !important;
+  transition: 0.6s !important;
 }
 
 .foosball-facemarker circle {
-  stroke-width: 1cqh;
-  fill: transparent;
+  stroke: var(--bs-border-color) !important;
+  vector-effect: non-scaling-stroke !important;
+  stroke-width: 2px !important;
+  fill: transparent !important;
 }
+
 .foosball-facemarker:hover {
-  opacity: 1;
-  cursor: pointer;
+  opacity: 1 !important;
+  cursor: pointer !important;
+}
+
+.foosball-clickable {
+  cursor: pointer !important;
 }
 
 .foosball-score {
@@ -206,6 +218,7 @@ div.shinybusy .ff-image {
 }
 
 .foosball-timer {
+  cursor: drag !important;
   color: var(--bs-body-color) !important;
 }
 

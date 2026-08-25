@@ -206,7 +206,7 @@ CREATE TABLE tournament_phases( --- Phases of matches in a tournament
   TOURNAMENT_PHASE TEXT NOT NULL,
   IS_NESTED INTEGER NOT NULL CONSTRAINT CHECK_NESTED CHECK(
     IS_NESTED IN (0, 1)
-  )
+  ) DEFAULT 0
 );
 CREATE VIEW match_positions AS
 SELECT

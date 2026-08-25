@@ -59,8 +59,11 @@ tournamentServer <- function(id, db, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      face_click <- shiny::reactiveVal()
+      
       mod_picture <- pictureServer("mod_picture", get_it_all)
-      shiny::observe({ mod_picture() }) #TODO
+      shiny::observe({ face_click(mod_picture()) })
+      shiny::observe({ face_click(avatars()$click) })
       
       wait_for_update      <- shiny::reactiveVal()
       edit_mode            <- shiny::reactiveVal()
@@ -77,7 +80,7 @@ tournamentServer <- function(id, db, avatars) {
         )
       })
       
-      observeEvent(editor(), {
+      shiny::observeEvent(editor(), {
         new_id(-1L)
         shinyjs::enable("btnNew")
         shinyjs::enable("btnEdit")
@@ -115,11 +118,12 @@ tournamentServer <- function(id, db, avatars) {
       
       get_it_all <- shiny::reactive({
         list(
-          state           = tournament_update,
+          face_click      = face_click(),
+          state           = tournament_update(),
           trigger_refresh = trigger_refresh,
-          tournaments     = get_tournaments,
-          selected        = get_selected,
-          database        = db
+          tournaments     = get_tournaments(),
+          selected        = get_selected(),
+          database        = db()
         )
       })
       
@@ -209,9 +213,9 @@ tournamentServer <- function(id, db, avatars) {
 
       shiny::observeEvent(input$btnNew, {
         tnmt <- get_it_all()
-        con <- tnmt$database()$connect()
+        con <- tnmt$database$connect()
         on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
-        id_new <- max(c(0L, tnmt$tournaments()$TOURNAMENT_ID)) + 1L
+        id_new <- max(c(0L, tnmt$tournaments$TOURNAMENT_ID)) + 1L
         empty <-
           dplyr::tbl(con, "tournaments") |>
           dplyr::filter(dplyr::row_number() == -1L) |>

@@ -9,6 +9,7 @@ Author:
 Description: TODO
 Imports:
     base64enc,
+    bsicons,
     bslib,
     DiagrammeRsvg,
     dplyr,

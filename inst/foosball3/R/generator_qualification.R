@@ -51,15 +51,16 @@ qualGeneratorServer <- function(id, matches, btnStart) {
         shinyvalidate::sv_numeric(allow_na = TRUE)
       )
       
+      #id, label, db, initial, table, field_id, name = NULL, fmt = "%s", default = NA, validator = NULL
       mod_table <- lookupServer(
         "mod_table", "Table",
-        matches()$tournament$database,
-        matches()$tournament$selected,
+        shiny::reactive({ matches()$tournament$database }),
+        shiny::reactive({ matches()$tournament$selected }),
         "tables", "TABLE_CODE", "TABLE_NAME", "%s", NA, validator)
       mod_ball <- lookupServer(
         "mod_ball", "Ball",
-        matches()$tournament$database,
-        matches()$tournament$selected,
+        shiny::reactive({ matches()$tournament$database }),
+        shiny::reactive({ matches()$tournament$selected }),
         "balls", "BALL_ID", "BALL_DESCRIPTION", "%s", -1L, validator)
       
       validator$enable()

@@ -19,8 +19,7 @@ personPickerServer <- function(
 
       get_people <-
         shiny::reactive({
-          tournaments()$state() ## has been updated
-          con <- tournaments()$database()$connect()
+          con <- tournaments()$database$connect()
           on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
           dplyr::tbl(con, "persons") |>
             dplyr::collect()
@@ -95,7 +94,7 @@ personPickerServer <- function(
         is_valid <- is.null(validator) ||
           !any(grepl("numerics", validator$validate()[[ns("selectPeople")]]$message))
         if (length(new_peops) == 1 && is_valid) {
-          con <- tournaments()$database()$connect()
+          con <- tournaments()$database$connect()
           on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
           new_row <-
             dplyr::tbl(con, "persons") |>
@@ -111,7 +110,7 @@ personPickerServer <- function(
           dplyr::copy_to(
             con, new_row, "persons", append = TRUE
           )
-          tournaments()$trigger_refresh()
+          tournaments$trigger_refresh()
         }
       })
       

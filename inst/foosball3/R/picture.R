@@ -7,9 +7,11 @@ pictureServer <- function(id, tournament) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      ns <- session$ns
+      
       output$picture <- renderUI({
         tnmt <- tournament()
-        id <- tnmt$selected()$TOURNAMENT_ID
+        id <- tnmt$selected$TOURNAMENT_ID
         if (length(id) == 0) {
           "Select a tournament first for a picture"
         } else {
@@ -17,11 +19,11 @@ pictureServer <- function(id, tournament) {
         }
       })
       
-      get_picture <- reactive({
-        shiny::req(tournament()$database())
+      get_picture <- shiny::reactive({
+        shiny::req(tournament())
         tnmt <- tournament()
-        id <- tnmt$selected()$TOURNAMENT_ID
-        con <- tnmt$database()$connect()
+        id <- tnmt$selected$TOURNAMENT_ID
+        con <- tnmt$database$connect()
         on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
         pic <-
           dplyr::tbl(con, "pictures") |>
@@ -45,7 +47,8 @@ pictureServer <- function(id, tournament) {
                   class = "foosball-facemarker",
                   shiny::a(
                     onClick = sprintf(
-                      "Shiny.onInputChange(`faceclick`, {id: %i,timestamp: new Date()});",
+                      "Shiny.onInputChange(`%s`, {id: %i,timestamp: new Date()});",
+                      ns("faceclick"),
                       .data$PERSON_ID),
                     shiny::tags$circle(
                       cx = as.integer(.data$TAG_X),
@@ -66,6 +69,8 @@ pictureServer <- function(id, tournament) {
             xmlns = "http://www.w3.org/2000/svg",
             `xmlns:xlink` = "http://www.w3.org/1999/xlink",
             viewBox = sprintf("0 0 %i %i", pic$PICTURE_WIDTH, pic$PICTURE_HEIGHT),
+            style = sprintf("--vb-width: %i; --vb-height: %i",
+                            pic$PICTURE_WIDTH, pic$PICTURE_HEIGHT),
             class = "foosball-picture",
             shiny::tags$image(
               width  = pic$PICTURE_WIDTH,
@@ -80,8 +85,7 @@ pictureServer <- function(id, tournament) {
         return(result)
       })
       
-      
-      return(shiny::reactive({ "TODO" }))
+      return(shiny::reactive({ input$faceclick }))
     }
   )
 }

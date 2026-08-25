@@ -43,10 +43,14 @@ tournamentEditorServer <- function(
                            avatars, validator, 4L)
       
       mod_loc <- lookupServer(
-        "mod_loc", "Location", tournaments()$database, tournaments()$selected,
+        "mod_loc", "Location",
+        shiny::reactive({ tournaments()$database }),
+        shiny::reactive({ tournaments()$selected }),
         "locations", "LOC_CODE", "LOCATION_NAME", "%s", NA, validator)
       mod_ps <- lookupServer(
-          "mod_ps", "Point System", tournaments()$database, tournaments()$selected,
+          "mod_ps", "Point System",
+          shiny::reactive({ tournaments()$database }),
+          shiny::reactive({ tournaments()$selected }),
           "point_systems", "POINT_SYSTEM_ID", "PS_DESCRIPTION", "%s",
           "1", validator)
 

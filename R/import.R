@@ -15,6 +15,7 @@ foosball3_import_db <- function(file, target, ...) {
   on.exit({RSQLite::dbDisconnect(con_new)}, add = TRUE)
   con_imp <- RSQLite::dbConnect(RSQLite::SQLite(), file)
   on.exit({RSQLite::dbDisconnect(con_imp)}, add = TRUE)
+  
   sql_code <-
     "SELECT name 
      FROM sqlite_schema 
@@ -27,7 +28,7 @@ foosball3_import_db <- function(file, target, ...) {
   unknown <- setdiff(tb_nms, tb_known)
   if (length(unknown) > 0) {
     warning_messages <- c(warning_messages,
-                          sprintf("Skipping unknown tables: %s",
+                          sprintf("Skipping unknown tables: '%s'.",
                                   paste(unknown, collapse = ", ")))
   }
   tb_imp <- intersect(tb_nms, tb_known)
@@ -40,7 +41,7 @@ foosball3_import_db <- function(file, target, ...) {
     if (any(duplicated(dat))) {
       warning_messages <- c(
         warning_messages,
-        sprintf("Removed duplicated records from '%s'", tb))
+        sprintf("Removed duplicated records from '%s'.", tb))
     }
     dat <- dplyr::distinct(dat)
     dat_expected <-
@@ -59,10 +60,10 @@ foosball3_import_db <- function(file, target, ...) {
           if (is.character(default)) {
             default <- stringr::str_replace_all(default, "^'|'$", "")
           }
-          warning_messages <- c(
+          warning_messages <<- c(
             warning_messages,
-            sprintf("Missing fields were added with default values in '%s'",
-                    tb))
+            sprintf("Missing fields ('%s') were added with default values ('%s') in '%s'.",
+                    cl, as.character(default), tb))
           d <- .as_sqlite(rep(default, nrow(dat)),
                           class(dat_expected[[cl]]))
         }
@@ -76,7 +77,7 @@ foosball3_import_db <- function(file, target, ...) {
     dplyr::copy_to(con_new, new_tb, tb, append = TRUE)
 
   }
-  warning(paste(warning_messages, collapse = "\n"))
+  warning(paste(warning_messages, collapse = " "))
   invisible()
 }
 

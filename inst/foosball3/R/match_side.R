@@ -55,7 +55,7 @@ matchSideServer <- function(id, match, side, avatars) {
       
       get_player_ids <- shiny::reactive({
         if (length(match()$selected_id) > 0) {
-          con <- match()$tournament$database()$connect()
+          con <- match()$tournament$database$connect()
           on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
           dplyr::tbl(con, "match_players") |>
             dplyr::filter(.data$MATCH_ID == !!match()$selected_id &
@@ -93,7 +93,7 @@ matchSideServer <- function(id, match, side, avatars) {
           pid <- pid |>
             dplyr::mutate(
               avt = lapply(.data$PERSON_ID, avt$get_avatar,
-                           what = "tile", side)
+                           what = "tile", side = side, clickable = TRUE)
             )
           order_fun <- I
           if (side == 2) order_fun <- rev
@@ -102,7 +102,7 @@ matchSideServer <- function(id, match, side, avatars) {
               paste(
                 order_fun(
                   c(
-                    sprintf("Defense: %s", m[[paste0("PLAYER_DEFENSE_", side)]]),
+                    sprintf("<strong>Defense</strong>: %s", m[[paste0("PLAYER_DEFENSE_", side)]]),
                     pid$avt[[which(pid$POSITION_CODE == paste0("D", side))]]
                   )
                 ),
@@ -111,7 +111,7 @@ matchSideServer <- function(id, match, side, avatars) {
               paste(
                 order_fun(
                   c(
-                    sprintf("Strike: %s", m[[paste0("PLAYER_STRIKE_", side)]]),
+                    sprintf("<strong>Strike</strong>: %s", m[[paste0("PLAYER_STRIKE_", side)]]),
                     pid$avt[[which(pid$POSITION_CODE == paste0("S", side))]]
                   )
                 ),
@@ -121,7 +121,7 @@ matchSideServer <- function(id, match, side, avatars) {
           if (side == 2L) txt <- rev(txt)
           txt <- txt |>
             lapply(shiny::HTML) |>
-            lapply(shiny::h2) |>
+            lapply(shiny::h2, style = "white-space: nowrap") |>
             lapply(shiny::p)
           do.call(shiny::div, txt)
         }
@@ -139,7 +139,7 @@ matchSideServer <- function(id, match, side, avatars) {
       })
       
       get_tournament_state <- shiny::reactive({
-        match()$tournament$selected()$TOURNAMENT_STATE
+        match()$tournament$selected$TOURNAMENT_STATE
       })
       
       shiny::observeEvent(get_selected_match(), {

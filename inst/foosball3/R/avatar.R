@@ -22,8 +22,8 @@ avatarServer <- function(id, db) {
     id,
     function(input, output, session) {
       ns <- session$ns
-      
-      observeEvent(get_picture_tags(), {
+
+      shiny::observeEvent(get_picture_tags(), {
         if (avatar_generator$status() == "running") {
           bslib::hide_toast(ns("avatar_progress"))
           browser() #TODO stop process if old on is still running
@@ -49,9 +49,9 @@ avatarServer <- function(id, db) {
             type = NULL,
             position = "bottom-right")
         )
-        
+
       })
-      
+
       get_picture_tags <- shiny::reactive({
         shiny::req(db())
         con <- db()$connect()
@@ -69,7 +69,7 @@ avatarServer <- function(id, db) {
           dir      = dir
         )
       })
-      
+
       avatar_generator <- shiny::ExtendedTask$new(\(pt) {
         unlink(file.path(pt$dir, "*"))
         m <- mirai::mirai({
@@ -98,9 +98,12 @@ avatarServer <- function(id, db) {
             }
           }
         }, pcts = pt$pictures, tags = pt$tags, dir = pt$dir)
+
         m
       })
-      
+
+      progress_clock <- shiny::reactiveTimer(2000)
+
       shiny::observe({
         if (avatar_generator$status() == "running") {
           pt <- get_picture_tags()
@@ -113,7 +116,7 @@ avatarServer <- function(id, db) {
               count = n_files,
               total = tot_files
             ))
-            shiny::reactiveTimer(2000)()
+            progress_clock()
 
           }
         } else {
@@ -122,12 +125,14 @@ avatarServer <- function(id, db) {
       })
       
       return(
-        reactive({
+        shiny::reactive({
+          click <- input$face_click #TODO doesn't work
           status <- avatar_generator$status()
           if (status == "success") {
             pt <- get_picture_tags()
             list(
-              get_avatar = function(person_id, what = "icon", side = NULL) {
+              click = click,
+              get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
                 what <- match.arg(what, c("icon", "tile"))
                 tags <- pt$tags
                 tag_id <-
@@ -143,9 +148,18 @@ avatarServer <- function(id, db) {
                   if (!file.exists(fp)) return(NULL)
                   img_dat <- readBin( fp, "raw", file.size(fp) )
                   sprintf(
-                    "<img src=\"%s\" class=\"%s\"/>",
+                    "<img src=\"%s\" class=\"%s\" %s/>",
                     base64enc::dataURI(img_dat, mime = "image/png"),
-                    my_class)
+                    paste(c(my_class, if (clickable) "foosball-clickable" else NULL),
+                          collapse = " "),
+                    ifelse(
+                      clickable,
+                      sprintf(
+                        "onClick='Shiny.onInputChange(`%s`, {id: %i,timestamp: new Date()});'",
+                        ns("face_click"),
+                        person_id),
+                      "")
+                    )
                 } else {
                   NULL
                   #TODO
@@ -154,7 +168,8 @@ avatarServer <- function(id, db) {
             )
           } else {
             list(
-              get_avatar = function(person_id, what = "icon", side = NULL) {
+              click = click,
+              get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
                 NULL #TODO anonymous
               }
             )

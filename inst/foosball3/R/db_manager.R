@@ -1,3 +1,6 @@
+db_file <- tempfile(fileext = ".sqlite")
+foosball3::foosball3_create_db(db_file)
+
 dbManagerUI <- function(id) {
   ns <- shiny::NS(id)
   bslib::layout_columns(
@@ -42,20 +45,12 @@ dbManagerUI <- function(id) {
 }
 
 dbManagerServer <- function(id) {
-  db_file <- tempfile(fileext = ".sqlite")
-  foosball3::foosball3_create_db(db_file)
-
   shiny::moduleServer(
     id,
     function(input, output, session) {
       ns <- session$ns
       
-      db_path <- shiny::reactiveVal(
-        list(
-          path = db_file,
-          update_counter = 0
-        )
-      )
+      db_path <- shiny::reactiveVal( db_file )
       
       shiny::observeEvent(input$uploadSQLite, {
         bslib::show_toast(
@@ -73,17 +68,15 @@ dbManagerServer <- function(id) {
           )
         )
         pt <- db_path()
-        temp_path <- tempfile()
+        new_path <- tempfile(fileext = ".sqlite")
         tryCatch({
           withCallingHandlers({
-            foosball3_import_db(
+            foosball3::foosball3_import_db(
               input$uploadSQLite$datapath,
-              temp_path
+              new_path
             )
-            file.copy(temp_path, pt$path, overwrite = TRUE)
-            pt$update_counter <- pt$update_counter + 1L
-            db_path(pt)
-            unlink(temp_path, TRUE, TRUE)
+            db_path(new_path)
+            unlink(pt, TRUE, TRUE)
           }, warning = \(w) {
             shinyWidgets::show_alert(
               "Please be aware of the following",
@@ -161,9 +154,9 @@ dbManagerServer <- function(id) {
       database <- shiny::reactive({
         shiny::req(db_path())
         list(
-          path    = db_path()$path,
+          path    = db_path(),
           connect = \() RSQLite::dbConnect(
-            RSQLite::SQLite(), db_file)
+            RSQLite::SQLite(), db_path())
         )
       })
       

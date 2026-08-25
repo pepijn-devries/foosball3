@@ -48,7 +48,7 @@ timerServer <- function(id, tournament, matches, show) {
       get_match_duration <- shiny::reactive({
         shiny::req(tournament())
         shiny::req(matches())
-        total_duration <- tournament()$selected()$TOURNAMENT_DURATION
+        total_duration <- tournament()$selected$TOURNAMENT_DURATION
         phase <- matches()$selected_phase
         n_matches <- matches()$matches |> nrow()
         if (length(total_duration) == 0 || phase != "Qualification" || n_matches <= 0) {

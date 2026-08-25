@@ -26,7 +26,7 @@ foosball3_create_db <- function(file, ...) {
     stop("Failed to create database")
   
   copy_data <- \(df, nm) dplyr::copy_to( con, df, nm,
-                                         overwrite = TRUE,
+                                         append = TRUE,
                                          temporary = FALSE )
   
   copy_data(
@@ -34,12 +34,6 @@ foosball3_create_db <- function(file, ...) {
       BALL_ID = -1L,
       BALL_DESCRIPTION = "Unknown"
     ), "balls")
-  
-  copy_data(
-    dplyr::tibble(
-      TOURN_TYPE_ID = 1L,
-      TOURNAMENT_TYPE = "Individual players"
-    ), "tournament_types")
   
   copy_data(
     dplyr::tibble(

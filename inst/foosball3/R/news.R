@@ -1,7 +1,12 @@
+news_tree     <- readLines("www/data/newstree.json") |>
+  jsonlite::fromJSON(FALSE)
+news_messages <-  read.csv("www/data/news.csv")
+
 newsUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tags$div(
     class = "foosball-news-flash",
+    id = ns("foosball-news-bar"),
     shiny::tags$div(
       id = ns("foosball-news"),
       class = "foosball-news-text",
@@ -9,15 +14,18 @@ newsUI <- function(id) {
   )
 }
 
-newsServer <- function(id, matches, mod_avatar) {
+newsServer <- function(id, matches, mod_avatar, show) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
       ns <- session$ns
       
-      news_tree     <- readLines("www/data/newstree.json") |>
-        jsonlite::fromJSON(FALSE)
-      news_messages <-  read.csv("www/data/news.csv")
+      shiny::observe({
+        shinyjs::toggle(
+          "foosball-news-bar",
+          condition = show()
+        )
+      })
       
       all_input <- shiny::reactive({
         list(
@@ -39,7 +47,7 @@ newsServer <- function(id, matches, mod_avatar) {
       get_param <- function(param_name) {
         inp <- all_input()
         m <- inp$matches()
-        sel_tour <- m$tournament$selected()
+        sel_tour <- m$tournament$selected
         
         switch(
           param_name,

@@ -1,4 +1,6 @@
-library(rlang)
+`!!` <- rlang::`!!`
+`:=` <- rlang::`:=`
+.data <- rlang::`.data`
 
 ui <- bslib::page_navbar(
   title = "Foosball 3.0",
@@ -8,16 +10,21 @@ ui <- bslib::page_navbar(
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(script    = "js/shinyjs-extra.js",
                            functions = c("updateSideStyle",
-                                         "updateNews")),
+                                         "speech_supported",
+                                         "announce")),
     tags$head(
       shiny::includeCSS("www/custom.css"),
       shiny::tags$script(src = "js/extra.js")
     ),
-    avatarUI("mod_avatar")
+    tagList(
+      avatarUI("mod_avatar"),
+      shinybusy::add_busy_gif("img/banana.gif", 100, "top-right",
+                              width = "33px", height = "35px")
+    )
   ),
   selected = "Database Manager",
   bslib::nav_panel("Warming Up",       warmingUpUI(),
-                   icon = bsicons::bs_icon("fire")),
+                   icon = bsicons::bs_icon("cup-hot-fill")),
   bslib::nav_panel("Database Manager", dbManagerUI("mod_db"),
                    icon = bsicons::bs_icon("database")),
   bslib::nav_panel("Tournaments",      tournamentUI("mod_tournament"),
@@ -30,14 +37,22 @@ ui <- bslib::page_navbar(
                    icon = bsicons::bs_icon("info-circle-fill")),
   bslib::nav_spacer(),
   bslib::nav_item(
-    shiny::checkboxInput("checkTimer", shiny::span(bsicons::bs_icon("stopwatch-fill"), "Timer"))
+    shinyWidgets::materialSwitch(
+      "checkTimer",
+      shiny::span(bsicons::bs_icon("stopwatch-fill"), "Timer"),
+      width = "120px")
   ),
   bslib::nav_item(
-    bslib::input_dark_mode(id = "dark_mode_toggle")
+    shinyWidgets::materialSwitch(
+      "checkNews",
+      shiny::span(bsicons::bs_icon("newspaper"), "News"),
+      TRUE, width = "120px")
   ),
   bslib::nav_item(
-    shinybusy::add_busy_gif("img/banana.gif", 100, "top-right",
-                            width = "33px", height = "35px")
+    shinyWidgets::materialSwitch(
+      "checkLight",
+      shiny::span(bsicons::bs_icon("lightbulb"), "Light"),
+      TRUE, width = "120px")
   ),
   footer = timerUI("mod_timer")
 )
@@ -47,13 +62,22 @@ server <- function(input, output, session) {
   mod_avatar     <-     avatarServer("mod_avatar",     mod_db)
   mod_tournament <- tournamentServer("mod_tournament", mod_db, mod_avatar)
   mod_matches    <-    matchesServer("mod_matches",    mod_tournament, mod_avatar)
-  mod_news       <-       newsServer("mod_news",       mod_matches, mod_avatar)
+  mod_news       <-       newsServer("mod_news",       mod_matches, mod_avatar,
+                                     shiny::reactive({ input$checkNews }))
   mod_timer      <-      timerServer("mod_timer",      mod_tournament, mod_matches,
                                      shiny::reactive({ input$checkTimer }))
   mod_peops      <-     peopleServer("mod_peops",      mod_tournament, mod_avatar)
+  
+  shiny::observe({
+    bslib::toggle_dark_mode(
+      ifelse(input$checkLight, "light", "dark")
+    )
+  })
+  
+  shiny::observeEvent(mod_tournament()$face_click, {
+    mod_tournament()$face_click #TODO
+  }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
-  shiny::observe({ mod_news(); mod_db(); mod_tournament(); mod_avatar();
-    mod_matches(); mod_timer() })
 }
 
 shiny::shinyApp(ui, server)

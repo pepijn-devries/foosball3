@@ -15,7 +15,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
 
       get_record <- shiny::reactive({
         rec_id <- record_picker()
-        con <- tournaments()$database()$connect()
+        con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         pk <- get_primary_key()
         dplyr::tbl(con, table_name()) |>
@@ -24,7 +24,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       })
       
       get_primary_key <- shiny::reactive({
-        con <- tournaments()$database()$connect()
+        con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         pk_info <-
           RSQLite::dbGetQuery(
@@ -35,7 +35,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       
       get_new_pk <- shiny::reactive({
         pk <- get_primary_key()
-        con <- tournaments()$database()$connect()
+        con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         existing_keys <-
           dplyr::tbl(con, table_name()) |>
@@ -51,14 +51,14 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       })
 
       get_foreign_keys <- shiny::reactive({
-        con <- tournaments()$database()$connect()
+        con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         RSQLite::dbGetQuery(
           con,
           paste0("PRAGMA foreign_key_list(", table_name(), ");"))
       })
       
-      observeEvent(input$btnNew, {
+      shiny::observeEvent(input$btnNew, {
         fk <- get_foreign_keys()
         new_key <- get_new_pk()
         browser() #TODO
@@ -99,14 +99,13 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
         rec <- get_record()
         fk <- get_foreign_keys()
         
-        fk_rec <- get_record_to_foreign
         changed <- FALSE
         new_fks <- fk$from[!fk$from %in% names(svs)]
         new_servers <- lapply(new_fks, \(nm) {
           fk_cur <- fk |>
             dplyr::filter(.data$from == !!nm)
           lookupServer(
-            nm, nm, tournaments()$database,
+            nm, nm, shiny::reactive({ tournaments()$database }),
             get_record_to_foreign,
             fk_cur$table, fk_cur$to)
         })
