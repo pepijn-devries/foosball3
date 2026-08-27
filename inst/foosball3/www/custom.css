@@ -86,7 +86,7 @@
 
 .progress {
   height: 18px !important;
-  background-color: var(--bs-toast-bg, rgba(255,255,255,0.85)) !important;
+  background-color: var(--bs-gray-200) !important;
   border-radius: var(--bs-border-radius-sm) !important;
 }
 
@@ -204,7 +204,7 @@ div.shinybusy .ff-image {
   padding: 0 !important;
 }
 
-.foosball-timer-card {
+.foosball-drag-card {
   background-color: var(--bs-primary-bg-subtle) !important;
 }
 

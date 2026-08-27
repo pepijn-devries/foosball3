@@ -7,11 +7,12 @@
 foosball3(...)
 }
 \arguments{
-\item{...}{TODO}
+\item{...}{Ignored}
 }
 \value{
-Returns NULL silently.
+Returns \code{NULL} invisibly.
 }
 \description{
-TODO
+Renders the Graphical User Interface and starts the server
+to interact with a Foosball SQLite database.
 }

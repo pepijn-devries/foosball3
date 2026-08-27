@@ -43,7 +43,7 @@ lookupServer <- function(id, label, db, initial, table, field_id, name = NULL, f
         ls <- lookup_state()
         if (!identical(ls$opts, opts) || !identical(ls$selected, init)) {
           ls$opts <- opts
-          ls$select <- init
+          ls$selected <- init
           lookup_state(ls)
         }
       })
@@ -51,7 +51,7 @@ lookupServer <- function(id, label, db, initial, table, field_id, name = NULL, f
       shiny::observe({
         ls <- lookup_state()
         shiny::updateSelectizeInput(
-          inputId = "selectLookup", choices = ls$opts, selected = ls$sel
+          inputId = "selectLookup", choices = ls$opts, selected = ls$selected
         )
       })
       

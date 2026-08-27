@@ -32,37 +32,49 @@ matchesServer <- function(id, tournament, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      matches_cache <- shiny::reactiveVal()
+      move_detector <- shiny::reactiveVal()
+      
       phases <- NULL
       mod_match <- matchServer("mod_match", get_selected_match, avatars)
       mod_gen   <- matchGeneratorServer("mod_gen", get_selected_match)
       
-      get_matches <- shiny::reactive({
+      shiny::observe({
+        mod_match() #TODO
         shiny::req(input$selectPhase)
         tnmt <- tournament()
         con <- tnmt$database$connect()
         on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
-        dplyr::tbl(con, "matches_view") |>
+        mc <- matches_cache()
+        matches <-
+          dplyr::tbl(con, "matches_view") |>
           dplyr::filter(
             .data$TOURNAMENT_PHASE == input$selectPhase &
               .data$TOURNAMENT_ID == !!max(c(-1,  tnmt$selected$TOURNAMENT_ID))
           ) |>
           dplyr::collect() |>
           dplyr::mutate(
-            match_name = paste0(
-              dplyr::row_number(), " - ",
-              .data$PLAYER_DEFENSE_1, " + ",
-              .data$PLAYER_STRIKE_1, " vs. ",
-              .data$PLAYER_DEFENSE_2, " + ",
-              .data$PLAYER_STRIKE_2
-            )
+            match_name =
+              ifelse(is.na(.data$PLAYER_DEFENSE_1) | is.na(.data$PLAYER_DEFENSE_2) |
+                       is.na(.data$PLAYER_STRIKE_1) | is.na(is.na(.data$PLAYER_STRIKE_2)),
+                     "Match generating...",
+                     paste0(
+                       dplyr::row_number(), " - ",
+                       .data$PLAYER_DEFENSE_1, " + ",
+                       .data$PLAYER_STRIKE_1, " vs. ",
+                       .data$PLAYER_DEFENSE_2, " + ",
+                       .data$PLAYER_STRIKE_2
+                     )
+              )
           )
+        if (!identical(mc, matches)) matches_cache(matches)
       })
       
-      observeEvent(mod_match(), {
+      observeEvent(move_detector(), {
         current <- input$selectMatch
-        mtchs <- get_matches()
-        if (!is.null(current) && nrow(mtchs) > 0) {
-          move <- mod_match()
+        mtchs <- matches_cache()
+        if (!is.null(current) && !is.null(mtchs) && nrow(mtchs) > 0) {
+          move <- move_detector()
           if (is.na(current) || current == "") {
             if (move$direction == 1L) {
               new_id <- mtchs$MATCH_ID[[1L]]
@@ -82,8 +94,8 @@ matchesServer <- function(id, tournament, avatars) {
         }
       })
       
-      shiny::observeEvent(get_matches(), {
-        mtchs       <- get_matches()
+      shiny::observeEvent(matches_cache(), {
+        mtchs       <- matches_cache()
         match_names <- dplyr::pull(mtchs, "match_name")
         bslib::nav_select(
           "match-tab",
@@ -96,11 +108,13 @@ matchesServer <- function(id, tournament, avatars) {
           } else {
             NA_character_
           }
-        shinyWidgets::updateVirtualSelect(
-          inputId = "selectMatch",
-          choices = mtchs$MATCH_ID |> stats::setNames(match_names),
-          selected = selected
-        )
+        if (!identical(selected, input$selectMatch)) {
+          shinyWidgets::updateVirtualSelect(
+            inputId = "selectMatch",
+            choices = mtchs$MATCH_ID |> stats::setNames(match_names),
+            selected = selected
+          )
+        }
       })
       
       shiny::observe({
@@ -124,9 +138,12 @@ matchesServer <- function(id, tournament, avatars) {
         # shiny::req(input$selectMatch) #TODO this blocks a lot of triggers
         list(
           tournament     = tournament(),
-          matches        = get_matches(),
+          matches        = matches_cache(),
           selected_phase = input$selectPhase,
-          selected_id    = input$selectMatch
+          selected_id    = input$selectMatch,
+          move_match     = function(direction) {
+            move_detector(direction)
+          }
         )
       })
       

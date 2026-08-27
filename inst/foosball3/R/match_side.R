@@ -2,8 +2,9 @@ matchSideUI <- function(id, side) { # Side is either 1L or 2L
   ns <- NS(id)
   opposite_id <- stringr::str_replace_all(
     id, "[12]", \(x) ifelse(x == "1", "2", "1") )
-  inputnum <- shiny::numericInput(
-    ns("numScore"), "Score", NULL, 0L, 10L, 1L, width = "150px"
+  inputnum <- numericInput(
+    ns("numScore"), "Score", NULL, 0L, 10L, 1L, width = "200px",
+    updateOn = "blur"
   )
   inputnum$children[[1]] <- NULL
   inputnum$children[[1]] <-
@@ -30,6 +31,10 @@ matchSideServer <- function(id, match, side, avatars) {
   moduleServer(
     id,
     function(input, output, session) {
+      ## Use cache to ensure that UI is only updated when the data actually changes
+      match_cache   <- shiny::reactiveVal()
+      players_cache <- shiny::reactiveVal()
+      avatar_cache  <- shiny::reactiveVal()
 
       validator <- shinyvalidate::InputValidator$new()
       validator$add_rule(
@@ -53,48 +58,63 @@ matchSideServer <- function(id, match, side, avatars) {
           side = side)
       })
       
-      get_player_ids <- shiny::reactive({
-        if (length(match()$selected_id) > 0) {
-          con <- match()$tournament$database$connect()
-          on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
-          dplyr::tbl(con, "match_players") |>
-            dplyr::filter(.data$MATCH_ID == !!match()$selected_id &
-              stringr::str_like(.data$POSITION_CODE, paste0("%", side))
-            ) |>
-            dplyr::left_join(
-              dplyr::tbl(con, "participants") |>
-                dplyr::select(dplyr::any_of(c("PARTICIPANT_ID", "PERSON_ID"))),
-              by = "PARTICIPANT_ID"
-            ) |>
-            dplyr::collect()
-        } else {
-          return(NULL)
+      shiny::observe({
+        pid <-
+          if (length(match()$selected_id) > 0) {
+            con <- match()$tournament$database$connect()
+            on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+            dplyr::tbl(con, "match_players") |>
+              dplyr::filter(.data$MATCH_ID == !!match()$selected_id &
+                              stringr::str_like(.data$POSITION_CODE, paste0("%", side))
+              ) |>
+              dplyr::left_join(
+                dplyr::tbl(con, "participants") |>
+                  dplyr::select(dplyr::any_of(c("PARTICIPANT_ID", "PERSON_ID"))),
+                by = "PARTICIPANT_ID"
+              ) |>
+              dplyr::collect()
+          } else {
+            return(NULL)
+          }
+        pc <- players_cache()
+        if (!identical(pid, pc[, !(colnames(pc) %in% "avt")])) {
+          if (nrow(pid) != 2) {
+            NULL
+          } else {
+            avt <- avatars()
+            # if (is.null(pid$avt)) {
+            #   browser() #TODO
+            # }
+            pid <- pid |>
+              dplyr::mutate(
+                avt = lapply(.data$PERSON_ID, avt$get_avatar,
+                             what = "tile", side = side, clickable = TRUE)
+              )
+          }
+
+          players_cache(pid)
         }
       })
       
       get_color <- shiny::reactive({
-        shiny::req(match())
         m <- match()
-        col <-
+        col <- if (is.null(m$matches) || nrow(m$matches) == 0 || length(m$selected_id) == 0) {
+          NULL
+        } else {
           m$matches |>
-          dplyr::filter(.data$MATCH_ID == m$selected_id) |>
-          dplyr::pull(paste0("COLOR_RGB", side))
+            dplyr::filter(.data$MATCH_ID == m$selected_id) |>
+            dplyr::pull(paste0("COLOR_RGB", side))
+        }
         ifelse(length(col) == 0, "#888888", col)
       })
 
       output$players <- shiny::renderUI({
         m <- get_selected_match()
-        shiny::req(get_player_ids())
-        pid <- get_player_ids()
+        shiny::req(players_cache())
+        pid <- players_cache()
         if (nrow(pid) != 2) {
           NULL
         } else {
-          avt <- avatars()
-          pid <- pid |>
-            dplyr::mutate(
-              avt = lapply(.data$PERSON_ID, avt$get_avatar,
-                           what = "tile", side = side, clickable = TRUE)
-            )
           order_fun <- I
           if (side == 2) order_fun <- rev
           txt <-
@@ -129,13 +149,21 @@ matchSideServer <- function(id, match, side, avatars) {
       
       get_selected_match <- shiny::reactive({
         m <- match()
-        m$matches |>
-          dplyr::filter(.data$MATCH_ID == m$selected_id)
+        if (is.null(m$matches) || nrow(m$matches) == 0) {
+          NULL
+        } else {
+          m$matches |>
+            dplyr::filter(.data$MATCH_ID == m$selected_id)
+        }
       })
       
       get_color_name <- shiny::reactive({
-        get_selected_match() |>
-          dplyr::pull(paste0("COLOR_NAME", side))
+        m <- get_selected_match()
+        if (is.null(m) || nrow(m) == 0) {
+          "Select a match"
+        } else {
+          dplyr::pull(m, paste0("COLOR_NAME", side))
+        }
       })
       
       get_tournament_state <- shiny::reactive({
@@ -144,33 +172,47 @@ matchSideServer <- function(id, match, side, avatars) {
       
       shiny::observeEvent(get_selected_match(), {
         m <- get_selected_match()
+        m_cache <- match_cache()
         state <- get_tournament_state()
-
-        if (length(state) == 0 || is.na(state) || state == "ARC") {
-          shinyjs::disable("numScore")
-        } else {
-          shinyjs::enable("numScore")
+        if (!identical(m, m_cache)) {
+          match_cache(m)
+          if (length(state) == 0 || is.na(state) || state == "ARC") {
+            shinyjs::disable("numScore")
+          } else {
+            shinyjs::enable("numScore")
+          }
+          
+          shiny::updateNumericInput(
+            inputId = "numScore",
+            value = m[[paste0("SCORE_", side)]]
+          )
         }
-
-        shiny::updateNumericInput(
-          inputId = "numScore",
-          value = m[[paste0("SCORE_", side)]]
-        )
       })
       
       shiny::observeEvent(input$numScore, {
         m <- get_selected_match()
         state <- get_tournament_state()
         shiny::req(m)
-        if (state == "ACT" && ### TODO this line caused a crash at one point perhaps state can be NA?
-            m[[paste0("SCORE_", side)]] != input$numScore) {
-          browser() #TODO check validity + tournament state and store in database
-          #TODO store updated scores in database
+        if (state == "ACT" &&
+            !identical(m[[paste0("SCORE_", side)]], input$numScore) &&
+            validator$is_valid()) {
+          
+          con <- match()$tournament$database$connect()
+          on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+          RSQLite::dbExecute(
+            con,
+            "UPDATE match_results SET RESULT = ? WHERE MATCH_ID = ? AND SIDE_ID = ?",
+            params = list(
+              input$numScore,
+              m$MATCH_ID,
+              side
+            )
+          )
         }
       })
       
       return(
-        shiny::reactive({ get_color() }) #TODO
+        shiny::reactive({ match_cache() })
       )
     }
   )

@@ -9,10 +9,10 @@ timerUI <- function(id) {
       draggable = TRUE, style = "z-index: 10000;",
       style = "display: none;",
       bslib::card(
-        class = "foosball-timer-card",
+        class = "foosball-drag-card",
         bslib::accordion(
           bslib::accordion_panel(
-            class = "foosball-timer-card",
+            class = "foosball-drag-card",
             title = "Draggable Timer",
             icon = bsicons::bs_icon("stopwatch-fill"),
             bslib::toolbar(

@@ -77,11 +77,11 @@ CREATE TABLE roles( --- The roles a player can have (i.e., defense or strike).
   ROLE TEXT NOT NULL --- A short notation of the role.
 );
 CREATE TABLE positions( --- A table of positions around the table. It is a combination of the role (strike or defense) and the side of a table.
-  POSITION_CODE TEXT PRIMARY KEY NOT NULL, --- TODO
-  ROLE_CODE TEXT NOT NULL,
-  SIDE_ID INTEGER NOT NULL,
-  PSEUDO_SIDE_ID INTEGER NOT NULL,
-  POSITION TEXT NOT NULL,
+  POSITION_CODE TEXT PRIMARY KEY NOT NULL, --- A unique code identifyin a specific position of a player at the table
+  ROLE_CODE TEXT NOT NULL, --- Encodes the role of a player (striker or defender)
+  SIDE_ID INTEGER NOT NULL, --- Identifies a specific side of the table
+  PSEUDO_SIDE_ID INTEGER NOT NULL, --- Assumed side when the actual side is unknown
+  POSITION TEXT NOT NULL, --- A descriptive text for a position at the table
   FOREIGN KEY(ROLE_CODE) REFERENCES roles(ROLE_CODE)
   FOREIGN KEY(SIDE_ID) REFERENCES table_sides(SIDE_ID)
   FOREIGN KEY(PSEUDO_SIDE_ID) REFERENCES table_sides(SIDE_ID), -- Side to use when the actual side is unknown
@@ -101,7 +101,7 @@ CREATE TABLE persons( --- A list of persons. It can also include spectators, or 
   FOREIGN KEY(QUALIFICATION_CODE) REFERENCES qualifications(QUALIFICATION_CODE),
   FOREIGN KEY(HOME_BASE) REFERENCES locations(LOC_CODE)
 );
-CREATE TABLE qualifications(
+CREATE TABLE qualifications( --- Qualifications that can be assigned to (new) players.
   QUALIFICATION_CODE TEXT PRIMARY KEY NOT NULL,
   QUALIFICATION TEXT NOT NULL UNIQUE,
   QUALIFICATION_RATIO REAL NOT NULL,
@@ -109,26 +109,26 @@ CREATE TABLE qualifications(
   QUALIFICATION_DESCR TEXT
 );
 CREATE TABLE participants( --- A table of participants. A person will get a unique participation number for each tournament he/she joins. This will let you keep track of the person progress in a tournament, but will also let you keep track of historical performance.
-  PARTICIPANT_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier for each participant
-  TOURNAMENT_ID INTEGER NOT NULL, --- The tournament in which the person participates
-  PERSON_ID INTEGER NOT NULL, --- The unique identifier of the person participating
+  PARTICIPANT_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier for each participant.
+  TOURNAMENT_ID INTEGER NOT NULL, --- The tournament in which the person participates.
+  PERSON_ID INTEGER NOT NULL, --- The unique identifier of the person participating.
   PENALTY_POINTS INTEGER CONSTRAINT CHECK_POSITIVE_PENAL CHECK (PENALTY_POINTS >= 0), --- Penalty points assigned to the participant during the tournament
   FOREIGN KEY(TOURNAMENT_ID) REFERENCES tournaments(TOURNAMENT_ID),
   FOREIGN KEY(PERSON_ID) REFERENCES persons(PERSON_ID),
   UNIQUE(TOURNAMENT_ID, PERSON_ID)
 );
-CREATE TABLE match_results( --- Table of results (i.e. score) for all matches
-  MATCH_ID INTEGER NOT NULL,
-  RESULT INTEGER CONSTRAINT CHECK_POSITIVE_RESULT CHECK (RESULT >= 0),
-  SIDE_ID INTEGER NOT NULL,
+CREATE TABLE match_results( --- Table of results (i.e. score) for all matches.
+  MATCH_ID INTEGER NOT NULL, --- Identifier of the match for which the score is recorded.
+  RESULT INTEGER CONSTRAINT CHECK_POSITIVE_RESULT CHECK (RESULT >= 0), --- The goals scored on the side 'SIDE_ID'.
+  SIDE_ID INTEGER NOT NULL, --- The side of the table by which the goals were scored.
   FOREIGN KEY(MATCH_ID) REFERENCES matches(MATCH_ID),
   FOREIGN KEY(SIDE_ID) REFERENCES table_sides(SIDE_ID),
   UNIQUE(MATCH_ID, SIDE_ID)
 );
 CREATE TABLE match_players( --- Participants that play in specific matches.
-  MATCH_ID INTEGER NOT NULL,
-  PARTICIPANT_ID INTEGER NOT NULL,
-  POSITION_CODE TEXT NOT NULL,
+  MATCH_ID INTEGER NOT NULL, --- Unique identifier of a match
+  PARTICIPANT_ID INTEGER NOT NULL, --- Unique identifier of a participant enroled in a match
+  POSITION_CODE TEXT NOT NULL, --- Position of the player at the table during the match
   FOREIGN KEY(MATCH_ID) REFERENCES matches(MATCH_ID),
   FOREIGN KEY(PARTICIPANT_ID) REFERENCES participants(PARTICIPANT_ID)
   UNIQUE(MATCH_ID, PARTICIPANT_ID, POSITION_CODE)
@@ -149,7 +149,7 @@ CREATE TABLE balls( --- Balls that can be used in a tournament.
   BALL_ID INTEGER PRIMARY KEY NOT NULL,
   BALL_DESCRIPTION TEXT NOT NULL UNIQUE
 );
-CREATE TABLE tournament_phase_flow(
+CREATE TABLE tournament_phase_flow( --- Overview of how phases of a tournament flow for a specific tournament type
   TOURN_TYPE_CODE TEXT NOT NULL DEFAULT 'I',
   PHASE_ORDER INTEGER NOT NULL CONSTRAINT PHASE_ORDER_CHECK CHECK (
     PHASE_ORDER > 0
@@ -162,7 +162,7 @@ CREATE TABLE tournament_phase_flow(
   FOREIGN KEY(TOURN_TYPE_CODE) REFERENCES tournament_types(TOURN_TYPE_CODE),
   FOREIGN KEY(TOURN_PHASE_CODE) REFERENCES tournament_phases(TOURN_PHASE_CODE)
 );
-CREATE TABLE tournament_types(
+CREATE TABLE tournament_types( --- Types of tournaments
   TOURN_TYPE_CODE TEXT PRIMARY KEY NOT NULL DEFAULT 'I',
   TOURNAMENT_TYPE TEXT NOT NULL UNIQUE DEFAULT 'Individual',
   TOURN_TYPE_DESCRIPTION TEXT

@@ -6,6 +6,15 @@
 \usage{
 foosball3_meta_data(...)
 }
+\arguments{
+\item{...}{TODO}
+}
+\value{
+TODO
+}
 \description{
 TODO
+}
+\examples{
+foosball3_meta_data()
 }

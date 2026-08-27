@@ -1,22 +1,16 @@
-avatarUI <- function(id) {
-  ns <- shiny::NS(id)
-  js_updater <- shiny::tags$script(HTML(sprintf("
-  Shiny.addCustomMessageHandler('%s', function(data) {
-    var progressBar = document.querySelector('#%s .avatar-progress-bar');
-    var progressText = document.querySelector('#%s .avatar-progress-text');
-
-    if (progressBar) {
-      progressBar.style.width = data.pct + '%%';
-      progressBar.innerText = '\u00a0' + data.pct + '%%';
-    }
-    if (progressText) {
-      progressText.innerText = 'Generated ' + data.count + ' of ' + data.total + ' files...';
-    }
-  });", ns("avatar_progress"), ns("avatar_progress"), ns("avatar_progress"))))
-  tags$head(js_updater)
-}
-
 avatarServer <- function(id, db) {
+  TILE_SIZE <- 75
+  ICON_SIZE <- 25
+  anonym <- imager::load.image("www/img/anonymous.png")
+  anonym <- lapply(c(ICON_SIZE, TILE_SIZE), \(sz) {
+    im <- imager::resize(anonym, sz, sz, interpolation_type = 5)
+    tf <- tempfile(fileext = ".jpg")
+    imager::save.image(im, tf)
+    dat <- readBin(tf, "raw", file.size(tf))
+    unlink(tf, TRUE, TRUE)
+    base64enc::dataURI(dat, mime = "image/png")
+  }) |>
+    stats::setNames(c("icon", "tile"))
   
   shiny::moduleServer(
     id,
@@ -29,26 +23,8 @@ avatarServer <- function(id, db) {
           browser() #TODO stop process if old on is still running
         }
         avatar_generator$invoke(get_picture_tags())
-
-        bslib::show_toast(
-          bslib::toast(
-            shiny::div(
-              class = "d-flex flex-column gap-2 w-100",
-              shiny::div("Initiating avatars...", class = "avatar-progress-text", style = "margin-bottom: 8px;"),
-              shiny::div(
-                class = "progress",
-                shiny::div(
-                  class = "avatar-progress-bar progress-bar-striped progress-bar-animated bg-primary",
-                  style = "width: 0%;",
-                  " 0%"
-                )
-              )
-            ),
-            duration_s = NA,
-            id = ns("avatar_progress"),
-            type = NULL,
-            position = "bottom-right")
-        )
+        
+        foosball_progress(ns("avatar_progress"), "Initiating avatars...")
 
       })
 
@@ -75,11 +51,12 @@ avatarServer <- function(id, db) {
         m <- mirai::mirai({
           for (picid in pcts$PICTURE_ID) {
             pic <- as.list(pcts[pcts$PICTURE_ID == picid,])
-            img <- pic$JPG_DATA[[1]] |>
-              jpeg::readJPEG() |>
-              aperm(c(2, 1, 3)) |>
-              imager::as.cimg() |>
-              suppressWarnings()
+            picf <- tempfile(fileext = ".jpg")
+            writeBin(pic$JPG_DATA[[1]], picf)
+            img <- picf |>
+              imager::load.image()
+            unlink(picf, TRUE, TRUE)
+            
             for (tid in tags$TAG_ID[tags$PICTURE_ID == picid]) {
               tag <- as.list(tags[tags$TAG_ID == tid,])
               avat <- imager::imsub(img,
@@ -88,41 +65,55 @@ avatarServer <- function(id, db) {
                                     x <= 2*tag$TAG_SIZE,
                                     y <= 2*tag$TAG_SIZE)
               avat <- imager::renorm(avat)
-              avat <- imager::resize(avat, 75, 75, interpolation_type = 1)
+              avat <- imager::resize(avat, tile_size, tile_size, interpolation_type = 1)
               imager::save.image(
                 avat,
                 file.path(dir, sprintf("tile%i.png", tag$TAG_ID)))
               imager::save.image(
-                imager::resize(avat, 25, 25, interpolation_type = 1),
+                imager::resize(avat, icon_size, icon_size, interpolation_type = 1),
                 file.path(dir, sprintf("icon%i.png", tag$TAG_ID)))
             }
           }
-        }, pcts = pt$pictures, tags = pt$tags, dir = pt$dir)
+        }, pcts = pt$pictures, tags = pt$tags, dir = pt$dir, tile_size = TILE_SIZE, icon_size = ICON_SIZE)
 
         m
       })
-
-      progress_clock <- shiny::reactiveTimer(2000)
 
       shiny::observe({
         if (avatar_generator$status() == "running") {
           pt <- get_picture_tags()
           tot_files <- pt$tags |> nrow()
-          n_files <- length(list.files(pt$dir))/2
+          n_files <- as.integer(length(list.files(pt$dir))/2)
           if (tot_files > 0) {
-            perc <- as.character(as.integer(100*n_files/tot_files))
-            session$sendCustomMessage(ns("avatar_progress"), list(
-              pct = perc,
-              count = n_files,
-              total = tot_files
-            ))
-            progress_clock()
+            perc <- as.integer(100*n_files/tot_files)
+            shinyjs::js$progressbar(
+              id = ns("avatar_progress"),
+              percent = perc,
+              text = sprintf("Generated %i of %i avatar files", n_files, tot_files)
+            )
+            shiny::invalidateLater(2000)
 
           }
         } else {
           bslib::hide_toast(ns("avatar_progress"))
         }
       })
+      
+      parse_image <- function(uri, id, person_id, my_class, clickable) {
+        sprintf(
+          "<img src=\"%s\" class=\"%s\" %s/>",
+          uri,
+          paste(c(my_class, if (clickable) "foosball-clickable" else NULL),
+                collapse = " "),
+          ifelse(
+            clickable,
+            sprintf(
+              "onClick='Shiny.onInputChange(`%s`, {id: %i,timestamp: new Date()});'",
+              id,
+              person_id),
+            "")
+        )
+      }
       
       return(
         shiny::reactive({
@@ -133,6 +124,8 @@ avatarServer <- function(id, db) {
             list(
               click = click,
               get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
+                my_class = paste0("foosball-avatar",
+                                  ifelse(is.null(side), "", side))
                 what <- match.arg(what, c("icon", "tile"))
                 tags <- pt$tags
                 tag_id <-
@@ -141,36 +134,28 @@ avatarServer <- function(id, db) {
                   dplyr::sample_n(min(c(dplyr::n(), 1L))) |>
                   dplyr::pull("TAG_ID")
                 if (length(tag_id) == 1) {
-                  my_class = paste0("foosball-avatar",
-                                    ifelse(is.null(side), "", side))
                   fp <- file.path(tempdir(), "avatars",
                                   sprintf("%s%i.png", what, tag_id))
-                  if (!file.exists(fp)) return(NULL)
-                  img_dat <- readBin( fp, "raw", file.size(fp) )
-                  sprintf(
-                    "<img src=\"%s\" class=\"%s\" %s/>",
-                    base64enc::dataURI(img_dat, mime = "image/png"),
-                    paste(c(my_class, if (clickable) "foosball-clickable" else NULL),
-                          collapse = " "),
-                    ifelse(
-                      clickable,
-                      sprintf(
-                        "onClick='Shiny.onInputChange(`%s`, {id: %i,timestamp: new Date()});'",
-                        ns("face_click"),
-                        person_id),
-                      "")
-                    )
+                  if (!file.exists(fp)) {
+                    img_dat <- anonym[[what]]
+                  } else {
+                    img_dat <- readBin( fp, "raw", file.size(fp) ) |>
+                      base64enc::dataURI(mime = "image/png")
+                  }
                 } else {
-                  NULL
-                  #TODO
+                  img_dat <- anonym[[what]]
                 }
+                parse_image(img_dat, ns("face_click"), person_id, my_class, clickable)
               }
             )
           } else {
             list(
               click = click,
               get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
-                NULL #TODO anonymous
+                my_class = paste0("foosball-avatar",
+                                  ifelse(is.null(side), "", side))
+                img_dat <- anonym[[what]]
+                parse_image(img_dat, ns("face_click"), person_id, my_class, clickable)
               }
             )
           }

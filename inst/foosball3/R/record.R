@@ -61,7 +61,6 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       shiny::observeEvent(input$btnNew, {
         fk <- get_foreign_keys()
         new_key <- get_new_pk()
-        browser() #TODO
         new_record <-
           get_record()[0,] |>
           dplyr::add_row()

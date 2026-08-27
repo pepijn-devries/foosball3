@@ -63,7 +63,7 @@ tournamentEditorServer <- function(
       shiny::observeEvent(list(mode(), updating()), {
         shiny::req(updating())
         tnmt <- tournaments()
-        selected <- tnmt$selected()
+        selected <- tnmt$selected
         if (length(selected$TOURNAMENT_ID) > 0 && !updating()) {
           dt <- NA
           if (!is.na(selected$TOURNAMENT_DATE))
@@ -83,28 +83,21 @@ tournamentEditorServer <- function(
       })
       
       shiny::observeEvent(input$btnOK, {
-        con <- tournaments()$database()$connect()
+        con <- tournaments()$database$connect()
         on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
         dplyr::tbl(con, "tournaments")
         if (validator$is_valid()) {
-          sel <- tournaments()$selected()$TOURNAMENT_ID
+          sel <- tournaments()$selected$TOURNAMENT_ID
           tnmt <-
             dplyr::tbl(con, "tournaments") |>
             dplyr::collect()
           if (length(sel) == 0) sel <- tnmt$TOURNAMENT_ID[[nrow(tnmt)]]
-          ## TODO it seems that there are different versions of the
-          ## schema, one with a numeric date format, one as character
-          dt <- ifelse(
-            is.character(tnmt$TOURNAMENT_DATE),
-            format(format(input$pickDate, "%Y-%m-%d")),
-            lubridate::as_datetime(input$pickDate) |>
-              as.numeric())
           tnmt <-
             tnmt |>
             dplyr::rows_update(
               data.frame(
                 TOURNAMENT_ID = sel,
-                TOURNAMENT_DATE = dt,
+                TOURNAMENT_DATE = format(input$pickDate, "%Y-%m-%d"),
                 TOURNAMENT_DURATION = input$numDuration,
                 POINT_SYSTEM_ID = mod_ps() |>
                   as(Class = typeof(tnmt$POINT_SYSTEM_ID)),
@@ -166,10 +159,10 @@ tournamentEditorServer <- function(
       
       shiny::observeEvent(input$btnCancel, {
         if (mode() == "new") {
-          con <- tournaments()$database()$connect()
+          con <- tournaments()$database$connect()
           on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
           dbtab <- dplyr::tbl(con, "tournaments")
-          tid <- tournaments()$selected()$TOURNAMENT_ID
+          tid <- tournaments()$selected$TOURNAMENT_ID
           RSQLite::dbExecute(
             con,
             sprintf("DELETE FROM tournaments WHERE TOURNAMENT_ID = %i", tid)

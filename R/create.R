@@ -1,9 +1,10 @@
-#' TODO
+#' Create a New Foosball Database
 #'
-#' TODO
-#' @param file TODO
-#' @param ... TODO
-#' @returns TODO
+#' Creates an SQLite file at the specified location. It will contain
+#' all required relationships and constraints and some non-trivial data.
+#' @param file File path where the database needs to be stored
+#' @param ... Ignored
+#' @returns Returns `NULL` invisibly.
 #' @examples
 #' fl <- tempfile(fileext = ".sqlite")
 #' foosball3_create_db(fl)
@@ -93,6 +94,12 @@ foosball3_create_db <- function(file, ...) {
           "Number of goals scored minus penalty points"),
       MAX_POINTS_PER_MATCH = c(0L, 10L)
     ), "point_systems")
+
+  copy_data(
+    dplyr::tibble(
+      SIDE_ID = -1L:2L,
+      SIDE = c("Unknown opposed side", "Unknown side", "One", "Two")
+    ), "table_sides")
   
   expand.grid(
     ROLE_CODE = c("D", "S", "U"),
@@ -106,7 +113,7 @@ foosball3_create_db <- function(file, ...) {
                                 "U" ~ "Unknown role"),
               c("opposite unknown side",
                 "unknown side",
-                "side 1", "Side 2")[(.data$SIDE_ID + 2L)]),
+                "Side 1", "Side 2")[(.data$SIDE_ID + 2L)]),
       POSITION_CODE =
         paste0(.data$ROLE_CODE,
                c("O", "U", "1", "2")[(.data$SIDE_ID + 2L)]),

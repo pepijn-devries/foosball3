@@ -34,8 +34,8 @@ foosball3_meta_data <- function(...) {
     tidyr::fill(.data$is_view) |>
     dplyr::filter(
       is.na(.data$is_view) &
-        !field_name %in% c("PRAGMA", "FOREIGN", "CONSTRAINT", 
-                           "UNIQUE") & !is.na(field_name)) |>
+        !.data$field_name %in% c("PRAGMA", "FOREIGN", "CONSTRAINT", 
+                                 "UNIQUE") & !is.na(.data$field_name)) |>
     tidyr::fill(.data$table) |>
     dplyr::select(-"is_view")
 }

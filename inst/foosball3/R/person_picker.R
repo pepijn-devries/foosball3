@@ -110,7 +110,7 @@ personPickerServer <- function(
           dplyr::copy_to(
             con, new_row, "persons", append = TRUE
           )
-          tournaments$trigger_refresh()
+          tournaments()$trigger_refresh()
         }
       })
       

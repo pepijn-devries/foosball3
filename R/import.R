@@ -3,6 +3,7 @@
 #' TODO
 #' @param file TODO
 #' @param target TODO
+#' @param ... TODO
 #' @returns TODO
 #' @examples
 #' # TODO
@@ -62,7 +63,7 @@ foosball3_import_db <- function(file, target, ...) {
           }
           warning_messages <<- c(
             warning_messages,
-            sprintf("Missing fields ('%s') were added with default values ('%s') in '%s'.",
+            sprintf("Missing field ('%s') was added with default values ('%s') in '%s'.",
                     cl, as.character(default), tb))
           d <- .as_sqlite(rep(default, nrow(dat)),
                           class(dat_expected[[cl]]))
@@ -72,12 +73,13 @@ foosball3_import_db <- function(file, target, ...) {
       }) |>
       stats::setNames(col_known)
     new_tb <- dplyr::as_tibble(new_tb)
-
+    
     RSQLite::dbExecute(con_new, sprintf("DELETE FROM %s;", tb))
     dplyr::copy_to(con_new, new_tb, tb, append = TRUE)
-
+    
   }
-  warning(paste(warning_messages, collapse = " "))
+  if (length(warning_messages) > 0)
+    warning(paste(warning_messages, collapse = " "))
   invisible()
 }
 
@@ -85,10 +87,9 @@ foosball3_import_db <- function(file, target, ...) {
   if ("blob" %in% Class) {
     object <- blob::as_blob(object)
   } else {
-    if (is.character(object) && !all(is.na(object)) &&
-        any(object == ""))
-      object[object == ""] <- NA_character_
-    object <- as(object, Class) |>
+    if (is.character(object) && !all(is.na(object)))
+      object[!is.na(object) & object == ""] <- NA_character_
+    object <- methods::as(object, Class) |>
       suppressWarnings() # TODO should only suppress 'introduced NAs'
   }
   object

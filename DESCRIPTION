@@ -6,9 +6,16 @@ Authors@R: c(person("Pepijn", "de Vries", role = c("aut", "cre", "dtc"),
     comment = c(ORCID = "0000-0002-7961-6646")))
 Author:
     Pepijn de Vries [aut, cre, dtc] (0000-0002-7961-6646)
-Description: TODO
+Description: A relational SQLite database is used at the core of
+    this package to manage foosball tournaments. A graphical user
+    interface offers easy access to the database, it also allows to
+    visualise (historical) data and account player history.
+    It has all features required to facilitate a live tournament.
+Depends:
+    R (>= 4.1.0)
 Imports:
     base64enc,
+    blob,
     bsicons,
     bslib,
     DiagrammeRsvg,
@@ -16,10 +23,10 @@ Imports:
     dm,
     DT,
     imager,
-    jpeg,
     jsonlite,
     knitr,
     lubridate,
+    methods,
     mirai,
     rlang,
     RSQLite,
@@ -28,7 +35,8 @@ Imports:
     shinyjs,
     shinyvalidate,
     shinyWidgets,
-    stringr
+    stringr,
+    tidyr
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

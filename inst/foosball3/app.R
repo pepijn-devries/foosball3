@@ -10,6 +10,7 @@ ui <- bslib::page_navbar(
     shinyjs::useShinyjs(),
     shinyjs::extendShinyjs(script    = "js/shinyjs-extra.js",
                            functions = c("updateSideStyle",
+                                         "progressbar",
                                          "speech_supported",
                                          "announce")),
     tags$head(
@@ -17,7 +18,6 @@ ui <- bslib::page_navbar(
       shiny::tags$script(src = "js/extra.js")
     ),
     tagList(
-      avatarUI("mod_avatar"),
       shinybusy::add_busy_gif("img/banana.gif", 100, "top-right",
                               width = "33px", height = "35px")
     )
@@ -40,21 +40,27 @@ ui <- bslib::page_navbar(
     shinyWidgets::materialSwitch(
       "checkTimer",
       shiny::span(bsicons::bs_icon("stopwatch-fill"), "Timer"),
-      width = "120px")
+      right = TRUE, width = "120px")
+  ),
+  bslib::nav_item(
+    shinyWidgets::materialSwitch(
+      "checkCoin",
+      shiny::span(bsicons::bs_icon("coin"), "Coin"),
+      right = TRUE, width = "120px")
   ),
   bslib::nav_item(
     shinyWidgets::materialSwitch(
       "checkNews",
       shiny::span(bsicons::bs_icon("newspaper"), "News"),
-      TRUE, width = "120px")
+      TRUE, right = TRUE, width = "120px")
   ),
   bslib::nav_item(
     shinyWidgets::materialSwitch(
       "checkLight",
       shiny::span(bsicons::bs_icon("lightbulb"), "Light"),
-      TRUE, width = "120px")
+      TRUE, right = TRUE, width = "120px")
   ),
-  footer = timerUI("mod_timer")
+  footer = tagList(timerUI("mod_timer"), coinUI("mod_coin"))
 )
 
 server <- function(input, output, session) {
@@ -66,6 +72,7 @@ server <- function(input, output, session) {
                                      shiny::reactive({ input$checkNews }))
   mod_timer      <-      timerServer("mod_timer",      mod_tournament, mod_matches,
                                      shiny::reactive({ input$checkTimer }))
+  mod_coin       <-       coinServer("mod_coin",       shiny::reactive({ input$checkCoin }))
   mod_peops      <-     peopleServer("mod_peops",      mod_tournament, mod_avatar)
   
   shiny::observe({

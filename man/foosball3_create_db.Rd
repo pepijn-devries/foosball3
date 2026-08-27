@@ -2,20 +2,21 @@
 % Please edit documentation in R/create.R
 \name{foosball3_create_db}
 \alias{foosball3_create_db}
-\title{TODO}
+\title{Create a New Foosball Database}
 \usage{
 foosball3_create_db(file, ...)
 }
 \arguments{
-\item{file}{TODO}
+\item{file}{File path where the database needs to be stored}
 
-\item{...}{TODO}
+\item{...}{Ignored}
 }
 \value{
-TODO
+Returns \code{NULL} invisibly.
 }
 \description{
-TODO
+Creates an SQLite file at the specified location. It will contain
+all required relationships and constraints and some non-trivial data.
 }
 \examples{
 fl <- tempfile(fileext = ".sqlite")

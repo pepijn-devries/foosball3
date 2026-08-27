@@ -38,8 +38,7 @@ matchServer <- function(id, match, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      move <- shiny::reactiveVal()
-      
+
       mod_side_1 <- matchSideServer("mod_side_1", match, 1L, avatars)
       mod_side_2 <- matchSideServer("mod_side_2", match, 2L, avatars)
       shinyjs::js$speech_supported(id = session$ns("speech_supported"))
@@ -69,11 +68,11 @@ matchServer <- function(id, match, avatars) {
       })
       
       shiny::observeEvent(input$btnUp, {
-        move(list(direction = -1L, button = input$btnUp))
+        match()$move_match(list(direction = -1L, button = input$btnUp))
       })
 
       shiny::observeEvent(input$btnDown, {
-        move(list(direction = 1L, button = input$btnDown))
+        match()$move_match(list(direction = 1L, button = input$btnDown))
       })
       
       shiny::observeEvent(input$btnPenalty, {
@@ -81,7 +80,12 @@ matchServer <- function(id, match, avatars) {
       })
       
       return(
-        move
+        shiny::reactive({
+          list(
+            side1 = mod_side_1(),
+            side2 = mod_side_2()
+          )
+        })
       )
     }
   )

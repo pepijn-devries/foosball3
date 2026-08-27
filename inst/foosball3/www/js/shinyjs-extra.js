@@ -23,3 +23,16 @@ shinyjs.announce = function(params) {
     }
   }
 };
+
+shinyjs.progressbar = function(params) {
+  var progressBar = document.querySelector('#' + params.id + ' .foosball-progress-bar');
+  var progressText = document.querySelector('#' + params.id + ' .foosball-progress-text');
+
+  if (progressBar) {
+    progressBar.style.width = params.percent + '%';
+    progressBar.innerText = '\u00a0' + params.percent + '%';
+  }
+  if (progressText && params.text) {
+    progressText.innerText = params.text;
+  }
+};

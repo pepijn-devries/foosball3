@@ -222,7 +222,7 @@ tournamentServer <- function(id, db, avatars) {
           dplyr::collect() |>
           dplyr::add_row(
             TOURNAMENT_ID = id_new,
-            TOURN_TYPE_ID = 1L,
+            TOURN_TYPE_CODE = 'I',
             TOURNAMENT_STATE_CODE = "ACT",
           )
         dplyr::copy_to(con, empty,

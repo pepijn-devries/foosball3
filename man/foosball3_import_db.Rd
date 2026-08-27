@@ -10,6 +10,8 @@ foosball3_import_db(file, target, ...)
 \item{file}{TODO}
 
 \item{target}{TODO}
+
+\item{...}{TODO}
 }
 \value{
 TODO
