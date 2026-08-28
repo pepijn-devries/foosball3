@@ -6,6 +6,17 @@
 #' @returns Returns `NULL` invisibly.
 #' @export
 foosball3 <- function(...) {
-  appdir <- system.file("foosball3", package = "foosball3")
-  shiny::runApp(appDir = appdir, ...)
+  suggests <- utils::packageDescription("foosball3")$Suggests |>
+    strsplit(",\n", perl = TRUE) |> unlist()
+  
+  state <- lapply(suggests, requireNamespace) |> unlist()
+  if (all(state)) {
+    appdir <- system.file("foosball3", package = "foosball3")
+    shiny::runApp(appDir = appdir, ...)
+  } else {
+    stop(
+      sprintf("Install required packages and try again: %s",
+              paste(suggests[!state], collapse = ", "))
+    )
+  }
 }

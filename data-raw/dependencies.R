@@ -21,7 +21,11 @@ all_deps <-
 base_pkgs <- c("base", "compiler", "datasets", "graphics", "grDevices", 
                "grid", "methods", "parallel", "splines", "stats", 
                "stats4", "tcltk", "tools", "utils")
-exclude <- c("foosball3")
+exclude <- c(
+  "foosball3",
+  utils::packageDescription("foosball3")$Suggests |>
+    strsplit(",\n", perl = TRUE) |> unlist()
+)
 
 deps <- all_deps[!all_deps$Package %in% c(base_pkgs, exclude), ]
 deps <- deps[order(deps$Package, deps$Function),]
@@ -38,6 +42,7 @@ file_content <- c(
   "#' @title Internal Shiny Dependencies",
   "#' @description This file automatically registers dependencies used only in inst/.",
   roxygen_lines,
+  "#' @importFrom rlang .data",
   "#' @noRd",
   "NULL"
 )

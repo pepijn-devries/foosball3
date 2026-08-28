@@ -14,29 +14,30 @@ Description: A relational SQLite database is used at the core of
 Depends:
     R (>= 4.1.0)
 Imports:
-    base64enc,
     blob,
+    dplyr,
+    methods,
+    rlang,
+    RSQLite,
+    shiny,
+    stringr,
+    tidyr
+Suggests:
+    base64enc,
     bsicons,
     bslib,
     DiagrammeRsvg,
-    dplyr,
     dm,
     DT,
     imager,
     jsonlite,
     knitr,
     lubridate,
-    methods,
     mirai,
-    rlang,
-    RSQLite,
-    shiny,
     shinybusy,
     shinyjs,
     shinyvalidate,
-    shinyWidgets,
-    stringr,
-    tidyr
+    shinyWidgets
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
