@@ -27,6 +27,8 @@ const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 Shiny.addCustomMessageHandler('foosball_timer', function(message) {
   var aud_precount = $('#foosball-aud-precount').get(0);
+  var aud_midmatch = $('#foosball-aud-midmatch').get(0);
+  var aud_countdown = $('#foosball-aud-countdown').get(0);
 
   var show_time = function(tim) {
     var el = document.getElementById(message.timer_id);
@@ -36,9 +38,8 @@ Shiny.addCustomMessageHandler('foosball_timer', function(message) {
       if (min > 99) min = 99;
       if (tim == Math.floor(message.milliseconds/2000)) {
         if (aud_precount) {
-          aud_precount.play();
+          aud_midmatch.play();
         }
-        $('#foosball-aud-midmatch').get(0).play();
       }
       if (tim > Math.round(message.milliseconds/1000)) {
         var prec = Math.round(tim - message.milliseconds/1000);
@@ -48,6 +49,9 @@ Shiny.addCustomMessageHandler('foosball_timer', function(message) {
         if (tim > 5) {
           el.className = "foosball-timer"
         } else {
+          if (tim == 5 && aud_countdown) {
+            aud_countdown.play();
+          }
           el.className = "foosball-timer-danger"
         }
         el.innerHTML = "\u2007" + String(min).padStart(2, '0') + ":" + String(sec).padStart(2, '0');
@@ -86,6 +90,8 @@ Shiny.addCustomMessageHandler('foosball_timer', function(message) {
     if (aud_precount) {
       aud_precount.pause();
       aud_precount.currentTime = 0;
+      aud_countdown.pause();
+      aud_countdown.currentTime = 0;
     }
 
   };

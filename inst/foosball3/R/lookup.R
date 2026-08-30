@@ -19,12 +19,13 @@ lookupServer <- function(id, label, db, initial, table, field_id, name = NULL, f
       lookup_state <- shiny::reactiveVal(list(opts = NULL, selected = NA))
       
       shiny::observe({
+        # if (label == "HOME_BASE") browser() #TODO
         shiny::req(initial())
         init <- initial()[[field_id]]
         if (length(init) == 0 || is.na(init)) init <- default
         if (is.na(init)) init <- input$selectLookup
         con <- db()$connect()
-        on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+        on.exit({ RSQLite::dbDisconnect(con) }, add = TRUE)
         look <- dplyr::tbl(con, table)
 
         if (is.null(name)) {
@@ -41,7 +42,7 @@ lookupServer <- function(id, label, db, initial, table, field_id, name = NULL, f
                     names = do.call(
                       sprintf, c(list(fmt = fmt), as.list(look[, name]) |> unname())))
         ls <- lookup_state()
-        if (!identical(ls$opts, opts) || !identical(ls$selected, init)) {
+        if (!identical(ls$opts, opts) || !identical(input$selectLookup, init)) {
           ls$opts <- opts
           ls$selected <- init
           lookup_state(ls)

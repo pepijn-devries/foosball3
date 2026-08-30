@@ -1,0 +1,65 @@
+.coin-game-wrapper {
+  text-align: center;
+  margin: 10px auto;
+}
+
+.coin-viewport {
+  width: 160px;
+  height: 160px;
+  margin: 20px auto;
+  perspective: 1200px; /* Gives the scene depth */
+  background: transparent !important;
+}
+
+.coin-cylinder {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform; 
+}
+
+.coin-cylinder .face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  backface-visibility: hidden; /* Hides back layout when flipped over */
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.coin-cylinder .heads-face {
+  background-image: url("img/coin-heads.png");
+  border: 2px solid #ffd700;
+  transform: translateZ(5px);
+}
+
+.coin-cylinder .tails-face {
+  background-image: url("img/coin-tails.png");
+  border: 2px solid #e0e0e0;
+  transform: rotateY(180deg) translateZ(5px);
+}
+
+.coin-edge {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.coin-edge .segment {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(#b8860b, #4a3b00);
+  transform-style: preserve-3d;
+}
+
+.coin-edge .seg-1 { transform: translateZ(4px); }
+.coin-edge .seg-2 { transform: translateZ(2px); }
+.coin-edge .seg-3 { transform: translateZ(0px); background: #261e01; }
+.coin-edge .seg-4 { transform: translateZ(-2px); }
+.coin-edge .seg-5 { transform: translateZ(-4px); }

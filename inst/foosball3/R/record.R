@@ -15,11 +15,13 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
 
       get_record <- shiny::reactive({
         rec_id <- record_picker()
+
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         pk <- get_primary_key()
+        if (pk$type == "INTEGER") rec_id <- as.integer(rec_id)
         dplyr::tbl(con, table_name()) |>
-          dplyr::filter(!!pk == !!rec_id) |>
+          dplyr::filter(!!rlang::sym(pk$name) == !!rec_id) |>
           dplyr::collect()
       })
       
@@ -30,7 +32,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
           RSQLite::dbGetQuery(
             con,
             paste0("PRAGMA table_info(", table_name(), ");"))
-        pk_info |> dplyr::filter(.data$pk == 1) |> dplyr::pull("name")
+        pk_info |> dplyr::filter(.data$pk == 1)
       })
       
       get_new_pk <- shiny::reactive({
@@ -39,7 +41,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         existing_keys <-
           dplyr::tbl(con, table_name()) |>
-          dplyr::pull(pk)
+          dplyr::pull(pk$name)
         switch(
           typeof(existing_keys),
           integer = {
@@ -76,8 +78,11 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             } else {
               switch(
                 typeof(rec[[nm]]),
-                integer = shiny::numericInput(ns(nm), nm, NA_integer_, step = 1L),
-                character = shiny::textInput(ns(nm), nm, NA_character_),
+                integer = shiny::numericInput(
+                  ns(nm), nm,
+                  ifelse(length(rec[[nm]]) == 0, NA_integer_, rec[[nm]]), step = 1L),
+                character = shiny::textInput(
+                  ns(nm), nm, ifelse(length(rec[[nm]]) == 0, NA_character_, rec[[nm]])),
                 NULL
               )
             }
