@@ -27,7 +27,7 @@ avatarServer <- function(id, db) {
         foosball_progress(ns("avatar_progress"), "Initiating avatars...")
 
       })
-
+      
       get_picture_tags <- shiny::reactive({
         shiny::req(db())
         con <- db()$connect()
@@ -45,6 +45,10 @@ avatarServer <- function(id, db) {
         )
       })
 
+      get_tagged_persons <- shiny::reactive({
+        get_picture_tags()$tags$PERSON_ID |> unique()
+      })
+      
       avatar_generator <- shiny::ExtendedTask$new(\(pt) {
         unlink(file.path(pt$dir, "*"))
         m <- mirai::mirai({
@@ -122,6 +126,7 @@ avatarServer <- function(id, db) {
             pt <- get_picture_tags()
             list(
               click = click,
+              tagged_persons = get_tagged_persons(),
               get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
                 my_class = paste0("foosball-avatar",
                                   ifelse(is.null(side), "", side))
@@ -150,6 +155,7 @@ avatarServer <- function(id, db) {
           } else {
             list(
               click = click,
+              tagged_persons = get_tagged_persons(),
               get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
                 my_class = paste0("foosball-avatar",
                                   ifelse(is.null(side), "", side))

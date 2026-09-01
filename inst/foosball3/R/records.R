@@ -46,16 +46,13 @@ recordsServer <- function(id, tournaments) {
         lazy_table <- dplyr::tbl(con, input$selectTable)
         nms <- colnames(lazy_table)
         pk <- mod_rec()$primary_key
-        object <- stringr::str_replace_all(pk$name, "_ID$|_CODE", "")
-        ## TODO check if this description field is correctly found for all editable tables
-        descript <-
-          nms[grepl(sprintf("(?=.*(NAME|DESCR))^%s", object), nms, perl = TRUE) &
-                nms != pk$name][1]
+        descript <- get_description_field(pk$name, nms)
         opts <- structure(
           lazy_table |> dplyr::pull(pk$name),
           names = lazy_table |> dplyr::pull(descript),
           class = "list"
         ) |> as.list()
+        opts <- list(options = opts, new = mod_rec()$new_created)
         if (!identical(options_cache(), opts)) {
           options_cache(opts)
         }
@@ -63,8 +60,10 @@ recordsServer <- function(id, tournaments) {
       
       shiny::observeEvent(options_cache(), {
         current <- input$selectRecord
-        opts <- options_cache()
+        opts <- options_cache()$options
         if (!current %in% names(opts)) current <- NA_character_
+        if (is.na(current) || !is.null(options_cache()$new))
+          current <- options_cache()$new
         shiny::updateSelectizeInput(
           inputId = "selectRecord",
           choices = opts,

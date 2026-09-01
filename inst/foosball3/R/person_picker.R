@@ -15,8 +15,9 @@ personPickerServer <- function(
     id,
     function(input, output, session) {
       ns <- session$ns
-      options_cache <- shiny::reactiveVal()
-      is_initialising <- shiny::reactiveVal()
+      ## Use caching to prevent unneeded updates
+      options_cache       <- shiny::reactiveVal()
+      is_initialising     <- shiny::reactiveVal()
 
       get_people <-
         shiny::reactive({
@@ -32,16 +33,19 @@ personPickerServer <- function(
       
       get_pre_options <- shiny::reactive({
         peops <- get_people()
-        structure(peops$PERSON_ID, names = peops$PERSON_NAME)
-      })
-      
-      get_options <- shiny::reactive({
+        opts <- structure(peops$PERSON_ID, names = peops$PERSON_NAME)[
+          order(peops$PERSON_NAME) ]
         avt <- avatars()
-        opts <- get_pre_options()
         img <- lapply(as.numeric(opts), \(x) {
           avt$get_avatar(x, what = "icon") %||% ""
         }) |>
           unlist()
+        list(options = opts, img = img)
+      })
+      
+      get_options <- shiny::reactive({
+        opts <- get_pre_options()$options
+        img <- get_pre_options()$img
         names(opts) <- sprintf("<span>%s %s</span>", img, names(opts))
         opts
       })
@@ -111,7 +115,7 @@ personPickerServer <- function(
           current <- init()
           is_initialising(FALSE)
         } else {
-          current <- input$selectPeople
+          current <- shiny::isolate(input$selectPeople)
         }
         
         match_names <- match(tolower(current), tolower(peops$PERSON_NAME))
@@ -119,9 +123,11 @@ personPickerServer <- function(
         current <- current[current %in% as.character(peops$PERSON_ID)]
         dup <- current[duplicated(current)]
         current <- current[!current %in% unique(dup)]
+        
+        actual_input <- as.character(shiny::isolate(input$selectPeople) %||% character(0))
 
-        if (!identical(get_pre_options(), options_cache()) ||
-            !identical(input$selectPeople, unname(current))) {
+        if (!identical(get_pre_options(), options_cache()$options) ||
+            !identical(actual_input, unname(current))) {
           options_cache(get_pre_options())
           shinyWidgets::updateVirtualSelect(
             "selectPeople", choices = get_options(), selected = unname(current)
@@ -136,7 +142,8 @@ personPickerServer <- function(
       result <- shiny::reactive({
         list(
           update = update,
-          id = get_selected_peop()
+          id = get_selected_peop(),
+          id_all = input$selectPeople
         )
       })
       

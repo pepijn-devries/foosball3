@@ -101,6 +101,7 @@ tournamentEditorServer <- function(
             dplyr::rows_update(
               data.frame(
                 TOURNAMENT_ID = sel,
+                TOURNAMENT_TYPE_CODE = "I", ## Individual tournaments is currently the only option
                 TOURNAMENT_DATE = format(input$pickDate, "%Y-%m-%d"),
                 TOURNAMENT_DURATION = input$numDuration,
                 POINT_SYSTEM_ID = mod_ps() |>
@@ -110,7 +111,9 @@ tournamentEditorServer <- function(
               ),
               by = "TOURNAMENT_ID"
             )
-          dplyr::copy_to(con, tnmt, "tournaments", overwrite = TRUE, temporary = FALSE) ## TODO overwrite in copy_to may destroy keys and constraints!
+
+          dplyr::tbl(con, "tournaments") |>
+            dplyr::rows_upsert(tnmt, by = "TOURNAMENT_ID", in_place = TRUE, copy = TRUE)
           max_id <-
             dplyr::tbl(con, "participants") |>
             dplyr::summarise(
@@ -120,7 +123,7 @@ tournamentEditorServer <- function(
                                       .data$PARTICIPANT_ID)
             ) |>
             dplyr::pull("PARTICIPANT_ID")
-          parts <- mod_part()$id
+          parts <- as.integer(mod_part()$id_all)
           parts <-
             data.frame(
               PARTICIPANT_ID = as.integer(max_id + seq_along(parts)),
@@ -129,7 +132,7 @@ tournamentEditorServer <- function(
               PENALTY_POINTS = NA_integer_
             )
           dplyr::copy_to(con, parts, "participants", append = TRUE)
-          orgs <- mod_orgs()$id
+          orgs <- as.integer(mod_orgs()$id_all)
           orgs <-
             data.frame(
               TOURNAMENT_ID = sel,

@@ -20,6 +20,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      new_key_cache <- shiny::reactiveVal()
       ns <- session$ns
       lookup_servers <- shiny::reactiveVal(list())
 
@@ -57,17 +58,30 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
         existing_keys <-
           dplyr::tbl(con, table_name()) |>
           dplyr::pull(pk$name)
-        switch(
-          typeof(existing_keys),
-          integer = {
-            max(c(0L, existing_keys)) + 1L
-          }, {
-            browser() #TODO
-            "A" #TODO
-          }
-        )
+        nk <-
+          switch(
+            typeof(existing_keys),
+            integer = {
+              max(c(0L, existing_keys)) + 1L
+            }, {
+              lazy_table <- dplyr::tbl(con, table_name())
+              cur_keys <- lazy_table |> dplyr::pull(pk$name)
+              descr <- get_description_field(pk$name, colnames(lazy_table))
+              new_key <- input[[descr]] |> toupper()
+              for (i in 4L:nchar(new_key)) {
+                temp <- abbreviate(new_key, i)
+                if (!temp %in% cur_keys) {
+                  new_key <- temp
+                  break
+                }
+              }
+              new_key[[1]]
+            }
+          )
+        new_key_cache(nk)
+        nk
       })
-
+      
       get_foreign_keys <- shiny::reactive({
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
@@ -78,14 +92,14 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       
       shiny::observeEvent(input$btnNew, {
         pk <- get_primary_key()
-        new_key <- get_new_pk()
+        # new_key <- get_new_pk() #TODO
         switch(
           pk$type,
           INTEGER = {
-            shiny::updateNumericInput(inputId = pk$name, value = new_key)
+            shiny::updateNumericInput(inputId = pk$name, value = NA)
           },
           TEXT = {
-            shiny::updateTextInput(inputId = pk$name, value = new_key)
+            shiny::updateTextInput(inputId = pk$name, value = NA)
           }
           
         )
@@ -93,9 +107,13 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       })
 
       shiny::observeEvent(input$btnSave, {
+        pk <- get_primary_key()
+        new_key <- input[[pk$name]]
+        if (is.na(new_key) || new_key == "") {
+          new_key <- get_new_pk()
+        }
         validity <- validator$validate()
         valid <- lapply(validity, `[[`, "message") |> unlist() |> paste(collapse = " ")
-        browser()
         if (valid == "") {
           con <- tournaments()$database$connect()
           on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
@@ -108,9 +126,14 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
           for (nm in colnames(edited_row)) {
             src <- names(input)[which(startsWith(names(input), nm))]
             ##TODO handle datetime objects
-            val <- input[[src]]
+            if (src == pk$name) {
+              val <- new_key
+            } else {
+              val <- input[[src]]
+            }
             val <- methods::as(val, typeof(edited_row[[nm]]))
-            if (is.character(val) && val == "") val <- NA_character_
+            if (is.character(val) && (length(val) == 0 || val == ""))
+              val <- NA_character_
             edited_row[[nm]] <- val
           }
           
@@ -124,7 +147,8 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             )
             record_picker()$update()
           }, error = \(e) {
-            shinyWidgets::show_alert( "Failed to Save Record", e$message, "error" )
+            shinyWidgets::show_alert( "Failed to Save Record", strip_ansi(e$parent$message),
+                                      "error" )
           })
         } else {
           shinyWidgets::show_alert( "Failed to Save Record", valid, "error" )
@@ -133,7 +157,6 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       })
       
       shiny::observeEvent(input$btnDelete, {
-        browser() #TODO
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         tryCatch({
@@ -144,7 +167,8 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             ))
           record_picker()$update()
         }, error = \(e) {
-          shinyWidgets::show_alert( "Failed to Delete Record", e$message, "error" )
+          shinyWidgets::show_alert( "Failed to Delete Record",
+                                    strip_ansi(e$message), "error" )
         })
       })
 
@@ -187,9 +211,9 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
         fk <- get_foreign_keys()
         rec <- get_record()
         rename_map <- stats::setNames(fk$from, fk$to)
-        if (length(rename_map) == 0) browser() #TODO
-        rec |>
-          dplyr::select(dplyr::any_of(rename_map))
+        if (length(rename_map) == 0) rec else
+          rec |>
+            dplyr::select(dplyr::any_of(rename_map))
       })
       
       shiny::observe({
@@ -220,7 +244,8 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       
       result <- shiny::reactive({
         list(
-          primary_key = get_primary_key()
+          primary_key = get_primary_key(),
+          new_created = new_key_cache()
         )
       })
       return( result )
