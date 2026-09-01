@@ -138,7 +138,7 @@ tournamentServer <- function(id, db, avatars) {
         dplyr::tbl(con, "tournaments") |>
           dplyr::left_join(
             dplyr::tbl(con, "locations"),
-            by = "LOC_CODE"
+            by = "LOCATION_CODE"
           ) |>
           dplyr::arrange(.data$TOURNAMENT_DATE) |>
           dplyr::collect() |>
@@ -222,7 +222,7 @@ tournamentServer <- function(id, db, avatars) {
           dplyr::collect() |>
           dplyr::add_row(
             TOURNAMENT_ID = id_new,
-            TOURN_TYPE_CODE = 'I',
+            TOURNAMENT_TYPE_CODE = 'I',
             TOURNAMENT_STATE_CODE = "ACT",
           )
         dplyr::copy_to(con, empty,

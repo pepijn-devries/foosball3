@@ -96,8 +96,13 @@ dbManagerServer <- function(id) {
         shiny::req(db_path())
         list(
           path    = db_path(),
-          connect = \() RSQLite::dbConnect(
-            RSQLite::SQLite(), db_path())
+          connect = \() {
+            con <- RSQLite::dbConnect(RSQLite::SQLite(), db_path())
+            ## Honour foreign key constraints:
+            RSQLite::dbExecute(con, "PRAGMA foreign_keys = ON;")
+            RSQLite::dbExecute(con, "PRAGMA busy_timeout = 10000;")
+            con
+          }
         )
       })
  

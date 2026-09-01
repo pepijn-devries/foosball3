@@ -1,6 +1,6 @@
 timerUI <- function(id) {
   ns <- shiny::NS(id)
-  tagList(
+  shiny::tagList(
     tags$audio(id = "foosball-aud-countdown", src = "audio/countdown.mp3", type = "audio/mp3"),
     tags$audio(id = "foosball-aud-precount", src = "audio/precount.mp3", type = "audio/mp3"),
     tags$audio(id = "foosball-aud-midmatch", src = "audio/midmatch.mp3", type = "audio/mp3"),

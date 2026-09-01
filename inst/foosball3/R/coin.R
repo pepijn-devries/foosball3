@@ -1,6 +1,6 @@
 coinUI <- function(id) {
   ns <- shiny::NS(id)
-  tagList(
+  shiny::tagList(
     tags$audio(id = ns("audio_player"), src = "audio/coin-toss.mp3", type = "audio/mp3"),
     tags$head(
       tags$script(src = "js/coin.js"),

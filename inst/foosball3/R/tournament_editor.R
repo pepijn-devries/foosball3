@@ -2,7 +2,7 @@ NUM_DUR_DEFAULT <- 1.5
 
 tournamentEditorUI <- function(id) {
   ns <- shiny::NS(id)
-  tagList(
+  shiny::tagList(
     bslib::layout_column_wrap(
       shiny::numericInput(ns("numDuration"), "Tourn. duration [h]",
                           NUM_DUR_DEFAULT, 0.01, step = 0.01),
@@ -42,16 +42,20 @@ tournamentEditorServer <- function(
                            tournament_people()$participants,
                            avatars, validator, 4L)
       
+      shiny::observe({
+        mod_orgs(); mod_part() #TODO do I need this to ensure they are updated?
+      })
+      
       mod_loc <- lookupServer(
         "mod_loc", "Location",
         shiny::reactive({ tournaments()$database }),
         shiny::reactive({ tournaments()$selected }),
-        "locations", "LOC_CODE", "LOCATION_NAME", "%s", NA, validator)
+        "locations", "LOCATION_CODE", "LOCATION_NAME", "%s", NA, validator)
       mod_ps <- lookupServer(
           "mod_ps", "Point System",
           shiny::reactive({ tournaments()$database }),
           shiny::reactive({ tournaments()$selected }),
-          "point_systems", "POINT_SYSTEM_ID", "PS_DESCRIPTION", "%s",
+          "point_systems", "POINT_SYSTEM_ID", "POINT_SYSTEM_DESCRIPTION", "%s",
           "1", validator)
 
       validator$add_rule("numDuration",
@@ -101,7 +105,7 @@ tournamentEditorServer <- function(
                 TOURNAMENT_DURATION = input$numDuration,
                 POINT_SYSTEM_ID = mod_ps() |>
                   as(Class = typeof(tnmt$POINT_SYSTEM_ID)),
-                LOC_CODE = mod_loc(),
+                LOCATION_CODE = mod_loc(),
                 TOURNAMENT_STATE_CODE = "ACT"
               ),
               by = "TOURNAMENT_ID"
@@ -116,7 +120,7 @@ tournamentEditorServer <- function(
                                       .data$PARTICIPANT_ID)
             ) |>
             dplyr::pull("PARTICIPANT_ID")
-          parts <- mod_part()
+          parts <- mod_part()$id
           parts <-
             data.frame(
               PARTICIPANT_ID = as.integer(max_id + seq_along(parts)),
@@ -125,7 +129,7 @@ tournamentEditorServer <- function(
               PENALTY_POINTS = NA_integer_
             )
           dplyr::copy_to(con, parts, "participants", append = TRUE)
-          orgs <- mod_orgs()
+          orgs <- mod_orgs()$id
           orgs <-
             data.frame(
               TOURNAMENT_ID = sel,
@@ -137,8 +141,8 @@ tournamentEditorServer <- function(
             list(
               action       = "ok",
               button       = input$btnOK,
-              organisers   = mod_orgs(),
-              participants = mod_part()
+              organisers   = mod_orgs()$id,
+              participants = mod_part()$id
             )
           )
           

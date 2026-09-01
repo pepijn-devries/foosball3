@@ -42,7 +42,6 @@ file_content <- c(
   "#' @title Internal Shiny Dependencies",
   "#' @description This file automatically registers dependencies used only in inst/.",
   roxygen_lines,
-  "#' @importFrom rlang .data",
   "#' @noRd",
   "NULL"
 )

@@ -44,6 +44,19 @@ foosball3_import_db <- function(file, target, ...) {
         warning_messages,
         sprintf("Removed duplicated records from '%s'.", tb))
     }
+    # Rename old field names for backward compatibility
+    rename_map <- stats::setNames(c("LOC_CODE", "PS_DESCRIPTION",
+                                    "TOURN_PHASE_CODE", "SIDE"),
+                                  c("LOCATION_CODE", "POINT_SYSTEM_DESCRIPTION",
+                                    "TOURNAMENT_PHASE_CODE", "SIDE_DESCRIPTION"))
+    matches <- match(names(dat), rename_map)
+    if (!all(is.na(matches))) {
+      names(dat)[!is.na(matches)] <- names(rename_map)[na.omit(matches)]
+      warning_messages <- c(
+        warning_messages,
+        sprintf("Renaming fields for backward compatibility '%s'.",
+                paste(rename_map, collapse = ", ")))
+    }
     dat <- dplyr::distinct(dat)
     dat_expected <-
       dplyr::tbl(con_new, tb) |>
@@ -74,12 +87,32 @@ foosball3_import_db <- function(file, target, ...) {
       stats::setNames(col_known)
     new_tb <- dplyr::as_tibble(new_tb)
     
-    RSQLite::dbExecute(con_new, sprintf("DELETE FROM %s;", tb))
-    dplyr::copy_to(con_new, new_tb, tb, append = TRUE)
+    tryCatch({
+      RSQLite::dbExecute(con_new, sprintf("DELETE FROM %s;", tb))
+      dplyr::copy_to(con_new, new_tb, tb, append = TRUE)
+    }, error = \(e) {
+      pk <-
+        RSQLite::dbGetQuery(con_new, sprintf("PRAGMA table_info('%s');", tb)) |>
+        dplyr::filter(pk == 1L)
+      
+      if (grepl("This record is protected and cannot be altered", e$message)) {
+        new_tb <-
+          dplyr::anti_join(
+            new_tb,
+            dat_expected,
+            pk$name
+          )
+        if (nrow(new_tb) > 0L) {
+          dplyr::copy_to(con_new, new_tb, tb, append = TRUE)
+        }
+      } else {
+        stop(e$message)
+      }
+    })
     
   }
   if (length(warning_messages) > 0)
-    warning(paste(warning_messages, collapse = " "))
+    warning(paste(unique(warning_messages), collapse = " "))
   invisible()
 }
 

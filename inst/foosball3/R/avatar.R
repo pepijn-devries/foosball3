@@ -31,7 +31,6 @@ avatarServer <- function(id, db) {
       get_picture_tags <- shiny::reactive({
         shiny::req(db())
         con <- db()$connect()
-        RSQLite::dbExecute(con, "PRAGMA busy_timeout = 10000;")
         on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
         pcts <- dplyr::tbl(con, "pictures") |>
           dplyr::collect()

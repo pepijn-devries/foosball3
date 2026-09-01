@@ -15,6 +15,7 @@ personPickerServer <- function(
     id,
     function(input, output, session) {
       ns <- session$ns
+      options_cache <- shiny::reactiveVal()
       is_initialising <- shiny::reactiveVal()
 
       get_people <-
@@ -29,31 +30,20 @@ personPickerServer <- function(
         is_initialising(TRUE)
       })
       
-      shiny::observeEvent(list(get_people(), avatars(), init()), {
+      get_pre_options <- shiny::reactive({
         peops <- get_people()
+        structure(peops$PERSON_ID, names = peops$PERSON_NAME)
+      })
+      
+      get_options <- shiny::reactive({
         avt <- avatars()
-        opts <- structure(peops$PERSON_ID, names = peops$PERSON_NAME)
+        opts <- get_pre_options()
         img <- lapply(as.numeric(opts), \(x) {
           avt$get_avatar(x, what = "icon") %||% ""
         }) |>
           unlist()
         names(opts) <- sprintf("<span>%s %s</span>", img, names(opts))
-        
-        if (is_initialising() %||% FALSE) {
-          current <- init()
-          is_initialising(FALSE)
-        } else {
-          current <- input$selectPeople
-        }
-
-        match_names <- match(tolower(current), tolower(peops$PERSON_NAME))
-        current[!is.na(match_names)] <- peops$PERSON_ID[na.omit(match_names)]
-        current <- current[current %in% as.character(peops$PERSON_ID)]
-        dup <- current[duplicated(current)]
-        current <- current[!current %in% unique(dup)]
-        shinyWidgets::updateVirtualSelect(
-          "selectPeople", choices = opts, selected = unname(current)
-        )
+        opts
       })
       
       if (!is.null(validator)) {
@@ -82,9 +72,7 @@ personPickerServer <- function(
         validator$enable()
       }
       
-      shiny::observeEvent(input$selectPeople, {
-        shiny::req(input$selectPeople)
-
+      get_selected_peop <- reactive({
         peops <- get_people()
         current <- input$selectPeople
         id_match   <- match(input$selectPeople, as.character(peops$PERSON_ID))
@@ -93,7 +81,7 @@ personPickerServer <- function(
         new_peops <- input$selectPeople[is.na(name_match) & is.na(id_match)]
         is_valid <- is.null(validator) ||
           !any(grepl("numerics", validator$validate()[[ns("selectPeople")]]$message))
-        if (length(new_peops) == 1 && is_valid) {
+        if (length(new_peops) == 1 && is_valid && new_peops != "") {
           con <- tournaments()$database$connect()
           on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
           new_row <-
@@ -107,14 +95,52 @@ personPickerServer <- function(
               QUALIFICATION_CODE = "H",
               HOME_BASE = NA_character_
             )
+          id_match <- new_row$PERSON_ID
           dplyr::copy_to(
             con, new_row, "persons", append = TRUE
           )
           tournaments()$trigger_refresh()
         }
+        na.omit(c(id_match, name_match))[1]
+      })
+
+      update <- shiny::reactive({
+        peops <- get_people()
+        
+        if (is_initialising() %||% FALSE) {
+          current <- init()
+          is_initialising(FALSE)
+        } else {
+          current <- input$selectPeople
+        }
+        
+        match_names <- match(tolower(current), tolower(peops$PERSON_NAME))
+        current[!is.na(match_names)] <- peops$PERSON_ID[na.omit(match_names)]
+        current <- current[current %in% as.character(peops$PERSON_ID)]
+        dup <- current[duplicated(current)]
+        current <- current[!current %in% unique(dup)]
+
+        if (!identical(get_pre_options(), options_cache()) ||
+            !identical(input$selectPeople, unname(current))) {
+          options_cache(get_pre_options())
+          shinyWidgets::updateVirtualSelect(
+            "selectPeople", choices = get_options(), selected = unname(current)
+          )
+        }
       })
       
-      return( shiny::reactive({ input$selectPeople }) )
+      shiny::observe({
+        update()
+      })
+      
+      result <- shiny::reactive({
+        list(
+          update = update,
+          id = get_selected_peop()
+        )
+      })
+      
+      return( result )
       
     })
 }

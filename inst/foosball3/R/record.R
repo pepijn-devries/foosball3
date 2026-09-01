@@ -1,8 +1,18 @@
-recordUI <- function(id) {
+recordUI <- function(id, label = "Edit record") {
   ns <- shiny::NS(id)
-  tagList(
-    shiny::actionButton(ns("btnNew"), "New record"),
-    shiny::uiOutput(ns("record_details"))
+  shiny::tagList(
+    bslib::toolbar(
+      gap = "5px",
+      shiny::actionButton(ns("btnNew"), bsicons::bs_icon("plus-square-fill")),
+      shiny::actionButton(ns("btnSave"), bsicons::bs_icon("floppy2-fill")),
+      shiny::actionButton(ns("btnDelete"), bsicons::bs_icon("trash3-fill"))
+    ),
+    bslib::card(
+      bslib::card_header(label),
+      bslib::card_body(
+        shiny::uiOutput(ns("record_details"))
+      )
+    )
   )
 }
 
@@ -13,13 +23,18 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       ns <- session$ns
       lookup_servers <- shiny::reactiveVal(list())
 
+      validator <- shinyvalidate::InputValidator$new()
+      validator$enable()
+      
       get_record <- shiny::reactive({
-        rec_id <- record_picker()
+        shiny::req(record_picker())
+        shiny::req(tournaments())
+        rec_id <- record_picker()$id
 
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         pk <- get_primary_key()
-        if (pk$type == "INTEGER") rec_id <- as.integer(rec_id)
+        if (pk$type == "INTEGER") rec_id <- as.integer(rec_id) |> suppressWarnings()
         dplyr::tbl(con, table_name()) |>
           dplyr::filter(!!rlang::sym(pk$name) == !!rec_id) |>
           dplyr::collect()
@@ -48,6 +63,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             max(c(0L, existing_keys)) + 1L
           }, {
             browser() #TODO
+            "A" #TODO
           }
         )
       })
@@ -61,39 +77,117 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       })
       
       shiny::observeEvent(input$btnNew, {
-        fk <- get_foreign_keys()
+        pk <- get_primary_key()
         new_key <- get_new_pk()
-        new_record <-
-          get_record()[0,] |>
-          dplyr::add_row()
+        switch(
+          pk$type,
+          INTEGER = {
+            shiny::updateNumericInput(inputId = pk$name, value = new_key)
+          },
+          TEXT = {
+            shiny::updateTextInput(inputId = pk$name, value = new_key)
+          }
+          
+        )
+        NULL
+      })
+
+      shiny::observeEvent(input$btnSave, {
+        validity <- validator$validate()
+        valid <- lapply(validity, `[[`, "message") |> unlist() |> paste(collapse = " ")
+        browser()
+        if (valid == "") {
+          con <- tournaments()$database$connect()
+          on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
+          lazy_tib <- dplyr::tbl(con, table_name())
+          edited_row <-
+            lazy_tib |>
+            dplyr::filter(dplyr::row_number() == -1) |>
+            dplyr::collect() |>
+            dplyr::add_row()
+          for (nm in colnames(edited_row)) {
+            src <- names(input)[which(startsWith(names(input), nm))]
+            ##TODO handle datetime objects
+            val <- input[[src]]
+            val <- methods::as(val, typeof(edited_row[[nm]]))
+            if (is.character(val) && val == "") val <- NA_character_
+            edited_row[[nm]] <- val
+          }
+          
+          tryCatch({
+            dplyr::rows_upsert(
+              lazy_tib,
+              edited_row,
+              by = get_primary_key()$name,
+              in_place = TRUE,
+              copy = TRUE
+            )
+            record_picker()$update()
+          }, error = \(e) {
+            shinyWidgets::show_alert( "Failed to Save Record", e$message, "error" )
+          })
+        } else {
+          shinyWidgets::show_alert( "Failed to Save Record", valid, "error" )
+        }
+        
+      })
+      
+      shiny::observeEvent(input$btnDelete, {
+        browser() #TODO
+        con <- tournaments()$database$connect()
+        on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
+        tryCatch({
+          RSQLite::dbExecute(
+            con,
+            sprintf("DELETE FROM %s WHERE %s = '%s'",
+              table_name(), get_primary_key()$name, record_picker()$id
+            ))
+          record_picker()$update()
+        }, error = \(e) {
+          shinyWidgets::show_alert( "Failed to Delete Record", e$message, "error" )
+        })
       })
 
       output$record_details <- shiny::renderUI({
         rec <- get_record()
         fk <- get_foreign_keys()
+        ## TODO make sure that the primary key is disabled. User should be able to change it
         widgets <-
           lapply(names(rec), \(nm) {
+            label <-
+              nm |>
+              stringr::str_replace_all("_", " ") |>
+              stringr::str_to_title()
             if (nm %in% fk[["from"]]) {
-              lookupUI(ns(nm), nm)
+              lookupUI(ns(nm), label)
             } else {
               switch(
                 typeof(rec[[nm]]),
                 integer = shiny::numericInput(
-                  ns(nm), nm,
+                  ns(nm), label,
                   ifelse(length(rec[[nm]]) == 0, NA_integer_, rec[[nm]]), step = 1L),
                 character = shiny::textInput(
-                  ns(nm), nm, ifelse(length(rec[[nm]]) == 0, NA_character_, rec[[nm]])),
+                  ns(nm), label, ifelse(length(rec[[nm]]) == 0, NA_character_, rec[[nm]])),
                 NULL
               )
             }
-          })
-        do.call(tagList, widgets)
+          }) |>
+          stats::setNames(names(rec))
+        
+        pk <- get_primary_key()$name
+        ## User should not be allowed to edit primary key
+        widgets[[pk]] <- shinyjs::disabled( widgets[[pk]] )
+        widgets <- unname(widgets)
+        widgets[["col_widths"]] <- c(3, 3, 3, 3)
+
+        do.call(bslib::layout_columns, widgets) |> suppressWarnings()
       })
       
       get_record_to_foreign <- shiny::reactive({
         fk <- get_foreign_keys()
         rec <- get_record()
         rename_map <- stats::setNames(fk$from, fk$to)
+        if (length(rename_map) == 0) browser() #TODO
         rec |>
           dplyr::select(dplyr::any_of(rename_map))
       })
@@ -103,7 +197,6 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
         rec <- get_record()
         fk <- get_foreign_keys()
         
-        changed <- FALSE
         new_fks <- fk$from[!fk$from %in% names(svs)]
         new_servers <- lapply(new_fks, \(nm) {
           fk_cur <- fk |>
@@ -111,7 +204,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
           lookupServer(
             nm, nm, shiny::reactive({ tournaments()$database }),
             get_record_to_foreign,
-            fk_cur$table, fk_cur$to)
+            fk_cur$table, fk_cur$to, validator = validator)
         })
         names(new_servers) <- new_fks
         svs <- modifyList(svs, new_servers)
@@ -125,7 +218,12 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
         }
       })
       
-      return( shiny::reactive({ }) )
+      result <- shiny::reactive({
+        list(
+          primary_key = get_primary_key()
+        )
+      })
+      return( result )
     }
   )
 }

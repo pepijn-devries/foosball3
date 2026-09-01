@@ -1,7 +1,7 @@
 qualGeneratorUI <- function(id) {
   ns <- shiny::NS(id)
   make_slider <- \(id, lab) shiny::sliderInput(ns(id), lab, 0, 1, 1, step = 0.01)
-  tagList(
+  shiny::tagList(
     bslib::layout_columns(
       colwidths = c(6,6),
       lookupUI(ns("mod_table"), "Table", "On which the tournament is played"),
@@ -119,7 +119,7 @@ qualGeneratorServer <- function(id, matches, btnStart) {
           )
         } else {
           type <- switch(
-            sel$TOURN_TYPE_CODE,
+            sel$TOURNAMENT_TYPE_CODE,
             I = "individual",
             "Unknown"
           )
@@ -154,7 +154,7 @@ qualGeneratorServer <- function(id, matches, btnStart) {
             dplyr::tibble(
               MATCH_ID = new_mtch,
               TOURNAMENT_ID = m$tournament$selected$TOURNAMENT_ID,
-              TOURN_PHASE_CODE = "Q",
+              TOURNAMENT_PHASE_CODE = "Q",
               TABLE_CODE = mod_table(),
               BALL_ID = as.integer(mod_ball())
             )
