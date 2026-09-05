@@ -55,7 +55,7 @@ timerServer <- function(id, tournament, matches, show) {
         if (length(total_duration) == 0 || phase != "Qualification" || n_matches <= 0) {
           120000
         } else {
-          round(total_duration*60*60*1000 / n_matches)
+          round(total_duration*60*60 / n_matches) * 1000
         }
       })
       

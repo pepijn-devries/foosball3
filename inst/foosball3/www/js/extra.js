@@ -42,7 +42,7 @@ Shiny.addCustomMessageHandler('foosball_timer', function(message) {
         }
       }
       if (tim > Math.round(message.milliseconds/1000)) {
-        var prec = Math.round(tim - message.milliseconds/1000);
+        var prec = tim - Math.round(message.milliseconds/1000);
         el.className = "foosball-timer-precount"
         el.innerHTML = "\u221200:" + String(prec).padStart(2, '0');
       } else if (tim > 0) {
