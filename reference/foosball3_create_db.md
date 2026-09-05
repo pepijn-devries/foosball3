@@ -28,7 +28,6 @@ Returns `NULL` invisibly.
 ``` r
 fl <- tempfile(fileext = ".sqlite")
 foosball3_create_db(fl)
-#> Error in check_dbplyr(): The package "dbplyr" is required to communicate with database backends.
 
 ## Clean up:
 unlink(fl, TRUE, TRUE)
