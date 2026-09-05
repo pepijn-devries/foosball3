@@ -44,9 +44,10 @@ tournamentEditorServer <- function(
                            avatars, validator, 4L)
       
       shiny::observe({
-        mod_orgs(); mod_part() #TODO do I need this to ensure they are updated?
+        ## We need observers on these to ensure updates are detected
+        mod_orgs(); mod_part()
       })
-      
+
       shiny::observe({
         mod_loc()$set_selected(
           tournaments()$selected$LOCATION_CODE

@@ -18,6 +18,7 @@ personPickerServer <- function(
       ## Use caching to prevent unneeded updates
       options_cache       <- shiny::reactiveVal()
       is_initialising     <- shiny::reactiveVal()
+      new_peops           <- shiny::reactiveVal()
 
       get_people <-
         shiny::reactive({
@@ -77,6 +78,7 @@ personPickerServer <- function(
       }
       
       get_selected_peop <- reactive({
+        np <- new_peops()
         peops <- get_people()
         current <- input$selectPeople
         id_match   <- match(input$selectPeople, as.character(peops$PERSON_ID))
@@ -136,8 +138,13 @@ personPickerServer <- function(
       })
       
       update_fun <- function(val) {
-        #TODO
+        if (length(val) >0) new_peops(val)
+        tournaments()$trigger_update()
       }
+      
+      shiny::observeEvent(list(get_people(), avatars(), init()), {
+        upd <- update()
+      })
 
       result <- shiny::reactive({
         list(

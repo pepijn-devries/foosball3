@@ -50,12 +50,28 @@ recordUI <- function(id, table, label = "Edit record") {
   ))
   widgets <- do.call(bslib::layout_columns, widgets)
   
+  opts <- list(
+    animation = TRUE,
+    delay = list(show = 750, hide = 100))
+  
   shiny::tagList(
     bslib::toolbar(
       gap = "5px",
-      shiny::actionButton(ns("btnNew"), bsicons::bs_icon("plus-square-fill")),
-      shiny::actionButton(ns("btnSave"), bsicons::bs_icon("floppy2-fill")),
-      shiny::actionButton(ns("btnDelete"), bsicons::bs_icon("trash3-fill"))
+      bslib::tooltip(
+        shiny::actionButton(ns("btnNew"), bsicons::bs_icon("plus-square-fill")),
+        "Draft new record (will only be saved after clicking 'Save')",
+        options = opts, placement = "auto"
+      ),
+      bslib::tooltip(
+        shiny::actionButton(ns("btnSave"), bsicons::bs_icon("floppy2-fill")),
+        "Save selected record in database",
+        options = opts, placement = "auto"
+      ),
+      bslib::tooltip(
+        shiny::actionButton(ns("btnDelete"), bsicons::bs_icon("trash3-fill")),
+        "Delete selected record from database",
+        options = opts, placement = "auto"
+      )
     ),
     bslib::card(
       bslib::card_header(label),
