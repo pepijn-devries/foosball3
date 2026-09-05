@@ -78,17 +78,25 @@ qualGeneratorServer <- function(id, matches, btnStart) {
         shinyvalidate::sv_numeric(allow_na = TRUE)
       )
       
-      mod_table <- lookupServer(
-        "mod_table", "Table",
-        shiny::reactive({ matches()$tournament$database }),
-        shiny::reactive({ matches()$tournament$selected }),
-        "tables", "TABLE_CODE", "TABLE_NAME", "%s", NA, validator)
-      mod_ball <- lookupServer(
-        "mod_ball", "Ball",
-        shiny::reactive({ matches()$tournament$database }),
-        shiny::reactive({ matches()$tournament$selected }),
-        "balls", "BALL_ID", "BALL_DESCRIPTION", "%s", -1L, validator)
+      shiny::observe({
+        ## TODO
+        # browser() #TODO
+        m <- matches()
+        mod_table()$set_selected(NA)
+      })
+
+      shiny::observe({
+        ##TODO
+        # browser() #TODO
+        m <- matches()
+        mod_ball()$set_selected(NA)
+      })
       
+      mod_table <- lookupServer(
+        "mod_table", "Table", shiny::reactive({ matches()$tournament }), "tables", "%s", validator)
+      mod_ball <- lookupServer(
+        "mod_ball", "Ball", shiny::reactive({ matches()$tournament }), "balls", "%s", validator)
+
       validator$enable()
       
       shiny::observeEvent(btnStart(), {
@@ -155,8 +163,8 @@ qualGeneratorServer <- function(id, matches, btnStart) {
               MATCH_ID = new_mtch,
               TOURNAMENT_ID = m$tournament$selected$TOURNAMENT_ID,
               TOURNAMENT_PHASE_CODE = "Q",
-              TABLE_CODE = mod_table(),
-              BALL_ID = as.integer(mod_ball())
+              TABLE_CODE = mod_table()$id,
+              BALL_ID = as.integer(mod_ball()$id)
             )
           
           dplyr::copy_to(con, new_mtch, "matches", append = TRUE, temporary = FALSE)

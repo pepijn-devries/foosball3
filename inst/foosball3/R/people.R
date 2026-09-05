@@ -10,7 +10,7 @@ peopleUI <- function(id) {
     bslib::nav_panel(
       "Edit records",
       icon = bsicons::bs_icon("pencil-square"),
-      recordUI(ns("mod_peop_rec"))
+      recordUI(ns("mod_peop_rec"), "persons")
     ),
     bslib::nav_panel(
       "Statistics",
@@ -32,16 +32,15 @@ peopleServer <- function(id, tournaments, avatars) {
         shiny::req(mod_peop_pick())
         
         list(
-          update = function() {
-            mod_peop_pick()$update()
+          update = function(val) {
+            mod_peop_pick()$update(val)
           },
           id = mod_peop_pick()$id
         )
       })
       
       mod_peop_rec <-
-        recordServer("mod_peop_rec", tournaments, record_pick,
-                     \() "persons")
+        recordServer("mod_peop_rec", tournaments, record_pick, "persons")
       
       return( shiny::reactive({ }) )
     }

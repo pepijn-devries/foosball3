@@ -135,13 +135,13 @@ personPickerServer <- function(
         }
       })
       
-      shiny::observe({
-        update()
-      })
-      
+      update_fun <- function(val) {
+        #TODO
+      }
+
       result <- shiny::reactive({
         list(
-          update = update,
+          update = update_fun,
           id = get_selected_peop(),
           id_all = input$selectPeople
         )

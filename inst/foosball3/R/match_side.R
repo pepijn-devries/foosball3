@@ -82,9 +82,6 @@ matchSideServer <- function(id, match, side, avatars) {
             NULL
           } else {
             avt <- avatars()
-            # if (is.null(pid$avt)) {
-            #   browser() #TODO
-            # }
             pid <- pid |>
               dplyr::mutate(
                 avt = lapply(.data$PERSON_ID, avt$get_avatar,

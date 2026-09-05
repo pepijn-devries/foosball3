@@ -1,5 +1,3 @@
-foosball_meta <- foosball3::foosball3_meta_data()
-
 tableDetailsUI <- function(id) {
   ns <- shiny::NS(id)
   bslib::navset_tab(
