@@ -2,18 +2,19 @@
 % Please edit documentation in R/meta.R
 \name{foosball3_meta_data}
 \alias{foosball3_meta_data}
-\title{TODO}
+\title{Get Meta Data for Tables in the Foosball Database Scheme}
 \usage{
 foosball3_meta_data(...)
 }
 \arguments{
-\item{...}{TODO}
+\item{...}{Ignored.}
 }
 \value{
-TODO
+Returns a \code{data.frame} with description information
 }
 \description{
-TODO
+Returns a list of tables and fields in the Foosball database. In addition,
+it contains a description of the table and each field.
 }
 \examples{
 foosball3_meta_data()

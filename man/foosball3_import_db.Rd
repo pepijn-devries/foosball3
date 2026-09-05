@@ -2,22 +2,26 @@
 % Please edit documentation in R/import.R
 \name{foosball3_import_db}
 \alias{foosball3_import_db}
-\title{TODO}
+\title{Import Foosball Tournament Data from a File}
 \usage{
 foosball3_import_db(file, target, ...)
 }
 \arguments{
 \item{file}{TODO}
 
-\item{target}{TODO}
+\item{target}{Target file path where the clean database will be stored.
+Existing files at this location may be overwritten.}
 
-\item{...}{TODO}
+\item{...}{Ignored}
 }
 \value{
-TODO
+Creates a new clean copy of the database. Returns \code{NULL} invisibly.
 }
 \description{
-TODO
+If you have an older file with tournament results, you can try to
+import those results with this function. It will create a new copy
+of the database (using \code{\link[=foosball3_create_db]{foosball3_create_db()}}), making sure it
+complies with the latest database scheme specification used by this package.
 }
 \examples{
 # TODO

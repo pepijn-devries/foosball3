@@ -1,13 +1,31 @@
-#' TODO
+#' Generate Matches for a Tournament Phase
 #' 
-#' TODO
-#' @param participants TODO
-#' @param tournament_type TODO
-#' @param tournament_phase TODO
-#' @param options TODO
-#' @param progress TODO
-#' @param ... TODO
-#' @returns TODO
+#' Generates matches for a specific phase in a foosball tournament for a
+#' given set of participants.
+#' @param participants A `data.frame` with two columns: first `PARTICIPANT_ID`,
+#' a unique integer identifier for each participant. Second a column named
+#' `QUALIFICATION_RATE`, it holds numeric values greater than zero. A qualification
+#' rate of 0.5 indicates an average player. Values less than 0.5 are for less
+#' experienced players. Values greater than 0.5 indicate more experienced players.
+#' @param tournament_type Type of tournament for which to render matches.
+#' At the moment only `"individual"` is supported. This is a tournament where
+#' player play in variable team compositions, but for individual results.
+#' @param tournament_phase The phase of the tournament. At the moment only
+#' `qualification` is supported. These are matches preceding a semi finals, where
+#' individuals can collect points individually to qualify for the semi finals.
+#' @param options Options used for generating the matches. It can be used to
+#' tweak the effort for balancing matches for player experience.
+# TODO document details
+#' @param progress A callback function for reporting progress. It needs to be
+#' a function that accepts 1 numeric argument. It is called by the generator,
+#' with a number between 0 and 1 indicating the progress of the process.
+#' @param ... Ignored
+#' @returns It returns a `data.frame` with three columns. Firstly, `MATCH_ID`
+#' which is a unique integer identifier for each match. Secondly, `PARTICIPANT_ID`,
+#' which is from the input `participants`, and indicates the participants enrolled
+#' in the indicated match. Thirdly, `POSITION_CODE`, indicating where the
+#' participant is positioned for each specific match: `S1` = striker side 1,
+#' `D1` = defender side 1, `S2` = striker side 2 and finally `D2` = defender side 2.
 #' @examples
 #' participants <-
 #'   dplyr::tibble(

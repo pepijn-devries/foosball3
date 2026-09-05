@@ -1,8 +1,9 @@
-#' TODO
+#' Get Meta Data for Tables in the Foosball Database Scheme
 #' 
-#' TODO
-#' @param ... TODO
-#' @returns TODO
+#' Returns a list of tables and fields in the Foosball database. In addition,
+#' it contains a description of the table and each field.
+#' @param ... Ignored.
+#' @returns Returns a `data.frame` with description information
 #' @examples
 #' foosball3_meta_data()
 #' @export

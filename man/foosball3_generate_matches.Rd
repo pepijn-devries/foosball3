@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate.R
 \name{foosball3_generate_matches}
 \alias{foosball3_generate_matches}
-\title{TODO}
+\title{Generate Matches for a Tournament Phase}
 \usage{
 foosball3_generate_matches(
   participants,
@@ -14,23 +14,40 @@ foosball3_generate_matches(
 )
 }
 \arguments{
-\item{participants}{TODO}
+\item{participants}{A \code{data.frame} with two columns: first \code{PARTICIPANT_ID},
+a unique integer identifier for each participant. Second a column named
+\code{QUALIFICATION_RATE}, it holds numeric values greater than zero. A qualification
+rate of 0.5 indicates an average player. Values less than 0.5 are for less
+experienced players. Values greater than 0.5 indicate more experienced players.}
 
-\item{tournament_type}{TODO}
+\item{tournament_type}{Type of tournament for which to render matches.
+At the moment only \code{"individual"} is supported. This is a tournament where
+player play in variable team compositions, but for individual results.}
 
-\item{tournament_phase}{TODO}
+\item{tournament_phase}{The phase of the tournament. At the moment only
+\code{qualification} is supported. These are matches preceding a semi finals, where
+individuals can collect points individually to qualify for the semi finals.}
 
-\item{options}{TODO}
+\item{options}{Options used for generating the matches. It can be used to
+tweak the effort for balancing matches for player experience.}
 
-\item{progress}{TODO}
+\item{progress}{A callback function for reporting progress. It needs to be
+a function that accepts 1 numeric argument. It is called by the generator,
+with a number between 0 and 1 indicating the progress of the process.}
 
-\item{...}{TODO}
+\item{...}{Ignored}
 }
 \value{
-TODO
+It returns a \code{data.frame} with three columns. Firstly, \code{MATCH_ID}
+which is a unique integer identifier for each match. Secondly, \code{PARTICIPANT_ID},
+which is from the input \code{participants}, and indicates the participants enrolled
+in the indicated match. Thirdly, \code{POSITION_CODE}, indicating where the
+participant is positioned for each specific match: \code{S1} = striker side 1,
+\code{D1} = defender side 1, \code{S2} = striker side 2 and finally \code{D2} = defender side 2.
 }
 \description{
-TODO
+Generates matches for a specific phase in a foosball tournament for a
+given set of participants.
 }
 \examples{
 participants <-

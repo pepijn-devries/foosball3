@@ -1,10 +1,14 @@
-#' TODO
+#' Import Foosball Tournament Data from a File
 #' 
-#' TODO
+#' If you have an older file with tournament results, you can try to
+#' import those results with this function. It will create a new copy
+#' of the database (using [foosball3_create_db()]), making sure it
+#' complies with the latest database scheme specification used by this package.
 #' @param file TODO
-#' @param target TODO
-#' @param ... TODO
-#' @returns TODO
+#' @param target Target file path where the clean database will be stored.
+#' Existing files at this location may be overwritten.
+#' @param ... Ignored
+#' @returns Creates a new clean copy of the database. Returns `NULL` invisibly.
 #' @examples
 #' # TODO
 #' 
