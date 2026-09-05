@@ -59,6 +59,32 @@ db_join_keys <- function() {
       db_static_fk, c(table = "child_table", column = "child_fk_cols")
     )
 }
+
+get_schema_static <- function(con, include_views) {
+  tbls <- RSQLite::dbListTables(con)
+  
+  my_dm <- dm::dm_from_con(con, learn_keys = TRUE)
+  if (include_views) {
+    all_tbls <- RSQLite::dbListTables(con)
+    unreferenced <- setdiff(all_tbls, names(my_dm))
+    unreferenced <- unreferenced[!grepl("^sqlite_", unreferenced)]
+    
+    unreferenced <-
+      lapply(unreferenced, dplyr::tbl, src = con) |>
+      stats::setNames(unreferenced)
+    for (i in seq_along(unreferenced)) {
+      my_dm <-
+        my_dm |>
+        dm::dm(!!names(unreferenced)[[i]] := unreferenced[[i]])
+    }
+  }
+  dm::dm_draw(my_dm) |>
+    DiagrammeRsvg::export_svg()
+}
+
+db_schemas_static <-
+  lapply(c(TRUE, FALSE), get_schema_static, con = con)
+
 RSQLite::dbDisconnect(con)
 unlink(tf, TRUE, TRUE)
 rm(con, tf, db_schema)

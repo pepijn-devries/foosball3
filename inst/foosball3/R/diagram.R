@@ -42,38 +42,11 @@ diagramServer <- function(id, database) {
     id,
     function(input, output, session) {
       get_diagram_svg <- shiny::reactive({
-        schem <- get_schema()
-        dm::dm_draw(
-          schem
-        ) |>
-          DiagrammeRsvg::export_svg()
+        db_schemas_static[[ifelse(input$checkView, 1L, 2L)]]
       })
       
       output$diagram <- shiny::renderUI({
         shiny::HTML(get_diagram_svg())
-      })
-      
-      get_schema <- shiny::reactive({
-        con <- database()$database$connect()
-        on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
-        tbls <- RSQLite::dbListTables(con)
-        
-        my_dm <- dm::dm_from_con(con, learn_keys = TRUE)
-        if (input$checkView) {
-          all_tbls <- RSQLite::dbListTables(con)
-          unreferenced <- setdiff(all_tbls, names(my_dm))
-          unreferenced <- unreferenced[!grepl("^sqlite_", unreferenced)]
-          
-          unreferenced <-
-            lapply(unreferenced, dplyr::tbl, src = con) |>
-            stats::setNames(unreferenced)
-          for (i in seq_along(unreferenced)) {
-            my_dm <-
-              my_dm |>
-              dm::dm(!!names(unreferenced)[[i]] := unreferenced[[i]])
-          }
-        }
-        my_dm
       })
       
       shiny::observe({
