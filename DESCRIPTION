@@ -1,6 +1,6 @@
 Package: foosball3
 Title: An App to Manage and Organise Foosball Tournaments
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: c(person("Pepijn", "de Vries", role = c("aut", "cre", "dtc"),
     email = "pepijn.devries@outlook.com",
     comment = c(ORCID = "0000-0002-7961-6646")))
