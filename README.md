@@ -5,26 +5,16 @@
 
 <!-- badges: end -->
 
-The goal of foosball3 is to …
+Create a database to manage foosball tournaments, facilitate live
+matches and visualise match results and player statistics.
 
 ## Installation
 
-You can install the development version of foosball3 like so:
+Install latest developmental version from R-Universe:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+install.packages("foosball3", repos = c('https://pepijn-devries.r-universe.dev', 'https://cloud.r-project.org'))
 ```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-library(foosball3)
-## basic example code
-```
-
-TODO
 
 ## Code of Conduct
 
