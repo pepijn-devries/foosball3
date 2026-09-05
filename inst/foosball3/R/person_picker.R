@@ -107,7 +107,7 @@ personPickerServer <- function(
           )
           tournaments()$trigger_refresh()
         }
-        na.omit(c(id_match, name_match))[1]
+        stats::na.omit(c(id_match, name_match))[1]
       })
 
       update <- shiny::reactive({
@@ -121,7 +121,7 @@ personPickerServer <- function(
         }
         
         match_names <- match(tolower(current), tolower(peops$PERSON_NAME))
-        current[!is.na(match_names)] <- peops$PERSON_ID[na.omit(match_names)]
+        current[!is.na(match_names)] <- peops$PERSON_ID[stats::na.omit(match_names)]
         current <- current[current %in% as.character(peops$PERSON_ID)]
         dup <- current[duplicated(current)]
         current <- current[!current %in% unique(dup)]

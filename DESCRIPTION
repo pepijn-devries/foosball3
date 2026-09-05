@@ -1,6 +1,6 @@
 Package: foosball3
 Title: An App to Manage and Organise Foosball Tournaments
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(person("Pepijn", "de Vries", role = c("aut", "cre", "dtc"),
     email = "pepijn.devries@outlook.com",
     comment = c(ORCID = "0000-0002-7961-6646")))
@@ -42,3 +42,5 @@ License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
+URL: https://github.com/pepijn-devries/foosball3, https://pepijn-devries.github.io/foosball3/
+BugReports: https://github.com/pepijn-devries/foosball3/issues

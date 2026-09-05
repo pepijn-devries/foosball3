@@ -41,9 +41,9 @@ db_static_fk$child_fk_cols <- unlist(db_static_fk$child_fk_cols)
 db_static_dictionary <- names(db_schema) |>
   lapply(\(table_name) {
     
-    raw_schema <- DBI::dbGetQuery( con, sprintf("PRAGMA table_info('%s');", table_name) )
+    raw_schema <- RSQLite::dbGetQuery( con, sprintf("PRAGMA table_info('%s');", table_name) )
     
-    tibble::tibble(
+    dplyr::tibble(
       table     = table_name,
       column    = raw_schema$name,
       data_type = raw_schema$type
