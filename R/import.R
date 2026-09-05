@@ -55,7 +55,7 @@ foosball3_import_db <- function(file, target, ...) {
                                     "TOURNAMENT_PHASE_CODE", "SIDE_DESCRIPTION"))
     matches <- match(names(dat), rename_map)
     if (!all(is.na(matches))) {
-      names(dat)[!is.na(matches)] <- names(rename_map)[na.omit(matches)]
+      names(dat)[!is.na(matches)] <- names(rename_map)[stats::na.omit(matches)]
       warning_messages <- c(
         warning_messages,
         sprintf("Renaming fields for backward compatibility '%s'.",

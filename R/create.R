@@ -27,8 +27,8 @@ foosball3_create_db <- function(file, ...) {
     stop("Failed to create database")
   
   copy_data <- \(df, nm) dplyr::copy_to( con, df, nm,
-                                         append = TRUE,
-                                         temporary = FALSE )
+                                             append = TRUE,
+                                             temporary = FALSE )
   protect_data <- \(con, nm, what, when) {
     condition <-
       switch(
@@ -53,7 +53,7 @@ foosball3_create_db <- function(file, ...) {
       BALL_ID = -1L,
       BALL_DESCRIPTION = "Unknown"
     ), "balls")
-
+  
   protect_data(con, "balls", "BALL_ID", 0L)
   
   copy_data(
