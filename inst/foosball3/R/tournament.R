@@ -2,55 +2,65 @@ tournament_label <- "Tournament Details"
 
 tournamentUI <- function(id) {
   ns <- shiny::NS(id)
-  bslib::layout_columns(
-    col_widths = c(3, 9),
-    bslib::card(
-      bslib::card_header("Menu"),
-      bslib::card_body(
-        shinyWidgets::virtualSelectInput(
-          ns("selectTournament"), "Select tournament",
-          character(), keepAlwaysOpen = TRUE,
-          search = TRUE, optionsCount = 5,
-          noOptionsText = "No tournaments in database"
+  bslib::navset_card_tab(
+    full_screen = TRUE,
+    bslib::nav_panel(
+      "Tournament Setup",
+      bslib::layout_columns(
+        col_widths = c(3, 9),
+        bslib::card(
+          bslib::card_header("Menu"),
+          bslib::card_body(
+            shinyWidgets::virtualSelectInput(
+              ns("selectTournament"), "Select tournament",
+              character(), keepAlwaysOpen = TRUE,
+              search = TRUE, optionsCount = 4,
+              noOptionsText = "No tournaments in database"
+            ),
+            shiny::actionButton(ns("btnNew"), "New Tournament",
+                                icon = bsicons::bs_icon("folder-plus")),
+            shiny::actionButton(ns("btnEdit"), "Edit Tournament",
+                                icon = bsicons::bs_icon("pencil-square"))
+          )
         ),
-        shiny::actionButton(ns("btnNew"), "New Tournament",
-                            icon = bsicons::bs_icon("folder-plus")),
-        shiny::actionButton(ns("btnEdit"), "Edit Tournament",
-                            icon = bsicons::bs_icon("pencil-square"))
-      )
-    ),
-    bslib::card(
-      full_screen = TRUE,
-      bslib::card_header(
-        tournament_label,
-        id = ns("foosball-tournament-header")
-      ),
-      bslib::card_body(
-        bslib::navset_hidden(
-          id = ns("nav_tournament"),
-          bslib::nav_panel(
-            "Details",
-            bslib::layout_columns(
-              col_widths = c(4, 8),
-              bslib::card(
-                bslib::card_body(
-                  shiny::uiOutput(ns("txtDetails"))
+        bslib::card(
+          full_screen = TRUE,
+          bslib::card_header(
+            tournament_label,
+            id = ns("foosball-tournament-header")
+          ),
+          bslib::card_body(
+            bslib::navset_hidden(
+              id = ns("nav_tournament"),
+              bslib::nav_panel(
+                "Details",
+                bslib::layout_columns(
+                  col_widths = c(4, 8),
+                  bslib::card(
+                    bslib::card_body(
+                      shiny::uiOutput(ns("txtDetails"))
+                    )
+                  ),
+                  bslib::card(
+                    full_screen = TRUE,
+                    bslib::card_body(
+                      pictureUI(ns("mod_picture"))
+                    )
+                  )
                 )
               ),
-              bslib::card(
-                full_screen = TRUE,
-                bslib::card_body(
-                  pictureUI(ns("mod_picture"))
-                )
+              bslib::nav_panel(
+                "Tournament Editor",
+                tournamentEditorUI(ns("mod_editor"))
               )
             )
-          ),
-          bslib::nav_panel(
-            "Tournament Editor",
-            tournamentEditorUI(ns("mod_editor"))
           )
         )
       )
+    ),
+    bslib::nav_panel(
+      "Tournament statistics",
+      tournamentStatsUI(ns("mod_tourn_stats"))
     )
   )
 }
@@ -302,6 +312,8 @@ tournamentServer <- function(id, db, avatars) {
         attr(mode, "ts") <- Sys.time()
         edit_mode(mode)
       })
+      
+      mod_tourn_stats <- tournamentStatsServer("mod_tourn_stats", get_it_all)
       
       return(get_it_all)
     }
