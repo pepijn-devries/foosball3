@@ -51,7 +51,7 @@ avatarServer <- function(id, db) {
       
       avatar_generator <- shiny::ExtendedTask$new(\(pt) {
         unlink(file.path(pt$dir, "*"))
-        m <- mirai::mirai({
+        avatar_expression <- quote({
           for (picid in pcts$PICTURE_ID) {
             pic <- as.list(pcts[pcts$PICTURE_ID == picid,])
             picf <- tempfile(fileext = ".jpg")
@@ -77,9 +77,30 @@ avatarServer <- function(id, db) {
                 file.path(dir, sprintf("icon%i.png", tag$TAG_ID)))
             }
           }
-        }, pcts = pt$pictures, tags = pt$tags, dir = pt$dir, tile_size = TILE_SIZE, icon_size = ICON_SIZE)
+        })
+        if (requireNamespace("mirai", quietly = TRUE)) {
+          m <- mirai::mirai(
+            avatar_expression,
+            pcts = pt$pictures,
+            tags = pt$tags,
+            dir = pt$dir,
+            tile_size = TILE_SIZE,
+            icon_size = ICON_SIZE)
+          return(m)
+        } else {
+          
+          eval_env <- list2env(list(
+            pcts = pt$pictures, 
+            tags = pt$tags, 
+            dir = pt$dir, 
+            tile_size = TILE_SIZE, 
+            icon_size = ICON_SIZE
+          ), parent = parent.frame())
+          
+          eval(avatar_expression, envir = eval_env)
+          return(TRUE)
+        }
 
-        m
       })
 
       shiny::observe({

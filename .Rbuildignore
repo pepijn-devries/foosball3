@@ -8,3 +8,6 @@
 ^_pkgdown\.yml$
 ^docs$
 ^\.github$
+^docs-src$
+^\.quarto$
+^_quarto\.yml$

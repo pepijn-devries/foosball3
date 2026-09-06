@@ -8,7 +8,7 @@
 foosball3 <- function(...) {
   suggests <- utils::packageDescription("foosball3")$Suggests |>
     strsplit(",\n", perl = TRUE) |> unlist()
-  
+  suggests <- suggests[suggests != "mirai"]
   state <- lapply(suggests, requireNamespace) |> unlist()
   if (all(state)) {
     appdir <- system.file("foosball3", package = "foosball3")

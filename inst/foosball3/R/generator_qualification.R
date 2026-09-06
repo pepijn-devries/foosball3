@@ -45,14 +45,34 @@ qualGeneratorServer <- function(id, matches, btnStart) {
           unlink(progress_file, TRUE, TRUE)
         }, error = \(e) NULL)
         
-        m <- mirai::mirai({
-          
+        generator_expression <- quote({
           progress_fun <- \(frac) {
             writeLines(as.character(frac), pgf)
           }
           foosball3::foosball3_generate_matches(pt, tp, ph, opt, progress_fun)
-        }, pt = participants, tp = type, ph = phase, opt = options, pgf = progress_file)
-        m
+        })
+        
+        if (requireNamespace("mirai", quietly = TRUE)) {
+          m <- mirai::mirai(
+            generator_expression,
+            pt  = participants,
+            tp  = type,
+            ph  = phase,
+            opt = options,
+            pgf = progress_file)
+          return(m)
+        } else {
+          eval_env <- list2env(list(
+            pt  = participants,
+            tp  = type,
+            ph  = phase,
+            opt = options,
+            pgf = progress_file
+          ), parent = parent.frame())
+          
+          eval(avatar_expression, envir = eval_env)
+          return(TRUE)
+        }
       })
       
       validator <-
