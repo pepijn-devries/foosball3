@@ -1,19 +1,3 @@
-`!!` <- rlang::`!!`
-`!!!` <- rlang::`!!!`
-`:=` <- rlang::`:=`
-.data <- rlang::`.data`
-
-nav_switch <- function(id, icon_name, label, value = TRUE, right = TRUE, width = "150px") {
-  bslib::nav_item(
-    div(
-      class = "px-3",
-      onclick = "event.stopPropagation();",
-      shinyWidgets::materialSwitch(
-        id, shiny::span(bsicons::bs_icon(icon_name), label),
-        value = value, right = right, width = width)
-    )
-  )
-}
 
 ui <- bslib::page_navbar(
   title = "Foosball 3.0",
