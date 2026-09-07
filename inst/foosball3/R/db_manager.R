@@ -101,6 +101,13 @@ dbManagerServer <- function(id) {
             ## Honour foreign key constraints:
             RSQLite::dbExecute(con, "PRAGMA foreign_keys = ON;")
             RSQLite::dbExecute(con, "PRAGMA busy_timeout = 10000;")
+            if (requireNamespace("mirai", quietly = TRUE)) {
+              ## If we use mirai, we need to handle concurrent db access
+              RSQLite::dbExecute(con, "PRAGMA journal_mode = WAL;")
+            } else {
+              RSQLite::dbExecute(con, "PRAGMA journal_mode = MEMORY;")
+              RSQLite::dbExecute(con, "PRAGMA synchronous = OFF;")
+            }
             con
           }
         )

@@ -1,4 +1,3 @@
-PRAGMA journal_mode=WAL;
 PRAGMA user_version=1;
 CREATE TABLE pictures( --- Optional pictures of the tournament. Ideal for group photo's which are used for generating avatars.
   PICTURE_ID INTEGER PRIMARY KEY NOT NULL, --- Unique identifier for each picture.
