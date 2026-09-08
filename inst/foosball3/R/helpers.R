@@ -3,6 +3,9 @@
 `:=` <- rlang::`:=`
 .data <- rlang::`.data`
 
+if (requireNamespace("mirai", quietly = TRUE))
+  mirai::daemons(2)
+
 nav_switch <- function(id, icon_name, label, value = TRUE, right = TRUE, width = "150px") {
   bslib::nav_item(
     div(
