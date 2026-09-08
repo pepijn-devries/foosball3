@@ -12,6 +12,27 @@ Install latest developmental version from R-Universe:
 install.packages("foosball3", repos = c('https://pepijn-devries.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
+If you want to use the graphical user interface, make sure to install
+all suggested packages as well.
+
+``` r
+
+library(foosball3)
+
+if (!foosball3_suggests_ok()) {
+  foosball3_install_suggests()
+}
+```
+
+## Example
+
+To start the graphical user interface just call:
+
+``` r
+
+foosball3()
+```
+
 ## Code of Conduct
 
 Please note that the foosball3 project is released with a [Contributor
