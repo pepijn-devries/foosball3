@@ -3,12 +3,20 @@ pictureUI <- function(id) {
   shiny::uiOutput(ns("picture"))
 }
 
-pictureServer <- function(id, tournament) {
+pictureServer <- function(id, tournament, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
       ns <- session$ns
+      face_click <- shiny::reactiveVal()
       
+      shiny::observeEvent(input$faceclick, {
+        face_click(input$faceclick)
+      }, ignoreNULL = TRUE, ignoreInit = TRUE)
+      shiny::observeEvent(avatars()$click, {
+        face_click(avatars()$click)
+      }, ignoreNULL = TRUE, ignoreInit = TRUE)
+
       output$picture <- renderUI({
         tnmt <- tournament()
         id <- tnmt$selected$TOURNAMENT_ID
@@ -85,7 +93,7 @@ pictureServer <- function(id, tournament) {
         return(result)
       })
       
-      return(shiny::reactive({ input$faceclick }))
+      return(face_click)
     }
   )
 }

@@ -141,12 +141,11 @@ avatarServer <- function(id, db) {
       
       return(
         shiny::reactive({
-          click <- input$face_click #TODO doesn't work
           status <- avatar_generator$status()
           if (status == "success") {
             pt <- get_picture_tags()
             list(
-              click = click,
+              click = input$face_click,
               tagged_persons = get_tagged_persons(),
               get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
                 my_class = paste0("foosball-avatar",
@@ -175,7 +174,7 @@ avatarServer <- function(id, db) {
             )
           } else {
             list(
-              click = click,
+              click = input$face_click,
               tagged_persons = get_tagged_persons(),
               get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
                 my_class = paste0("foosball-avatar",

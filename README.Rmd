@@ -24,8 +24,27 @@ and visualise match results and player statistics.
 
 Install latest developmental version from R-Universe:
 
-``` r
+``` {r install, eval=FALSE}
 install.packages("foosball3", repos = c('https://pepijn-devries.r-universe.dev', 'https://cloud.r-project.org'))
+```
+
+If you want to use the graphical user interface, make sure to install
+all suggested packages as well.
+
+``` {r suggests, eval=FALSE}
+library(foosball3)
+
+if (!foosball3_suggests_ok()) {
+  foosball3_install_suggests()
+}
+```
+
+## Example
+
+To start the graphical user interface just call:
+
+```{r example, eval=FALSE}
+foosball3()
 ```
 
 ## Code of Conduct

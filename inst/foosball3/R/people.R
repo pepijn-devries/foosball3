@@ -20,7 +20,7 @@ peopleUI <- function(id) {
   )
 }
 
-peopleServer <- function(id, tournaments, avatars) {
+peopleServer <- function(id, tournaments, avatars, picture) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -32,12 +32,16 @@ peopleServer <- function(id, tournaments, avatars) {
         shiny::req(mod_peop_pick())
         
         list(
-          update = function(val) {
-            mod_peop_pick()$update(val)
+          add = function(val) {
+            mod_peop_pick()$add(val)
           },
           id = mod_peop_pick()$id
         )
       })
+      
+      shiny::observeEvent(picture(), {
+        mod_peop_pick()$select(picture()$id)
+      }, ignoreNULL = TRUE, ignoreInit = TRUE)
       
       mod_peop_rec <-
         recordServer("mod_peop_rec", tournaments, record_pick, "persons")

@@ -1,23 +1,7 @@
-`!!` <- rlang::`!!`
-`!!!` <- rlang::`!!!`
-`:=` <- rlang::`:=`
-.data <- rlang::`.data`
-
-nav_switch <- function(id, icon_name, label, value = TRUE, right = TRUE, width = "150px") {
-  bslib::nav_item(
-    div(
-      class = "px-3",
-      onclick = "event.stopPropagation();",
-      shinyWidgets::materialSwitch(
-        id, shiny::span(bsicons::bs_icon(icon_name), label),
-        value = value, right = right, width = width)
-    )
-  )
-}
 
 ui <- bslib::page_navbar(
   title = "Foosball 3.0",
-  
+  id = "nav_main",
   header = shiny::tagList(
     newsUI("mod_news"),
     shinyjs::useShinyjs(),
@@ -42,7 +26,7 @@ ui <- bslib::page_navbar(
                    icon = bsicons::bs_icon("database")),
   bslib::nav_panel("Records",          recordsUI("mod_recs"),
                    icon = bsicons::bs_icon("table")),
-  bslib::nav_panel("Tournaments",      tournamentUI("mod_tournament"),
+  bslib::nav_panel("Tournaments",      tournamentUI("mod_tournament", pictureUI("mod_picture")),
                    icon = bsicons::bs_icon("trophy-fill")),
   bslib::nav_panel("Matches",          matchesUI("mod_matches"),
                    icon = bsicons::bs_icon("hammer")),
@@ -64,13 +48,14 @@ server <- function(input, output, session) {
   mod_db         <-  dbManagerServer("mod_db")
   mod_avatar     <-     avatarServer("mod_avatar",     mod_db)
   mod_tournament <- tournamentServer("mod_tournament", mod_db, mod_avatar)
+  mod_picture    <-    pictureServer("mod_picture",    mod_tournament, mod_avatar)
   mod_matches    <-    matchesServer("mod_matches",    mod_tournament, mod_avatar)
   mod_news       <-       newsServer("mod_news",       mod_matches, mod_avatar,
                                      shiny::reactive({ input$checkNews }))
   mod_timer      <-      timerServer("mod_timer",      mod_tournament, mod_matches,
                                      shiny::reactive({ input$checkTimer }))
   mod_coin       <-       coinServer("mod_coin",       shiny::reactive({ input$checkCoin }))
-  mod_peops      <-     peopleServer("mod_peops",      mod_tournament, mod_avatar)
+  mod_peops      <-     peopleServer("mod_peops",      mod_tournament, mod_avatar, mod_picture)
   mod_recs       <-    recordsServer("mod_recs",       mod_tournament)
   
   shiny::observe({
@@ -79,8 +64,8 @@ server <- function(input, output, session) {
     )
   })
   
-  shiny::observeEvent(mod_tournament()$face_click, {
-    mod_tournament()$face_click #TODO
+  shiny::observeEvent(mod_picture(), {
+    bslib::nav_select("nav_main", "People") ##TODO update selection there
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
 }
