@@ -4,19 +4,15 @@
 #' to interact with a Foosball SQLite database.
 #' @param ... Ignored
 #' @returns Returns `NULL` invisibly.
+#' @include suggests.R
 #' @export
 foosball3 <- function(...) {
-  suggests <- utils::packageDescription("foosball3")$Suggests |>
-    strsplit(",\n", perl = TRUE) |> unlist()
-  suggests <- suggests[suggests != "mirai"]
-  state <- lapply(suggests, requireNamespace) |> unlist()
-  if (all(state)) {
+  if (foosball3_suggests_ok()) {
     appdir <- system.file("foosball3", package = "foosball3")
     shiny::runApp(appDir = appdir, ...)
   } else {
     stop(
-      sprintf("Install required packages and try again: %s",
-              paste(suggests[!state], collapse = ", "))
+      "Not all required suggests available. Call `foosball3_install_suggests()` and try again."
     )
   }
 }
