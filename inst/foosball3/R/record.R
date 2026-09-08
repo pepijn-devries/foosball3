@@ -221,7 +221,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             in_place = TRUE,
             copy = TRUE
           )
-          record_picker()$update(edited_row[[pk]])
+          record_picker()$add(edited_row[[pk]])
         }, error = \(e) {
           shinyWidgets::show_alert( "Failed to Save Record", strip_ansi(e$parent$message),
                                     "error" )
@@ -238,7 +238,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             sprintf("DELETE FROM %s WHERE %s = '%s'",
                     table_name, get_primary_key_global(table_name), record_picker()$id
             ))
-          record_picker()$update(NA)
+          record_picker()$add(NA)
         }, error = \(e) {
           shinyWidgets::show_alert( "Failed to Delete Record",
                                     strip_ansi(e$message), "error" )

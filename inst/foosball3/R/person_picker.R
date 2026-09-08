@@ -77,7 +77,7 @@ personPickerServer <- function(
         validator$enable()
       }
       
-      get_selected_peop <- reactive({
+      get_selected_peop <- shiny::reactive({
         np <- new_peops()
         peops <- get_people()
         current <- input$selectPeople
@@ -137,9 +137,18 @@ personPickerServer <- function(
         }
       })
       
-      update_fun <- function(val) {
-        if (length(val) >0) new_peops(val)
-        tournaments()$trigger_update()
+      add_fun <- function(val) {
+        if (length(val) > 0) new_peops(as.character(val))
+        tournaments()$trigger_refresh()
+      }
+
+      select_fun <- function(val) {
+        val <- as.character(val)
+        if (val %in% get_options() && !identical(val, input$selectPeople)) {
+          shinyWidgets::updateVirtualSelect(
+            "selectPeople", selected = val, session = session
+          )
+        }
       }
       
       shiny::observeEvent(list(get_people(), avatars(), init()), {
@@ -148,8 +157,9 @@ personPickerServer <- function(
 
       result <- shiny::reactive({
         list(
-          update = update_fun,
-          id = get_selected_peop(),
+          add    = add_fun,
+          select = select_fun,
+          id     = get_selected_peop(),
           id_all = input$selectPeople
         )
       })

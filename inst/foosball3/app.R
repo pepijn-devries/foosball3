@@ -55,7 +55,7 @@ server <- function(input, output, session) {
   mod_timer      <-      timerServer("mod_timer",      mod_tournament, mod_matches,
                                      shiny::reactive({ input$checkTimer }))
   mod_coin       <-       coinServer("mod_coin",       shiny::reactive({ input$checkCoin }))
-  mod_peops      <-     peopleServer("mod_peops",      mod_tournament, mod_avatar)
+  mod_peops      <-     peopleServer("mod_peops",      mod_tournament, mod_avatar, mod_picture)
   mod_recs       <-    recordsServer("mod_recs",       mod_tournament)
   
   shiny::observe({
