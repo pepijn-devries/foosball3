@@ -1,6 +1,6 @@
 tournament_label <- "Tournament Details"
 
-tournamentUI <- function(id) {
+tournamentUI <- function(id, picUI) {
   ns <- shiny::NS(id)
   bslib::navset_card_tab(
     full_screen = TRUE,
@@ -44,7 +44,7 @@ tournamentUI <- function(id) {
                   bslib::card(
                     full_screen = TRUE,
                     bslib::card_body(
-                      pictureUI(ns("mod_picture"))
+                      picUI
                     )
                   )
                 )
@@ -69,11 +69,6 @@ tournamentServer <- function(id, db, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      face_click <- shiny::reactiveVal()
-      
-      mod_picture <- pictureServer("mod_picture", get_it_all)
-      shiny::observe({ face_click(mod_picture()) })
-      shiny::observe({ face_click(avatars()$click) })
       
       wait_for_update      <- shiny::reactiveVal()
       edit_mode            <- shiny::reactiveVal()
@@ -128,7 +123,6 @@ tournamentServer <- function(id, db, avatars) {
       
       get_it_all <- shiny::reactive({
         list(
-          face_click      = face_click(),
           state           = tournament_update(),
           trigger_refresh = trigger_refresh,
           tournaments     = get_tournaments(),
