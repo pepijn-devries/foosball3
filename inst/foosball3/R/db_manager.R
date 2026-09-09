@@ -9,6 +9,9 @@ dbManagerUI <- function(id) {
       bslib::card_header( "Database menu" ),
       bslib::card_body(
         shiny::fileInput(ns("uploadSQLite"), "Upload SQLite"),
+        shiny::selectInput(
+          ns("selectFormat"), "Download format",
+          c(SQLite = ".sqlite", `Zipped csv files` = ".zip"), ".sqlite"),
         shiny::downloadButton(ns("downloadSQLite"))
       )
     ),
@@ -85,10 +88,14 @@ dbManagerServer <- function(id) {
       
       output$downloadSQLite <- shiny::downloadHandler(
         \() {
-          sprintf("foosball %s.sqlite", Sys.time())
+          sprintf("foosball %s.%s", Sys.time(), input$selectFormat)
         },
         \(filename) {
-          file.copy(database()$path, filename)
+          if (input$selectFormat == ".zip") {
+            foosball3::foosball3_export(database()$path, filename)
+          } else {
+            file.copy(database()$path, filename)
+          }
         }
       )
 

@@ -2,6 +2,7 @@
 
 export(foosball3)
 export(foosball3_create_db)
+export(foosball3_export)
 export(foosball3_generate_matches)
 export(foosball3_import_db)
 export(foosball3_install_suggests)
