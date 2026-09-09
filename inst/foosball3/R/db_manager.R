@@ -8,7 +8,7 @@ dbManagerUI <- function(id) {
     bslib::card(
       bslib::card_header( "Database menu" ),
       bslib::card_body(
-        shiny::fileInput(ns("uploadSQLite"), "Upload SQLite"),
+        shiny::fileInput(ns("uploadSQLite"), "Upload SQLite or zip"),
         shiny::selectInput(
           ns("selectFormat"), "Download format",
           c(SQLite = ".sqlite", `Zipped csv files` = ".zip"), ".sqlite"),

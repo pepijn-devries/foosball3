@@ -7,7 +7,9 @@
 foosball3_import_db(file, target, ...)
 }
 \arguments{
-\item{file}{TODO}
+\item{file}{An SQLite file or a zipped collection of csv files (created
+with \code{\link[=foosball3_export]{foosball3_export()}}), to be imported into the standardised database
+structure.}
 
 \item{target}{Target file path where the clean database will be stored.
 Existing files at this location may be overwritten.}
