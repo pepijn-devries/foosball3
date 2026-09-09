@@ -39,7 +39,7 @@ invisible `NULL`
 
 ``` r
 foosball3_list_suggests()
-#> [1] "base64enc, bsicons, bslib, DiagrammeRsvg, dm, DT, ggplot2"    
-#> [2] "ggiraph, imager, jsonlite, knitr, lubridate, mirai, shinybusy"
-#> [3] "shinyjs, shinyvalidate, shinyWidgets"                         
+#> [1] "base64enc, bsicons, bslib, DiagrammeRsvg, dm, DT, ggplot2"   
+#> [2] "ggiraph, imager, jsonlite, knitr, lubridate, mirai, promises"
+#> [3] "shinybusy, shinyjs, shinyvalidate, shinyWidgets"             
 ```
