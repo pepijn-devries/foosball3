@@ -38,9 +38,11 @@ matchesServer <- function(id, tournament, avatars) {
       phases <- NULL
       mod_match <- matchServer("mod_match", get_selected_match, avatars)
       mod_gen   <- matchGeneratorServer("mod_gen", get_selected_match)
-      
+
       shiny::observe({
-        mod_match() #TODO
+        ## We nee to observer mod_match() here to ensure that changes
+        ## to the scores are stored
+        mod_match()
         shiny::req(input$selectPhase)
         tnmt <- tournament()
         con <- tnmt$database$connect()
@@ -135,7 +137,6 @@ matchesServer <- function(id, tournament, avatars) {
       })
 
       get_selected_match <- shiny::reactive({
-        # shiny::req(input$selectMatch) #TODO this blocks a lot of triggers
         list(
           tournament     = tournament(),
           matches        = matches_cache(),

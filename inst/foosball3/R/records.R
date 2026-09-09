@@ -41,7 +41,7 @@ recordsServer <- function(id, tournaments) {
             if (!missing(val) && !is.null(val)) {
               new_record_id(val)
             }
-            tournaments()$trigger_refresh() #TODO
+            tournaments()$trigger_refresh()
           }
         )
       })
@@ -71,7 +71,7 @@ recordsServer <- function(id, tournaments) {
         }
       })
 
-      shiny::observe({ #TODO
+      shiny::observe({
         new_id  <- shiny::isolate(new_record_id())
         current <- shiny::isolate(input$selectRecord)
         opts <- options_cache()
@@ -92,7 +92,7 @@ recordsServer <- function(id, tournaments) {
       
       observe({
         for (nm in names(rec_servers)) {
-          rec_servers[[nm]]() #TODO for now just observing all input widgets
+          rec_servers[[nm]]()
         }
       })
       
