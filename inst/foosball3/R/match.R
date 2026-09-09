@@ -38,6 +38,12 @@ matchServer <- function(id, match, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      announce_lang <- "EN"
+      dictionary <-
+        data.frame(
+          lang = c("EN", "NL", "DE", "FR"),
+          and = c("and", "en", "und", "et"),
+          vs = c("versus", "versus", "gegen", "contre"))
 
       mod_side_1 <- matchSideServer("mod_side_1", match, 1L, avatars)
       mod_side_2 <- matchSideServer("mod_side_2", match, 2L, avatars)
@@ -53,14 +59,18 @@ matchServer <- function(id, match, avatars) {
         msg <- if (nrow(m) == 0) {
           "Select a match first"
         } else {
-          coupling1 <- "en" #TODO depend on language
-          coupling2 <- "versus"  #TODO depend on language
+          coupling1 <-
+            dictionary |> dplyr::filter(lang == !!announce_lang) |>
+            dplyr::pull("and")
+          coupling2 <-
+            dictionary |> dplyr::filter(lang == !!announce_lang) |>
+            dplyr::pull("vs")
           paste(m$PLAYER_DEFENSE_1, coupling1, m$PLAYER_STRIKE_1, coupling2,
                 m$PLAYER_STRIKE_2, coupling1, m$PLAYER_DEFENSE_2)
         }
         shinyjs::js$announce(
           speech = msg,
-          lang = "EN",
+          lang = announce_lang,
           pitch = 0.9,
           rate = 0.8
         )

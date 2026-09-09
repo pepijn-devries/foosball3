@@ -252,7 +252,7 @@ tournamentServer <- function(id, db, avatars) {
             "Can't Edit",
             "Please select a tournament first",
             type = "error")
-        } else if (sel$TOURNAMENT_STATE_CODE != "ACT") { # TODO ignore while testing
+        } else if (sel$TOURNAMENT_STATE_CODE != "ACT") {
           shinyWidgets::show_alert(
             "Can't Edit",
             "Can't edit a tournament when it is not active",

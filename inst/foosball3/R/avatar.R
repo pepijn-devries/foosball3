@@ -11,21 +11,41 @@ avatarServer <- function(id, db) {
     base64enc::dataURI(dat, mime = "image/png")
   }) |>
     stats::setNames(c("icon", "tile"))
-  
+
   shiny::moduleServer(
     id,
     function(input, output, session) {
       ns <- session$ns
+      current_generator <- NULL
+      new_job <- shiny::reactiveVal()
 
-      shiny::observeEvent(get_picture_tags(), {
-        if (avatar_generator$status() == "running") {
-          bslib::hide_toast(ns("avatar_progress"))
-          browser() #TODO stop process if old on is still running
+      progress_bar <- function(nf, nt) {
+        if (missing(nf)) {
+          shinyjs::js$progressbar(
+            id = ns("avatar_progress"), percent = 100, text = "Done.")
+        } else {
+          perc <- as.integer(100*nf/nt)
+          shinyjs::js$progressbar(
+            id = ns("avatar_progress"),
+            percent = perc,
+            text = sprintf("Generated %i of %i avatar files", nf, nt)
+          )
         }
-        avatar_generator$invoke(get_picture_tags())
-        
+      }
+      
+      shiny::observeEvent(get_picture_tags(), {
+        delay <- 0
+        if (avatar_generator$status() == "running") {
+          progress_bar(0, 1)
+          m <- current_generator
+          if (requireNamespace("mirai", quietly = TRUE) && mirai::is_mirai(m)) {
+            delay <- 10
+            mirai::stop_mirai(m)
+          }
+        }
+        new_job(get_picture_tags())
         foosball_progress(ns("avatar_progress"), "Initiating avatars...")
-
+        
       })
       
       get_picture_tags <- shiny::reactive({
@@ -50,7 +70,7 @@ avatarServer <- function(id, db) {
       })
       
       avatar_generator <- shiny::ExtendedTask$new(\(pt) {
-        unlink(file.path(pt$dir, "*"))
+          unlink(file.path(pt$dir, "*"))
         avatar_expression <- quote({
           for (picid in pcts$PICTURE_ID) {
             pic <- as.list(pcts[pcts$PICTURE_ID == picid,])
@@ -86,13 +106,22 @@ avatarServer <- function(id, db) {
             dir = pt$dir,
             tile_size = TILE_SIZE,
             icon_size = ICON_SIZE)
+          current_generator <<- m
+          m <- promises::catch(m, onRejected = function(e) {
+            current_generator <<- NULL
+            if (grepl("Operation canceled", e$message)) {
+              shiny::req(FALSE) 
+            } else {
+              stop(e)
+            }
+          })
           return(m)
         } else {
           
           eval_env <- list2env(list(
             pcts = pt$pictures, 
             tags = pt$tags, 
-            dir = pt$dir, 
+            dir = pt$dir,
             tile_size = TILE_SIZE, 
             icon_size = ICON_SIZE
           ), parent = parent.frame())
@@ -104,21 +133,30 @@ avatarServer <- function(id, db) {
       })
 
       shiny::observe({
+        if (is.null(current_generator) &&
+            !is.null(new_job()) &&
+            avatar_generator$status() != "running") {
+          ## This may show a warning message in the console,
+          ## when an old running task was cancelled in favour of this one
+          avatar_generator$invoke(new_job())
+          new_job(NULL)
+        } else {
+          shiny::invalidateLater(50)
+        }
+      })
+      
+      shiny::observe({
         if (avatar_generator$status() == "running") {
           pt <- get_picture_tags()
           tot_files <- pt$tags |> nrow()
           n_files <- as.integer(length(list.files(pt$dir))/2)
           if (tot_files > 0) {
-            perc <- as.integer(100*n_files/tot_files)
-            shinyjs::js$progressbar(
-              id = ns("avatar_progress"),
-              percent = perc,
-              text = sprintf("Generated %i of %i avatar files", n_files, tot_files)
-            )
+            progress_bar(n_files, tot_files)
             shiny::invalidateLater(2000)
-
           }
-        } else {
+        } else if (avatar_generator$status() == "success") {
+          current_generator <<- NULL
+          progress_bar()
           bslib::hide_toast(ns("avatar_progress"))
         }
       })

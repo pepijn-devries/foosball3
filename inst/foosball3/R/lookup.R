@@ -1,4 +1,4 @@
-lookupUI <- function(id, label, placeholder = "") { #TODO use this placeholder
+lookupUI <- function(id, label, placeholder = "") {
   ns <- shiny::NS(id)
   settings <- list(
     placeholder = placeholder,
@@ -37,22 +37,6 @@ lookupServer <- function(id, label, tournaments, table, fmt = "%s", validator = 
           choices_cache(opts)
         }
       })
-      
-      # shiny::observeEvent(choices_cache(), { #TODO
-      #   shiny::updateSelectizeInput(
-      #     session = session,
-      #     inputId = "selectLookup",
-      #     choices = choices_cache()
-      #   )
-      # }, ignoreInit = FALSE, ignoreNULL = FALSE)
-      # 
-      # shiny::observeEvent(selected_cache(), {
-      #   shiny::updateSelectizeInput(
-      #     session = session,
-      #     inputId = "selectLookup",
-      #     selected = selected_cache()
-      #   )
-      # }, ignoreInit = TRUE)
       
       shiny::observe({
         opts <- choices_cache()

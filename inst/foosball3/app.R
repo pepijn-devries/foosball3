@@ -1,4 +1,3 @@
-
 ui <- bslib::page_navbar(
   title = "Foosball 3.0",
   id = "nav_main",
@@ -65,7 +64,7 @@ server <- function(input, output, session) {
   })
   
   shiny::observeEvent(mod_picture(), {
-    bslib::nav_select("nav_main", "People") ##TODO update selection there
+    bslib::nav_select("nav_main", "People")
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
 }
