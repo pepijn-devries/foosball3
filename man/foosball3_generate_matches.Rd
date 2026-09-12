@@ -29,7 +29,34 @@ player play in variable team compositions, but for individual results.}
 individuals can collect points individually to qualify for the semi finals.}
 
 \item{options}{Options used for generating the matches. It can be used to
-tweak the effort for balancing matches for player experience.}
+tweak the effort for balancing matches for player experience.
+
+For \code{"individual"} tournaments the following options are available,
+for generating qualifying matches:
+\itemize{
+\item \code{nsim}: Number of simulated tournaments, from which to pick
+a suitable configuration. Given the constraint
+that all players play the same number of matches on each of
+the positions of the table.
+\item \code{revolutions}: Number of times players play on each position of the
+table during the qualification.
+\item \code{weights}: A named list of weights used for selecting suitable
+tournaments from simulated permutations.
+}
+
+The \code{weights} list should contain the following numeric weights scaled between
+0 (not applied) and 1 (fully applied):
+\itemize{
+\item \code{teamup}: Avoid that specific duos team up frequently
+\item \code{opposing}: Avoid that specific duos oppose each other frequently
+\item \code{match_var}: Minimise variation in predicted match results (based on historical performance)
+\item \code{match_bal}: Ensure mean matches are balanced
+\item \code{match_bal_var}: Minimise variance balance in matches
+\item \code{match_bal_extr}: Avoid extreme unbalance in matches
+\item \code{part_bal}: Ensure mean balance of participants
+\item \code{part_bal_var}: Minimise variance in participants balance
+\item \code{part_bal_extr}: Avoid extremes in participants balance
+}}
 
 \item{progress}{A callback function for reporting progress. It needs to be
 a function that accepts 1 numeric argument. It is called by the generator,
