@@ -8,7 +8,7 @@ foosball3_import_db(file, target, ...)
 }
 \arguments{
 \item{file}{An SQLite file or a zipped collection of csv files (created
-with \code{\link[=foosball3_export]{foosball3_export()}}), to be imported into the standardised database
+with \code{\link[=foosball3_export_db]{foosball3_export_db()}}), to be imported into the standardised database
 structure.}
 
 \item{target}{Target file path where the clean database will be stored.
@@ -26,6 +26,15 @@ of the database (using \code{\link[=foosball3_create_db]{foosball3_create_db()}}
 complies with the latest database scheme specification used by this package.
 }
 \examples{
-# TODO
+tf <- tempfile()
+export <- tempfile(fileext = ".zip")
+import <- tempfile()
+foosball3_create_db(tf)
+foosball3_export_db(tf, export)
+foosball3_import_db(export, import)
 
+# Clean up example files
+unlink(tf, TRUE, TRUE)
+unlink(export, TRUE, TRUE)
+unlink(import, TRUE, TRUE)
 }

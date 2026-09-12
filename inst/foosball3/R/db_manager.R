@@ -92,7 +92,7 @@ dbManagerServer <- function(id) {
         },
         \(filename) {
           if (input$selectFormat == ".zip") {
-            foosball3::foosball3_export(database()$path, filename)
+            foosball3::foosball3_export_db(database()$path, filename)
           } else {
             file.copy(database()$path, filename)
           }

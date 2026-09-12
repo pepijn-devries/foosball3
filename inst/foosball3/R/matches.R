@@ -23,6 +23,10 @@ matchesUI <- function(id) {
       bslib::nav_panel(
         "Generate Matches", matchGeneratorUI(ns("mod_gen")),
         icon = bsicons::bs_icon("database-fill-gear")
+      ),
+      bslib::nav_panel(
+        "Penalties", penaltyUI(ns("mod_penal")),
+        icon = bsicons::bs_icon("heartbreak-fill")
       )
     )
   )
@@ -38,7 +42,8 @@ matchesServer <- function(id, tournament, avatars) {
       phases <- NULL
       mod_match <- matchServer("mod_match", get_selected_match, avatars)
       mod_gen   <- matchGeneratorServer("mod_gen", get_selected_match)
-
+      mod_penal <- penaltyServer("mod_penal", tournament, avatars)
+      
       shiny::observe({
         ## We nee to observer mod_match() here to ensure that changes
         ## to the scores are stored

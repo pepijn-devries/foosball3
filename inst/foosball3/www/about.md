@@ -19,8 +19,13 @@ called into question. And participant were distrustful of the black box code
 in Visual Basic. A second generation app was developed in R, where code
 was shared with colleagues. But still it was not enough.
 
-This lead up to the third generation app, where a graphical user interface
-was added, allowing to facilitate tournaments and tracking results live.
-The package that you see here is the result of this where the app is bundled
-in a formal package. All fully open source, all code can be found at
+This lead up to the third generation app, backed by a relational database,
+where a graphical user interface was added. It allows to facilitate
+tournaments and tracking results live. The package that you see here is the
+result of this where the app is bundled in a formal package. All fully open
+source, all code can be found at
 [github](https://pepijn-devries.github.io/foosball3/).
+
+After more than a decade, we use the app to organise tournaments at multiple
+locations, multiple tables were worn, multiple champions were celebrated.
+But who's the best player? There's still no agreement on that.

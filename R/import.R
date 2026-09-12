@@ -5,15 +5,24 @@
 #' of the database (using [foosball3_create_db()]), making sure it
 #' complies with the latest database scheme specification used by this package.
 #' @param file An SQLite file or a zipped collection of csv files (created
-#' with [foosball3_export()]), to be imported into the standardised database
+#' with [foosball3_export_db()]), to be imported into the standardised database
 #' structure.
 #' @param target Target file path where the clean database will be stored.
 #' Existing files at this location may be overwritten.
 #' @param ... Ignored
 #' @returns Creates a new clean copy of the database. Returns `NULL` invisibly.
 #' @examples
-#' # TODO
+#' tf <- tempfile()
+#' export <- tempfile(fileext = ".zip")
+#' import <- tempfile()
+#' foosball3_create_db(tf)
+#' foosball3_export_db(tf, export)
+#' foosball3_import_db(export, import)
 #' 
+#' # Clean up example files
+#' unlink(tf, TRUE, TRUE)
+#' unlink(export, TRUE, TRUE)
+#' unlink(import, TRUE, TRUE)
 #' @export
 foosball3_import_db <- function(file, target, ...) {
   foosball3_create_db(target)
@@ -171,7 +180,8 @@ foosball3_import_db <- function(file, target, ...) {
 
 .as_sqlite <- function(object, Class, ...) {
   if ("blob" %in% Class) {
-    object <- blob::as_blob(object)
+    if (length(object) == 0) blob::blob() else
+      object <- blob::as_blob(object)
   } else {
     if (is.character(object) && !all(is.na(object)))
       object[!is.na(object) & object == ""] <- NA_character_
