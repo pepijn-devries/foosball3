@@ -20,11 +20,6 @@ matchUI <- function(id) {
         shiny::actionButton(ns("btnAnnounce"), bsicons::bs_icon("megaphone-fill")),
         "Announce match players",
         options = opts, placement = "auto"
-      ),
-      bslib::tooltip(
-        shiny::actionButton(ns("btnPenalty"), bsicons::bs_icon("heartbreak-fill")),
-        "Assign penalty points to a player",
-        options = opts, placement = "auto"
       )
     ),
     bslib::layout_columns(
@@ -38,6 +33,7 @@ matchServer <- function(id, match, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      ns <- session$ns
       announce_lang <- "EN"
       dictionary <-
         data.frame(
@@ -83,10 +79,6 @@ matchServer <- function(id, match, avatars) {
 
       shiny::observeEvent(input$btnDown, {
         match()$move_match(list(direction = 1L, button = input$btnDown))
-      })
-      
-      shiny::observeEvent(input$btnPenalty, {
-        #TODO
       })
       
       return(

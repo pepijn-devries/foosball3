@@ -1,15 +1,16 @@
-personPickerUI <- function(id, ...) {
+personPickerUI <- function(id, ..., dropboxWrapper = "card") {
   ns <- shiny::NS(id)
   shinyWidgets::virtualSelectInput(
     ns("selectPeople"), ..., choices = character(0),
     caseInsensitiveMatching = TRUE,
     position = "bottom", noOfDisplayValues = 3,
-    dropboxWrapper = "card" , zIndex = 1000L,
+    dropboxWrapper = dropboxWrapper, zIndex = 2000L,
     search = TRUE, html = TRUE, showValueAsTags = TRUE)
 }
 
 personPickerServer <- function(
-    id, tournaments, init, avatars, validator, min_required = 0L) {
+    id, tournaments, init, avatars, validator, min_required = 0L,
+    this_tournament_only = FALSE) {
   
   shiny::moduleServer(
     id,
@@ -20,12 +21,30 @@ personPickerServer <- function(
       is_initialising     <- shiny::reactiveVal()
       new_peops           <- shiny::reactiveVal()
 
+      get_people_unfiltered <- shiny::reactive({
+        con <- tournaments()$database$connect()
+        on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+        peops <- dplyr::tbl(con, "persons") |>
+          dplyr::collect()
+      })
+      
       get_people <-
         shiny::reactive({
-          con <- tournaments()$database$connect()
-          on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
-          dplyr::tbl(con, "persons") |>
-            dplyr::collect()
+          peops <- get_people_unfiltered()
+          if (this_tournament_only) {
+            con <- tournaments()$database$connect()
+            on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+            id <- tournaments()$selected$TOURNAMENT_ID
+            if (length(id) == 0) id <- -1L
+            current <-
+              dplyr::tbl(con, "participants") |>
+              dplyr::filter(.data$TOURNAMENT_ID == !!id) |>
+              dplyr::pull(PERSON_ID)
+            peops <-
+              peops |>
+              dplyr::filter(.data$PERSON_ID %in% !!current)
+          }
+          peops
         })
       
       shiny::observeEvent(init(), {
@@ -78,16 +97,29 @@ personPickerServer <- function(
       }
       
       get_selected_peop <- shiny::reactive({
-        np <- new_peops()
         peops <- get_people()
         current <- input$selectPeople
         id_match   <- match(input$selectPeople, as.character(peops$PERSON_ID))
         name_match <- match(tolower(input$selectPeople),
                             tolower(as.character(peops$PERSON_NAME)))
+        stats::na.omit(c(id_match, name_match))[1]
+      })
+
+      shiny::observeEvent(input$selectPeople, {
+        peops <- get_people_unfiltered()
+        current <- input$selectPeople
+        id_match   <- match(input$selectPeople, as.character(peops$PERSON_ID))
+        name_match <- match(tolower(input$selectPeople),
+                            tolower(as.character(peops$PERSON_NAME)))
         new_peops <- input$selectPeople[is.na(name_match) & is.na(id_match)]
-        is_valid <- is.null(validator) ||
-          !any(grepl("numerics", validator$validate()[[ns("selectPeople")]]$message))
-        if (length(new_peops) == 1 && is_valid && new_peops != "") {
+        if (length(new_peops) > 0) add_fun(new_peops) else {
+          select_fun(stats::na.omit(c(id_match, name_match)))
+        }
+      }, ignoreNULL = TRUE, ignoreInit = TRUE)
+
+      shiny::observeEvent(new_peops(), {
+        np <- new_peops()
+        if (!is.null(np)) {
           con <- tournaments()$database$connect()
           on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
           new_row <-
@@ -96,20 +128,20 @@ personPickerServer <- function(
             dplyr::add_row(PERSON_ID = 0L) |>
             dplyr::summarise(
               PERSON_ID = max(.data$PERSON_ID) + 1L,
-              PERSON_NAME = new_peops,
+              PERSON_NAME = np,
               GENDER_CODE = "NS",
               QUALIFICATION_CODE = "H",
               HOME_BASE = NA_character_
             )
-          id_match <- new_row$PERSON_ID
+          new_peops(NULL)
           dplyr::copy_to(
             con, new_row, "persons", append = TRUE
           )
+          select_fun(new_row$PERSON_ID)
           tournaments()$trigger_refresh()
         }
-        stats::na.omit(c(id_match, name_match))[1]
       })
-
+      
       update <- shiny::reactive({
         peops <- get_people()
         
@@ -144,7 +176,8 @@ personPickerServer <- function(
 
       select_fun <- function(val) {
         val <- as.character(val)
-        if (val %in% get_options() && !identical(val, input$selectPeople)) {
+        if (!val %in% get_options()) val <- NA_character_
+        if (!identical(val, input$selectPeople)) {
           shinyWidgets::updateVirtualSelect(
             "selectPeople", selected = val, session = session
           )

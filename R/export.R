@@ -14,13 +14,13 @@
 #' new_db <- tempfile()
 #' foosball3_create_db(new_db)
 #' new_export <- tempfile(fileext = ".zip")
-#' foosball3_export(new_db, new_export)
+#' foosball3_export_db(new_db, new_export)
 #' 
 #' ## Clean up the files created in this example
 #' unlink(new_db, TRUE, TRUE)
 #' unlink(new_export, TRUE, TRUE)
 #' @export
-foosball3_export <- function(source, destination, validate = FALSE, ...) {
+foosball3_export_db <- function(source, destination, validate = FALSE, ...) {
   if (validate) {
     validated_file <- tempfile()
     ## Use import to ensure the source file is valid

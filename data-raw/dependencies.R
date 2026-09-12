@@ -29,6 +29,7 @@ exclude <- c(
 
 deps <- all_deps[!all_deps$Package %in% c(base_pkgs, exclude), ]
 deps <- deps[order(deps$Package, deps$Function),]
+deps$Function <- gsub("`", "", deps$Function)
 
 roxygen_lines <- by(deps, deps$Package, function(sub) {
   pkg <- sub$Package[1]

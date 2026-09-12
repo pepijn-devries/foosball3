@@ -107,3 +107,16 @@ db_schemas_static <-
 RSQLite::dbDisconnect(con)
 unlink(tf, TRUE, TRUE)
 rm(con, tf, db_schema)
+
+md2html <- function(file) {
+  tf <- tempfile(fileext = ".html")
+  on.exit({unlink(tf, TRUE, TRUE)}, add = TRUE)
+  knitr::knit2html(file, tf, quiet = TRUE) |>
+    suppressWarnings()
+  cache_file <- stringr::str_replace_all(basename(file), "\\.[m|M][d|D]$", ".txt")
+  if (file.exists(cache_file)) unlink(cache_file, TRUE, TRUE)
+  readLines(tf) |>
+    paste(collapse = "\n") |>
+    stringr::str_extract("(?s)(?<=<body>).*?(?=</body>)") |>
+    shiny::HTML()
+}

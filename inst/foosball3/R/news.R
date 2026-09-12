@@ -1,6 +1,6 @@
 news_tree     <- readLines("www/data/newstree.json") |>
   jsonlite::fromJSON(FALSE)
-news_messages <-  read.csv("www/data/news.csv")
+news_messages <- utils::read.csv("www/data/news.csv")
 
 newsUI <- function(id) {
   ns <- shiny::NS(id)

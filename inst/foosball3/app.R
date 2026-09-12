@@ -31,7 +31,7 @@ ui <- bslib::page_navbar(
                    icon = bsicons::bs_icon("hammer")),
   bslib::nav_panel("People",           peopleUI("mod_peops"),
                    icon = bsicons::bs_icon("people-fill")),
-  bslib::nav_panel("About",            "TODO",
+  bslib::nav_panel("About",            md2html("www/about.md"),
                    icon = bsicons::bs_icon("info-circle-fill")),
   bslib::nav_menu(
     bsicons::bs_icon("gear-fill"),
