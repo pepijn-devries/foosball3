@@ -8,7 +8,7 @@
 - [`foosball3_create_db()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_create_db.md)
   : Create a New Foosball Database
 
-- [`foosball3_export()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_export.md)
+- [`foosball3_export_db()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_export_db.md)
   : Export an Foosball SQLite Database to csv Format
 
 - [`foosball3_generate_matches()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_generate_matches.md)
