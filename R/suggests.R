@@ -11,7 +11,7 @@
 #' @export
 foosball3_list_suggests <- function(...) {
   utils::packageDescription("foosball3")$Suggests |>
-    strsplit(",\n", perl = TRUE) |> unlist()
+    strsplit(",\\s", perl = TRUE) |> unlist()
 }
 
 .foosball_suggest <- function(ignore, ...) {
