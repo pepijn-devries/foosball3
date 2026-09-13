@@ -9,7 +9,7 @@ given set of participants."><meta property="og:image" content="https://pepijn-de
 
     <a class="navbar-brand me-2" href="../index.html">foosball3</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9013</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,7 +76,27 @@ individuals can collect points individually to qualify for the semi finals.</p><
 
 <dt id="arg-options">options<a class="anchor" aria-label="anchor" href="#arg-options"></a></dt>
 <dd><p>Options used for generating the matches. It can be used to
-tweak the effort for balancing matches for player experience.</p></dd>
+tweak the effort for balancing matches for player experience.</p>
+<p>For <code>"individual"</code> tournaments the following options are available,
+for generating qualifying matches:</p><ul><li><p><code>nsim</code>: Number of simulated tournaments, from which to pick
+a suitable configuration. Given the constraint
+that all players play the same number of matches on each of
+the positions of the table.</p></li>
+<li><p><code>revolutions</code>: Number of times players play on each position of the
+table during the qualification.</p></li>
+<li><p><code>weights</code>: A named list of weights used for selecting suitable
+tournaments from simulated permutations.</p></li>
+</ul><p>The <code>weights</code> list should contain the following numeric weights scaled between
+0 (not applied) and 1 (fully applied):</p><ul><li><p><code>teamup</code>: Avoid that specific duos team up frequently</p></li>
+<li><p><code>opposing</code>: Avoid that specific duos oppose each other frequently</p></li>
+<li><p><code>match_var</code>: Minimise variation in predicted match results (based on historical performance)</p></li>
+<li><p><code>match_bal</code>: Ensure mean matches are balanced</p></li>
+<li><p><code>match_bal_var</code>: Minimise variance balance in matches</p></li>
+<li><p><code>match_bal_extr</code>: Avoid extreme unbalance in matches</p></li>
+<li><p><code>part_bal</code>: Ensure mean balance of participants</p></li>
+<li><p><code>part_bal_var</code>: Minimise variance in participants balance</p></li>
+<li><p><code>part_bal_extr</code>: Avoid extremes in participants balance</p></li>
+</ul></dd>
 
 
 <dt id="arg-progress">progress<a class="anchor" aria-label="anchor" href="#arg-progress"></a></dt>

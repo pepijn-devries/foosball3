@@ -45,6 +45,41 @@ foosball3_generate_matches(
   Options used for generating the matches. It can be used to tweak the
   effort for balancing matches for player experience.
 
+  For `"individual"` tournaments the following options are available,
+  for generating qualifying matches:
+
+  - `nsim`: Number of simulated tournaments, from which to pick a
+    suitable configuration. Given the constraint that all players play
+    the same number of matches on each of the positions of the table.
+
+  - `revolutions`: Number of times players play on each position of the
+    table during the qualification.
+
+  - `weights`: A named list of weights used for selecting suitable
+    tournaments from simulated permutations.
+
+  The `weights` list should contain the following numeric weights scaled
+  between 0 (not applied) and 1 (fully applied):
+
+  - `teamup`: Avoid that specific duos team up frequently
+
+  - `opposing`: Avoid that specific duos oppose each other frequently
+
+  - `match_var`: Minimise variation in predicted match results (based on
+    historical performance)
+
+  - `match_bal`: Ensure mean matches are balanced
+
+  - `match_bal_var`: Minimise variance balance in matches
+
+  - `match_bal_extr`: Avoid extreme unbalance in matches
+
+  - `part_bal`: Ensure mean balance of participants
+
+  - `part_bal_var`: Minimise variance in participants balance
+
+  - `part_bal_extr`: Avoid extremes in participants balance
+
 - progress:
 
   A callback function for reporting progress. It needs to be a function
