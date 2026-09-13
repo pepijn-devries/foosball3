@@ -26,5 +26,5 @@ This will install all suggested packages required to run the graphical
 user interface (\code{\link[=foosball3]{foosball3()}}).
 }
 \examples{
-foosball3_list_suggests()
+foosball3_suggests_ok()
 }

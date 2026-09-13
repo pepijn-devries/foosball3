@@ -32,10 +32,10 @@ foosball3_list_suggests <- function(...) {
 #' @returns A `logical` value, indicating of all required suggests are
 #' available.
 #' @examples
-#' foosball3_list_suggests()
+#' foosball3_suggests_ok()
 #' @export
 foosball3_suggests_ok <- function(ignore = "mirai", ...) {
-  length(.foosball_suggest(ignore, ...) > 0)
+  !(.foosball_suggest(ignore, ...) > 0)
 }
 
 #' Install Packages Suggested by `foosball3`
