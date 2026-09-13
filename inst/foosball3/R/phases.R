@@ -133,9 +133,81 @@ phasesServer <- function(id, tournaments) {
             shiny::showModal()
         }
       })
+
+      match_states <- function(phase) {
+        states <- list()
+        if (length(phase) == 0 || is.na(phase) || phase == "") return(states)
+        con <- tournaments()$database$connect()
+        on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+        for (i in seq_len(length(phase))) {
+          state <-
+            dplyr::tbl(con, "matches_view") |>
+            dplyr::filter(
+              .data$TOURNAMENT_ID %in% !!tournaments()$selected$TOURNAMENT_ID &
+                .data$TOURNAMENT_PHASE %in% !!phase[[i]]
+            ) |>
+            dplyr::collect() |>
+            dplyr::summarise(
+              N_PLAYED =
+                sum(!is.na(.data$SCORE_1)) & all(!is.na(.data$SCORE_2)),
+              MATCH_COMPLETE =
+                all(!is.na(.data$SCORE_1)) & all(!is.na(.data$SCORE_2)),
+              N = dplyr::n()
+            )
+          states[[i]] <- state
+        }
+        states
+      }
+      
+      phase_completed <- function(phase) {
+        st <- match_states(phase)
+        if (length(st) == 0) return(TRUE)
+        lapply(st, \(x) x$MATCH_COMPLETE) |> unlist() |> all()
+      }
+
+      current_completed <- shiny::reactive({
+        ## Tests if all current phase is completed:
+        ## There are matches registered in this phase
+        ## And they all have results
+        phase_completed(input$selectPhase)
+      })
+      
+      previous_completed <- shiny::reactive({
+        ## Tests if all previous required phases were completed:
+        ## There are matches registered in this phase
+        ## And they all have results
+        phs <- get_phases()
+        if (nrow(phs) == 0 || input$selectPhase == "") return(TRUE)
+        current_order <-
+          phs |>
+          dplyr::filter(.data$TOURNAMENT_PHASE == !!input$selectPhase) |>
+          dplyr::pull("PHASE_ORDER")
+        previous_phases <-
+          phs |>
+          dplyr::filter(.data$PHASE_ORDER == (.env$current_order - 1L) &
+                          !.data$IS_OPTIONAL)
+        if (nrow(previous_phases) == 0) return(TRUE)
+        phase_completed(previous_phases$TOURNAMENT_PHASE)
+      })
+      
+      generator_message <- shiny::reactive({
+        sel <- tournaments()$selected
+        if (length(sel) == 0 || !("ACT" %in% sel$TOURNAMENT_STATE_CODE))
+          return("Can only generate matches for active tournaments.")
+        if (!current_completed())
+          return("Matches are already generated for this phase.")
+        if (!previous_completed())
+          return("All required previous tournament phases have to be completed first.")
+        NULL
+      })
       
       return(shiny::reactive({
-        input$selectPhase
+        list(
+          selected            = input$selectPhase,
+          completed           = current_completed(),
+          previouse_completed = previous_completed(),
+          message             = generator_message()
+        )
       }))
     }
   )

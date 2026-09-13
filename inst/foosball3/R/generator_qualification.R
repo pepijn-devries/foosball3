@@ -99,14 +99,7 @@ qualGeneratorServer <- function(id, matches, btnStart) {
       )
       
       shiny::observe({
-        ## TODO
-        # browser() #TODO
-        m <- matches()
-        mod_table()$set_selected(NA)
-      })
-
-      shiny::observe({
-        ##TODO
+        ##TODO lookup settings can't seem to accept empty values
         # browser() #TODO
         m <- matches()
         mod_ball()$set_selected(NA)
@@ -121,17 +114,10 @@ qualGeneratorServer <- function(id, matches, btnStart) {
       
       shiny::observeEvent(btnStart(), {
         sel <- matches()$tournament$selected
-        if (length(sel$TOURNAMENT_ID) == 0 || sel$TOURNAMENT_STATE_CODE != "ACT" ||
-            nrow(matches()$matches) != 0) {
-          shinyWidgets::show_alert(
-            "Can't generate matches",
-            "Can only generate matches for an active tournament without any existing matches",
-            type = "error"
-          )
-        } else if (!validator$is_valid()) {
-          ## TODO messsage seems incomplete
+        if (!validator$is_valid()) {
           msgs <- lapply(validator$validate(), `[[`, "message")
-          msgs <- do.call(tagList, msgs)
+          msgs <- do.call(tagList, msgs) |> unlist() |> unique()
+          msgs <- paste(msgs, collapse = " ")
           shinyWidgets::show_alert(
             "Invalid input",
             msgs,
@@ -208,7 +194,7 @@ qualGeneratorServer <- function(id, matches, btnStart) {
             seed = input$numSeed
           )
           
-          generator$invoke(participants, type, tolower(m$selected_phase), opts)
+          generator$invoke(participants, type, tolower(m$phase$selected), opts)
           
           foosball_progress(ns("iqual_gen_progress"), "Generating matches...")
           m$tournament$trigger_refresh() ## matches were added

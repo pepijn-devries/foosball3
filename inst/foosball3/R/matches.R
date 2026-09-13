@@ -54,7 +54,7 @@ matchesServer <- function(id, tournament, avatars) {
         matches <-
           dplyr::tbl(con, "matches_view") |>
           dplyr::filter(
-            .data$TOURNAMENT_PHASE == !!mod_phases() &
+            .data$TOURNAMENT_PHASE == !!mod_phases()$selected &
               .data$TOURNAMENT_ID == !!max(c(-1,  tnmt$selected$TOURNAMENT_ID))
           ) |>
           dplyr::collect() |>
@@ -126,7 +126,7 @@ matchesServer <- function(id, tournament, avatars) {
         list(
           tournament     = tournament(),
           matches        = matches_cache(),
-          selected_phase = mod_phases(),
+          phase          = mod_phases(),
           selected_id    = input$selectMatch,
           move_match     = function(direction) {
             move_detector(direction)

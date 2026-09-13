@@ -190,7 +190,7 @@ matchSideServer <- function(id, match, side, avatars) {
         m <- get_selected_match()
         state <- get_tournament_state()
         shiny::req(m)
-        if (state == "ACT" &&
+        if (state == "ACT" && nrow(m) > 0 &&
             !identical(m[[paste0("SCORE_", side)]], input$numScore) &&
             validator$is_valid()) {
           

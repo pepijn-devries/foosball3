@@ -44,11 +44,28 @@ matchGeneratorServer <- function(id, matches) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      start_qual <- shiny::reactiveVal()
+      
       shiny::observeEvent(matches(), {
-        bslib::nav_select("phase-generator", matches()$selected_phase)
+        bslib::nav_select("phase-generator", matches()$phase$selected)
+      })
+      
+      shiny::observeEvent(input$btnStart, {
+        msg <- matches()$phase$message
+        if (!is.null(msg)) {
+          shinyWidgets::show_alert(
+            "Can't generate matches", msg, type = "error"
+          )
+        } else {
+          #TODO add other phases
+          switch(
+            matches()$phase$selected,
+            Qualification = start_qual(input$btnStart)
+          )
+        }
       })
 
-      mod_qual <- qualGeneratorServer("mod_qual", matches, shiny::reactive({ input$btnStart }))
+      mod_qual <- qualGeneratorServer("mod_qual", matches, start_qual)
 
       shiny::observe({ mod_qual() })
       
