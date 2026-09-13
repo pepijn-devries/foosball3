@@ -17,7 +17,7 @@ foosball3_list_suggests <- function(...) {
 .foosball_suggest <- function(ignore, ...) {
   suggests <- foosball3_list_suggests(...)
   suggests <- suggests[!(suggests %in% ignore)]
-  state <- lapply(suggests, requireNamespace) |> unlist()
+  state <- lapply(suggests, requireNamespace, quietly = TRUE) |> unlist()
   suggests[!state]
 }
 
@@ -35,7 +35,7 @@ foosball3_list_suggests <- function(...) {
 #' foosball3_suggests_ok()
 #' @export
 foosball3_suggests_ok <- function(ignore = "mirai", ...) {
-  !(.foosball_suggest(ignore, ...) > 0)
+  length(.foosball_suggest(ignore, ...)) == 0
 }
 
 #' Install Packages Suggested by `foosball3`
