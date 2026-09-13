@@ -50,7 +50,7 @@ timerServer <- function(id, tournament, matches, show) {
         shiny::req(tournament())
         shiny::req(matches())
         total_duration <- tournament()$selected$TOURNAMENT_DURATION
-        phase <- matches()$selected_phase
+        phase <- matches()$phase$selected
         n_matches <- matches()$matches |> nrow()
         if (length(total_duration) == 0 || phase != "Qualification" || n_matches <= 0) {
           120000
