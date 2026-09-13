@@ -32,8 +32,5 @@ A `logical` value, indicating of all required suggests are available.
 
 ``` r
 foosball3_suggests_ok()
-#> Loading required namespace: base64enc, bsicons, bslib, DiagrammeR, DiagrammeRsvg, dm, DT
-#> Loading required namespace: ggplot2, ggiraph, imager, jsonlite, knitr, lubridate, mirai
-#> Loading required namespace: promises, shinybusy, shinyjs, shinyvalidate, shinyWidgets
-#> [1] FALSE FALSE FALSE
+#> [1] FALSE
 ```
