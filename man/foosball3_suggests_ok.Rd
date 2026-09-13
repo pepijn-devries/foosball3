@@ -22,5 +22,5 @@ This function returns \code{TRUE} if all packages required for the
 graphical user interface (GUI) (\code{\link[=foosball3]{foosball3()}}) are available.
 }
 \examples{
-foosball3_list_suggests()
+foosball3_suggests_ok()
 }
