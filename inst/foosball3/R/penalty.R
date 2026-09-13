@@ -44,9 +44,11 @@ penaltyServer <- function(id, tournaments, avatars) {
       get_participant <- shiny::reactive({
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con) }, add = TRUE)
+        t_id <- tournaments()$selected$TOURNAMENT_ID
         person <- mod_naughty()$id_all
         result <- dplyr::tbl(con, "participants") |>
-          dplyr::filter(.data$PARTICIPANT_ID %in% person) |>
+          dplyr::filter(.data$PERSON_ID %in% !!person &&
+                        .data$TOURNAMENT_ID %in% !!t_id) |>
           dplyr::collect()
         if (!identical(result$PARTICIPANT_ID, current_participant()))
           current_participant(result$PARTICIPANT_ID)

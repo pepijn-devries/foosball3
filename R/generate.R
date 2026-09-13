@@ -15,7 +15,32 @@
 #' individuals can collect points individually to qualify for the semi finals.
 #' @param options Options used for generating the matches. It can be used to
 #' tweak the effort for balancing matches for player experience.
-# TODO document details
+#' 
+#' For `"individual"` tournaments the following options are available,
+#' for generating qualifying matches:
+#' 
+#' * `nsim`: Number of simulated tournaments, from which to pick
+#'   a suitable configuration. Given the constraint
+#'   that all players play the same number of matches on each of
+#'   the positions of the table.
+#' * `revolutions`: Number of times players play on each position of the
+#'   table during the qualification.
+#' * `weights`: A named list of weights used for selecting suitable
+#'   tournaments from simulated permutations.
+#' 
+#' The `weights` list should contain the following numeric weights scaled between
+#' 0 (not applied) and 1 (fully applied):
+#' 
+#' * `teamup`: Avoid that specific duos team up frequently
+#' * `opposing`: Avoid that specific duos oppose each other frequently
+#' * `match_var`: Minimise variation in predicted match results (based on historical performance)
+#' * `match_bal`: Ensure mean matches are balanced
+#' * `match_bal_var`: Minimise variance balance in matches
+#' * `match_bal_extr`: Avoid extreme unbalance in matches
+#' * `part_bal`: Ensure mean balance of participants
+#' * `part_bal_var`: Minimise variance in participants balance
+#' * `part_bal_extr`: Avoid extremes in participants balance
+#' 
 #' @param progress A callback function for reporting progress. It needs to be
 #' a function that accepts 1 numeric argument. It is called by the generator,
 #' with a number between 0 and 1 indicating the progress of the process.
@@ -168,7 +193,7 @@ foosball3_generate_matches <- function(
     match_balance_extremes = apply(prediction, 1, function(x) {max(abs(x - 0.5))}), ## Get the most unbalances match in the tournament (preferably as small as possible)
     part_balance           = abs(colMeans(participant_prediction) - 0.5),
     part_balance_variance  = apply(participant_prediction, 2, stats::sd),
-    part_balance_extremes = apply(participant_prediction, 2, function(x) {max(abs(x - 0.5))})
+    part_balance_extremes  = apply(participant_prediction, 2, function(x) {max(abs(x - 0.5))})
   )
   score_rank <- apply(score, 2, function(x) x/max(x))
   score_rank [is.nan(score_rank )] <- 0

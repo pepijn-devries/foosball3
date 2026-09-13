@@ -5,9 +5,7 @@ matchesUI <- function(id) {
     
     bslib::card(
       bslib::card_body(
-        shiny::selectInput(
-          ns("selectPhase"), "Tournament Phase",
-          character()),
+        phasesUI(ns("mod_phases")),
         shinyWidgets::virtualSelectInput(
           ns("selectMatch"), "Select match", character(),
           keepAlwaysOpen = TRUE, search = TRUE, optionsCount = 9,
@@ -39,16 +37,16 @@ matchesServer <- function(id, tournament, avatars) {
       matches_cache <- shiny::reactiveVal()
       move_detector <- shiny::reactiveVal()
       
-      phases <- NULL
-      mod_match <- matchServer("mod_match", get_selected_match, avatars)
-      mod_gen   <- matchGeneratorServer("mod_gen", get_selected_match)
-      mod_penal <- penaltyServer("mod_penal", tournament, avatars)
+      mod_match  <- matchServer("mod_match", get_selected_match, avatars)
+      mod_gen    <- matchGeneratorServer("mod_gen", get_selected_match)
+      mod_penal  <- penaltyServer("mod_penal", tournament, avatars)
+      mod_phases <- phasesServer("mod_phases", tournament)
       
       shiny::observe({
         ## We nee to observer mod_match() here to ensure that changes
         ## to the scores are stored
         mod_match()
-        shiny::req(input$selectPhase)
+        shiny::req(mod_phases())
         tnmt <- tournament()
         con <- tnmt$database$connect()
         on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
@@ -56,7 +54,7 @@ matchesServer <- function(id, tournament, avatars) {
         matches <-
           dplyr::tbl(con, "matches_view") |>
           dplyr::filter(
-            .data$TOURNAMENT_PHASE == input$selectPhase &
+            .data$TOURNAMENT_PHASE == !!mod_phases() &
               .data$TOURNAMENT_ID == !!max(c(-1,  tnmt$selected$TOURNAMENT_ID))
           ) |>
           dplyr::collect() |>
@@ -124,28 +122,11 @@ matchesServer <- function(id, tournament, avatars) {
         }
       })
       
-      shiny::observe({
-        tnmt <- tournament()
-        con <- tnmt$database$connect()
-        on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
-        new_phases <- dplyr::tbl(con, "tournament_phases") |>
-          dplyr::collect()
-        new_phases <- new_phases$TOURNAMENT_PHASE
-        if (!identical(new_phases, phases)) {
-          phases <<- new_phases
-          shiny::updateSelectInput(
-            inputId = "selectPhase",
-            choices = phases,
-            selected = phases[[1]]
-          )
-        }
-      })
-
       get_selected_match <- shiny::reactive({
         list(
           tournament     = tournament(),
           matches        = matches_cache(),
-          selected_phase = input$selectPhase,
+          selected_phase = mod_phases(),
           selected_id    = input$selectMatch,
           move_match     = function(direction) {
             move_detector(direction)

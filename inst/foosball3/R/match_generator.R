@@ -52,7 +52,7 @@ matchGeneratorServer <- function(id, matches) {
 
       shiny::observe({ mod_qual() })
       
-      return( shiny::reactive({ "TODO" }) )
+      return( shiny::reactive({ }) )
     }
   )
 }

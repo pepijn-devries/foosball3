@@ -80,6 +80,15 @@ foosball3_create_db <- function(file, ...) {
       TOURNAMENT_TYPE_DESCRIPTION = "Players compete individually"),
     "tournament_types")
   protect_data(con, "tournament_types", "TOURNAMENT_TYPE_CODE", c("I"))
+
+  copy_data(
+    dplyr::tibble(
+      TOURNAMENT_TYPE_CODE = "I",
+      PHASE_ORDER = c(1L, 2L, 3L, 3L, 4L),
+      TOURNAMENT_PHASE_CODE = c("P", "Q", "S", "N", "F"),
+      IS_OPTIONAL = as.integer(c(TRUE, FALSE, FALSE, TRUE, FALSE))),
+    "tournament_phase_flow")
+  protect_data(con, "tournament_phase_flow", "TOURNAMENT_TYPE_CODE", c("I"))
   
   copy_data(
     dplyr::tibble(

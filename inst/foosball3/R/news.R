@@ -119,7 +119,7 @@ newsServer <- function(id, matches, mod_avatar, show) {
 
       })
       
-      return( shiny::reactive({ "TODO" }))
+      return( shiny::reactive({ }))
     }
   )
 }
