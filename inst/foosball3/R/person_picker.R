@@ -176,7 +176,9 @@ personPickerServer <- function(
 
       select_fun <- function(val) {
         val <- as.character(val)
-        if (!val %in% get_options()) val <- NA_character_
+
+        val <- val[val %in% get_options()]
+        if (length(val) == 0) val <- NA_character_
         if (!identical(val, input$selectPeople)) {
           shinyWidgets::updateVirtualSelect(
             "selectPeople", selected = val, session = session

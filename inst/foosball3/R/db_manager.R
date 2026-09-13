@@ -1,5 +1,5 @@
-db_file <- tempfile(fileext = ".sqlite")
-foosball3::foosball3_create_db(db_file)
+db_file <- file.path(tempdir(), "foosball.sqlite")
+if (!file.exists(db_file)) foosball3::foosball3_create_db(db_file)
 
 dbManagerUI <- function(id) {
   ns <- shiny::NS(id)
@@ -61,6 +61,7 @@ dbManagerServer <- function(id) {
           )
         )
         pt <- db_path()
+        attr(pt, "timestamp") <- Sys.time()
         new_path <- tempfile(fileext = ".sqlite")
         tryCatch({
           withCallingHandlers({
@@ -68,8 +69,9 @@ dbManagerServer <- function(id) {
               input$uploadSQLite$datapath,
               new_path
             )
-            db_path(new_path)
-            unlink(pt, TRUE, TRUE)
+            file.copy(new_path, pt, TRUE)
+            unlink(new_path, TRUE, TRUE)
+            db_path(pt)
           }, warning = \(w) {
             shinyWidgets::show_alert(
               "Please be aware of the following",
