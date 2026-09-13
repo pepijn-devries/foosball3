@@ -201,7 +201,6 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             src <- src[sel]
             src_field <- src_field[sel]
           }
-          ##TODO handle datetime objects
           if (pk %in% src_field) {
             val <- new_key
           } else {

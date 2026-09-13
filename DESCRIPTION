@@ -27,6 +27,7 @@ Suggests:
     base64enc,
     bsicons,
     bslib,
+    DiagrammeR,
     DiagrammeRsvg,
     dm,
     DT,
