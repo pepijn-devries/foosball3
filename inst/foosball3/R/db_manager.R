@@ -1,5 +1,5 @@
 db_file <- file.path(tempdir(), "foosball.sqlite")
-foosball3::foosball3_create_db(db_file)
+if (!file.exists(db_file)) foosball3::foosball3_create_db(db_file)
 
 dbManagerUI <- function(id) {
   ns <- shiny::NS(id)
