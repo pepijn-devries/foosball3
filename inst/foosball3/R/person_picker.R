@@ -96,24 +96,26 @@ personPickerServer <- function(
         validator$enable()
       }
       
-      get_selected_peop <- shiny::reactive({
-        peops <- get_people()
-        current <- input$selectPeople
-        id_match   <- match(input$selectPeople, as.character(peops$PERSON_ID))
-        name_match <- match(tolower(input$selectPeople),
+      filter_existing <- function(val) {
+        if (length(val) == 0 || all(is.na(val)) || all(val == "")) return(NA)
+        peops      <- get_people()
+        id_match   <- match(val, as.character(peops$PERSON_ID))
+        name_match <- match(tolower(val),
                             tolower(as.character(peops$PERSON_NAME)))
-        stats::na.omit(c(id_match, name_match))[1]
+        stats::na.omit(c(id_match, name_match))
+      }
+      
+      get_selected_peop <- shiny::reactive({
+        filter_existing(input$selectPeople)
       })
 
       shiny::observeEvent(input$selectPeople, {
         peops <- get_people_unfiltered()
-        current <- input$selectPeople
-        id_match   <- match(input$selectPeople, as.character(peops$PERSON_ID))
-        name_match <- match(tolower(input$selectPeople),
-                            tolower(as.character(peops$PERSON_NAME)))
-        new_peops <- input$selectPeople[is.na(name_match) & is.na(id_match)]
+        current <- filter_existing(input$selectPeople) |> as.character()
+        new_peops <- setdiff(input$selectPeople, current)
+        # new_peops <- input$selectPeople[is.na(name_match) & is.na(id_match)]
         if (length(new_peops) > 0) add_fun(new_peops) else {
-          select_fun(stats::na.omit(c(id_match, name_match)))
+          select_fun(current)
         }
       }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
@@ -170,7 +172,8 @@ personPickerServer <- function(
       })
       
       add_fun <- function(val) {
-        if (length(val) > 0) new_peops(as.character(val))
+        fe <- filter_existing(val)
+        if (length(val) > 0 && (length(fe) == 0 || is.na(fe))) new_peops(as.character(val))
         tournaments()$trigger_refresh()
       }
 

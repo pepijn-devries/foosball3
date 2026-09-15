@@ -70,7 +70,6 @@ tournamentServer <- function(id, db, avatars) {
     id,
     function(input, output, session) {
       
-      wait_for_update      <- shiny::reactiveVal()
       edit_mode            <- shiny::reactiveVal()
       ## When new data is written to database
       tournament_update    <- shiny::reactiveVal()
@@ -114,7 +113,6 @@ tournamentServer <- function(id, db, avatars) {
           ),
           selected = current_sel
         )
-        wait_for_update(FALSE)
       })
 
       trigger_refresh = function() {
@@ -132,7 +130,7 @@ tournamentServer <- function(id, db, avatars) {
       })
       
       editor <- tournamentEditorServer(
-        "mod_editor", edit_mode, wait_for_update, get_it_all, get_tournament_people, avatars)
+        "mod_editor", edit_mode, get_it_all, get_tournament_people, avatars)
       
       get_tournaments <- shiny::reactive({
         editor()
@@ -240,7 +238,6 @@ tournamentServer <- function(id, db, avatars) {
         trigger_refresh()
         mode <- "new"
         attr(mode, "ts") <- Sys.time()
-        wait_for_update(TRUE)
         update_tournament_selector()
         edit_mode(mode)
       })

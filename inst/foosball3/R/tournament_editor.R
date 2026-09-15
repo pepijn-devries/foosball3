@@ -26,7 +26,7 @@ tournamentEditorUI <- function(id) {
 }
 
 tournamentEditorServer <- function(
-    id, mode, updating, tournaments, tournament_people, avatars) {
+    id, mode, tournaments, tournament_people, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -42,55 +42,47 @@ tournamentEditorServer <- function(
         personPickerServer("mod_part", tournaments,
                            tournament_people()$participants,
                            avatars, validator, 4L)
-      
-      shiny::observe({
-        ## We need observers on these to ensure updates are detected
-        mod_orgs(); mod_part()
-      })
-
-      shiny::observe({
-        mod_loc()$set_selected(
-          tournaments()$selected$LOCATION_CODE
-        )
-      })
-      
-      shiny::observe({
-        mod_ps()$set_selected(
-          tournaments()$selected$POINT_SYSTEM_ID
-        )
-      })
-      
       mod_loc <- lookupServer(
         "mod_loc", "Location", tournaments, "locations", "%s", validator)
       mod_ps <- lookupServer(
         "mod_ps", "Point System", tournaments, "point_systems", "%s", validator)
       
+      shiny::observe({
+        ## We need observers on these to ensure updates are detected
+        mod_orgs(); mod_part(); mod_ps(); mod_loc()
+      })
+
       validator$add_rule("numDuration",
                          shinyvalidate::sv_gt(0))
       validator$add_rule("pickDate",
                          shinyvalidate::sv_required("Date is required"))
       validator$enable()
-      
-      shiny::observeEvent(list(mode(), updating()), {
-        shiny::req(updating())
-        tnmt <- tournaments()
-        selected <- tnmt$selected
-        if (length(selected$TOURNAMENT_ID) > 0 && !updating()) {
-          dt <- NA
-          if (!is.na(selected$TOURNAMENT_DATE))
-            dt <- lubridate::as_datetime(selected$TOURNAMENT_DATE)
-          
-          shinyWidgets::updateAirDateInput(
-            inputId = "pickDate",
-            value = dt
-          )
-          num_dur <- NUM_DUR_DEFAULT
-          if (!is.na(selected$TOURNAMENT_DURATION)) num_dur <- selected$TOURNAMENT_DURATION
-          shiny::updateNumericInput(
-            inputId = "numDuration",
-            value = num_dur
-          )
-        }
+
+      shiny::observeEvent(mode(), {
+        switch(
+          mode(),
+          new = {
+            mod_ps()$set_selected("1")
+            mod_loc()$set_selected("")
+            shiny::updateNumericInput(
+              inputId = "numDuration",
+              value = NUM_DUR_DEFAULT
+            )
+          },
+          edit = {
+            sel <- tournaments()$selected
+            shiny::updateNumericInput(
+              inputId = "numDuration",
+              value = as.numeric(sel$TOURNAMENT_DURATION)
+            )
+            shinyWidgets::updateAirDateInput(
+              inputId = "pickDate",
+              value = lubridate::as_datetime(sel$TOURNAMENT_DATE)
+            )
+            mod_ps()$set_selected(sel$POINT_SYSTEM_ID)
+            mod_loc()$set_selected(sel$LOCATION_CODE)
+          }
+        )
       })
       
       shiny::observeEvent(input$btnOK, {

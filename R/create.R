@@ -126,7 +126,7 @@ foosball3_create_db <- function(file, ...) {
       POINT_SYSTEM_DESCRIPTION =
         c("Win = 3 points; Draw = 1 point; Lose = 0 points; Remainder = 0.9 * success_rate",
           "Number of goals scored minus penalty points"),
-      MAX_POINTS_PER_MATCH = c(0L, 10L)
+      MAX_POINTS_PER_MATCH = c(10L, 10L)
     ), "point_systems")
   protect_data(con, "point_systems", "POINT_SYSTEM_ID", 3L)
   
