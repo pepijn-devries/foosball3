@@ -99,10 +99,8 @@ qualGeneratorServer <- function(id, matches, btnStart) {
       )
       
       shiny::observe({
-        ##TODO lookup settings can't seem to accept empty values
-        # browser() #TODO
         m <- matches()
-        mod_ball()$set_selected(NA)
+        mod_ball()$set_selected("")
       })
       
       mod_table <- lookupServer(

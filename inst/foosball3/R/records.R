@@ -33,16 +33,20 @@ recordsServer <- function(id, tournaments) {
     function(input, output, session) {
       options_cache  <- shiny::reactiveVal()
       new_record_id  <- shiny::reactiveVal()
+      select_cache   <- shiny::reactiveVal()
 
+      select_fun <- function(val) {
+        if (!missing(val) && !is.null(val)) {
+          new_record_id(val)
+        }
+        tournaments()$trigger_refresh()
+      }
+      
       record_picker <- shiny::reactive({
         list(
-          id = input$selectRecord,
-          update = function(val) {
-            if (!missing(val) && !is.null(val)) {
-              new_record_id(val)
-            }
-            tournaments()$trigger_refresh()
-          }
+          id     = input$selectRecord,
+          select = select_fun,
+          add    = select_fun
         )
       })
       

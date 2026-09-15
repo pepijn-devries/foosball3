@@ -1,11 +1,10 @@
-lookupUI <- function(id, label, placeholder = "") {
+lookupUI <- function(id, label, placeholder = "Select an option") {
   ns <- shiny::NS(id)
   settings <- list(
     placeholder = placeholder,
-    allowEmptyOption = TRUE,
-    plugins = list("remove_button")
+    maxItems = 1L
   )
-  shiny::selectizeInput( ns("selectLookup"), label, NULL, options = settings )
+  shiny::selectizeInput( ns("selectLookup"), label, NULL, multiple = TRUE, options = settings )
 }
 
 lookupServer <- function(id, label, tournaments, table, fmt = "%s", validator = NULL) {
@@ -43,13 +42,13 @@ lookupServer <- function(id, label, tournaments, table, fmt = "%s", validator = 
         sel  <- selected_cache()
         # If selection isn't valid for current options, fall back safely
         if (length(sel) > 0 && (length(opts) == 0 || !sel %in% opts)) {
-          sel <- NULL
+          sel <- ""
         }
         
         shiny::updateSelectizeInput(
           session = session,
           inputId = "selectLookup",
-          choices = opts,
+          choices = c(stats::setNames("", ""), opts),
           selected = sel
         )
       })
@@ -66,9 +65,9 @@ lookupServer <- function(id, label, tournaments, table, fmt = "%s", validator = 
       }, ignoreInit = TRUE, ignoreNULL = TRUE)
       
       update_fun <- function(val) {
-        val_clean <- if (!is.null(val)) as.character(val) else NULL
-        if (!identical(val_clean, shiny::isolate(selected_cache()))) {
-          selected_cache(val_clean)
+        val <- if (length(val) == 0 || is.na(val)) "" else as.character(val)
+        if (!identical(val, shiny::isolate(selected_cache()))) {
+          selected_cache(val)
         }
       }
       

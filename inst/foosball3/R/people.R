@@ -35,6 +35,9 @@ peopleServer <- function(id, tournaments, avatars, picture) {
           add = function(val) {
             mod_peop_pick()$add(val)
           },
+          select = function(val) {
+            mod_peop_pick()$select(val)
+          },
           id = mod_peop_pick()$id
         )
       })
