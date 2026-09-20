@@ -44,6 +44,7 @@ matchGeneratorServer <- function(id, matches, avatars, phases) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      ns <- session$ns
       start_qual   <- shiny::reactiveVal()
       start_semi   <- shiny::reactiveVal()
       start_final  <- shiny::reactiveVal()
@@ -66,7 +67,6 @@ matchGeneratorServer <- function(id, matches, avatars, phases) {
             "Can't generate matches", msg, type = "error"
           )
         } else {
-          #TODO add other phases
           switch(
             matches()$phase$selected,
             `Qualification`     = start_qual(input$btnStart),
@@ -75,6 +75,55 @@ matchGeneratorServer <- function(id, matches, avatars, phases) {
             `Consolation final` = start_consol(input$btnStart)
           )
         }
+      })
+
+      do_delete <- function() {
+        m <- matches()$matches
+        con <- matches()$tournament$database$connect()
+        on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+        RSQLite::dbBegin(con)
+
+        tryCatch({
+          lapply(c("match_results", "match_players", "matches"), \(x) {
+            RSQLite::dbExecute(
+              con,
+              sprintf("DELETE FROM %s WHERE MATCH_ID IN ('%s')",
+                      x, paste(m$MATCH_ID, collapse = "', '")
+              )
+            )
+          })
+          RSQLite::dbCommit(con)
+          matches()$tournament$trigger_refresh()
+          
+        }, error = \(e) {
+          
+          RSQLite::dbRollback(con)
+          shinyWidgets::show_alert(
+            "Failed to delete matches", e$msg, type = "error")
+        })
+        
+      }
+      
+      shiny::observeEvent(input$btnRemove, {
+        m <- matches()$matches
+        if (nrow(m) == 0) {
+          shinyWidgets::show_alert(
+            "Cannot delete",
+            "There are no matches to delete",
+            type = "warning"
+          )
+        } else if (!(all(is.na(m$SCORE_1)) && all(is.na(m$SCORE_2)))) {
+          shinyWidgets::ask_confirmation(
+            ns("confirmDelete"),
+            "Are you sure?",
+            "The matches already have results. All will be lost.")
+        } else {
+          do_delete()
+        }
+      })
+      
+      shiny::observeEvent(input$confirmDelete, {
+        if (input$confirmDelete) do_delete()
       })
 
       mod_qual <- qualGeneratorServer("mod_qual", matches, start_qual)

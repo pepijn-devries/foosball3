@@ -313,7 +313,26 @@ tournamentServer <- function(id, db, avatars) {
         if (length(msg) > 0) {
           shinyWidgets::show_alert( "Can't delete", msg, type = "warning" )
         } else {
-          browser() #TODO
+          tryCatch({
+            con <- db()$connect()
+            on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+            RSQLite::dbBegin(con)
+            lapply(c("tournament_organisers", "participants", "tournaments"), \(x) {
+              RSQLite::dbExecute(
+                con,
+                sprintf("DELETE FROM %s WHERE TOURNAMENT_ID = '%s'",
+                        x, input$selectTournament
+                )
+              )
+            })
+            RSQLite::dbCommit(con)
+            trigger_refresh()
+            
+          }, error = \(e) {
+            RSQLite::dbRollback(con)
+            shinyWidgets::show_alert(
+              "Can't delete tournament", e$message, type = "error" )
+          })
         }
       })
       
