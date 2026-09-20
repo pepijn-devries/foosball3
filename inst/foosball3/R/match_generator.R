@@ -21,15 +21,15 @@ matchGeneratorUI <- function(id) {
         ),
         bslib::nav_panel_hidden(
           "Semi final",
-          "TODO"
+          finalGeneratorUI(ns("mod_semi"), "semi")
         ),
         bslib::nav_panel_hidden(
           "Final",
-          "TODO"
+          finalGeneratorUI(ns("mod_final"), "final")
         ),
         bslib::nav_panel_hidden(
           "Consolation final",
-          "TODO"
+          finalGeneratorUI(ns("mod_consol"), "consol")
         ),
         bslib::nav_panel_hidden(
           "Practice",
@@ -40,12 +40,21 @@ matchGeneratorUI <- function(id) {
   )
 }
 
-matchGeneratorServer <- function(id, matches) {
+matchGeneratorServer <- function(id, matches, avatars, phases) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      start_qual <- shiny::reactiveVal()
-      
+      start_qual   <- shiny::reactiveVal()
+      start_semi   <- shiny::reactiveVal()
+      start_final  <- shiny::reactiveVal()
+      start_consol <- shiny::reactiveVal()
+      mod_semi     <- finalGeneratorServer(
+        "mod_semi", "semi", matches, start_semi, avatars, phases)
+      mod_final    <- finalGeneratorServer(
+        "mod_final", "final", matches, start_final, avatars, phases)
+      mod_consol   <- finalGeneratorServer(
+        "mod_consol", "consol", matches, start_consol, avatars, phases)
+
       shiny::observeEvent(matches(), {
         bslib::nav_select("phase-generator", matches()$phase$selected)
       })
@@ -60,7 +69,10 @@ matchGeneratorServer <- function(id, matches) {
           #TODO add other phases
           switch(
             matches()$phase$selected,
-            Qualification = start_qual(input$btnStart)
+            `Qualification`     = start_qual(input$btnStart),
+            `Final`             = start_final(input$btnStart),
+            `Semi final`        = start_semi(input$btnStart),
+            `Consolation final` = start_consol(input$btnStart)
           )
         }
       })

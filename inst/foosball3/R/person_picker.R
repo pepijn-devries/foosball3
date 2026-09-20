@@ -10,66 +10,16 @@ personPickerUI <- function(id, ..., dropboxWrapper = "card") {
 
 personPickerServer <- function(
     id, tournaments, init, avatars, validator, min_required = 0L,
-    this_tournament_only = FALSE) {
+    this_tournament_only = FALSE, allow_new = FALSE) {
   
   shiny::moduleServer(
     id,
     function(input, output, session) {
       ns <- session$ns
       ## Use caching to prevent unneeded updates
-      options_cache       <- shiny::reactiveVal()
-      is_initialising     <- shiny::reactiveVal()
       new_peops           <- shiny::reactiveVal()
+      select_cache        <- shiny::reactiveVal()
 
-      get_people_unfiltered <- shiny::reactive({
-        con <- tournaments()$database$connect()
-        on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
-        peops <- dplyr::tbl(con, "persons") |>
-          dplyr::collect()
-      })
-      
-      get_people <-
-        shiny::reactive({
-          peops <- get_people_unfiltered()
-          if (this_tournament_only) {
-            con <- tournaments()$database$connect()
-            on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
-            id <- tournaments()$selected$TOURNAMENT_ID
-            if (length(id) == 0) id <- -1L
-            current <-
-              dplyr::tbl(con, "participants") |>
-              dplyr::filter(.data$TOURNAMENT_ID == !!id) |>
-              dplyr::pull(PERSON_ID)
-            peops <-
-              peops |>
-              dplyr::filter(.data$PERSON_ID %in% !!current)
-          }
-          peops
-        })
-      
-      shiny::observeEvent(init(), {
-        is_initialising(TRUE)
-      })
-      
-      get_pre_options <- shiny::reactive({
-        peops <- get_people()
-        opts <- structure(peops$PERSON_ID, names = peops$PERSON_NAME)[
-          order(peops$PERSON_NAME) ]
-        avt <- avatars()
-        img <- lapply(as.numeric(opts), \(x) {
-          avt$get_avatar(x, what = "icon") %||% ""
-        }) |>
-          unlist()
-        list(options = opts, img = img)
-      })
-      
-      get_options <- shiny::reactive({
-        opts <- get_pre_options()$options
-        img <- get_pre_options()$img
-        names(opts) <- sprintf("<span>%s %s</span>", img, names(opts))
-        opts
-      })
-      
       if (!is.null(validator)) {
         validator$add_rule(
           "selectPeople", \(value) {
@@ -81,47 +31,26 @@ personPickerServer <- function(
           }
         )
         
-        validator$add_rule(
-          "selectPeople", \(value) {
-            peops <- get_people()$PERSON_ID
-            if (length(value) > length(peops)) {
-              if (grepl("[0-9]", value[[length(value)]], perl = TRUE)) {
-                return("Names should not contain numerics")
-              }
-            }
-            NULL
-          }
-        )
-        
         validator$enable()
       }
-      
-      filter_existing <- function(val) {
+
+      filter_unknown <- function(val) {
         if (length(val) == 0 || all(is.na(val)) || all(val == "")) return(NA)
-        peops      <- get_people()
-        id_match   <- match(val, as.character(peops$PERSON_ID))
+        opts <- avatars()$options
+        id_match   <- match(val, as.character(unname(opts)))
         name_match <- match(tolower(val),
-                            tolower(as.character(peops$PERSON_NAME)))
-        stats::na.omit(c(id_match, name_match))
+                            tolower(attr(opts, "PERSON_NAME")))
+        unknown_person <- stats::na.omit(c(id_match, name_match))
       }
       
       get_selected_peop <- shiny::reactive({
-        filter_existing(input$selectPeople)
+        input$selectPeople
       })
-
-      shiny::observeEvent(input$selectPeople, {
-        peops <- get_people_unfiltered()
-        current <- filter_existing(input$selectPeople) |> as.character()
-        new_peops <- setdiff(input$selectPeople, current)
-        # new_peops <- input$selectPeople[is.na(name_match) & is.na(id_match)]
-        if (length(new_peops) > 0) add_fun(new_peops) else {
-          select_fun(current)
-        }
-      }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
       shiny::observeEvent(new_peops(), {
         np <- new_peops()
-        if (!is.null(np)) {
+
+        if (allow_new && !is.null(np) && np != "") {
           con <- tournaments()$database$connect()
           on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
           new_row <-
@@ -135,64 +64,63 @@ personPickerServer <- function(
               QUALIFICATION_CODE = "H",
               HOME_BASE = NA_character_
             )
-          new_peops(NULL)
           dplyr::copy_to(
             con, new_row, "persons", append = TRUE
           )
-          select_fun(new_row$PERSON_ID)
+          new_peops(NULL)
+          avatars()$refresh_options()
           tournaments()$trigger_refresh()
         }
       })
       
-      update <- shiny::reactive({
-        peops <- get_people()
-        
-        if (is_initialising() %||% FALSE) {
-          current <- init()
-          is_initialising(FALSE)
-        } else {
-          current <- shiny::isolate(input$selectPeople)
-        }
-        
-        match_names <- match(tolower(current), tolower(peops$PERSON_NAME))
-        current[!is.na(match_names)] <- peops$PERSON_ID[stats::na.omit(match_names)]
-        current <- current[current %in% as.character(peops$PERSON_ID)]
-        dup <- current[duplicated(current)]
-        current <- current[!current %in% unique(dup)]
-        
-        actual_input <- as.character(shiny::isolate(input$selectPeople) %||% character(0))
-
-        if (!identical(get_pre_options(), options_cache()$options) ||
-            !identical(actual_input, unname(current))) {
-          options_cache(get_pre_options())
-          shinyWidgets::updateVirtualSelect(
-            "selectPeople", choices = get_options(), selected = unname(current)
-          )
-        }
-      })
-      
       add_fun <- function(val) {
-        fe <- filter_existing(val)
-        if (length(val) > 0 && (length(fe) == 0 || is.na(fe))) new_peops(as.character(val))
-        tournaments()$trigger_refresh()
-      }
-
-      select_fun <- function(val) {
-        val <- as.character(val)
-
-        val <- val[val %in% get_options()]
-        if (length(val) == 0) val <- NA_character_
-        if (!identical(val, input$selectPeople)) {
-          shinyWidgets::updateVirtualSelect(
-            "selectPeople", selected = val, session = session
-          )
+        if (length(val) == 0 || all(val == "")) return()
+        
+        opts <- avatars()$options
+        id_match   <- val %in% as.character(unname(opts))
+        name_match <- tolower(val) %in% tolower(attr(opts, "PERSON_NAME"))
+        
+        is_new <- !(id_match | name_match)
+        new_vals <- val[is_new]
+        
+        if (length(new_vals) > 0) {
+          new_peops(as.character(new_vals[1])) 
         }
       }
-      
-      shiny::observeEvent(list(get_people(), avatars(), init()), {
-        upd <- update()
+
+      shiny::observe({
+        opts <- avatars()$options
+        sel <- select_cache()
+        needs_update <- FALSE
+        if (!is.null(sel)) {
+          unsel <- sel[!sel %in% as.character(unname(opts))]
+          sel <- sel[sel %in% as.character(unname(opts))]
+          needs_update <- TRUE
+          if (length(unsel) > 0) {
+            new_sel <-
+              unname(opts)[match(tolower(unsel), tolower(attr(opts, "PERSON_NAME")))] |>
+              as.character()
+            if (length(new_sel) > 0 && !any(is.na(new_sel))) {
+              select_cache(union(new_sel, sel))
+            }
+          }
+        }
+        if (needs_update || !is.null(opts)) {
+          shinyWidgets::updateVirtualSelect(
+            "selectPeople", selected = sel, choices = opts
+          )
+        }
       })
 
+      shiny::observeEvent(input$selectPeople, {
+        add_fun(input$selectPeople)
+        select_cache(input$selectPeople)
+      }, ignoreNULL = TRUE, ignoreInit = TRUE)
+      
+      select_fun <- function(val) {
+        if (!identical(val, select_cache())) select_cache(val)
+      }
+      
       result <- shiny::reactive({
         list(
           add    = add_fun,

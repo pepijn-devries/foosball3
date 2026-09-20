@@ -17,8 +17,10 @@ avatarServer <- function(id, db) {
     function(input, output, session) {
       ns <- session$ns
       current_generator <- NULL
-      new_job <- shiny::reactiveVal()
-
+      new_job      <- shiny::reactiveVal()
+      people_cache <- shiny::reactiveVal()
+      refresh      <- shiny::reactiveVal(0L)
+      
       progress_bar <- function(nf, nt) {
         if (missing(nf)) {
           shinyjs::js$progressbar(
@@ -177,51 +179,77 @@ avatarServer <- function(id, db) {
         )
       }
       
+      get_avatar <- shiny::reactive({
+        pt <- get_picture_tags()
+        status <- avatar_generator$status()
+        if (status == "success") {
+          function(person_id, what = "icon", side = NULL, clickable = FALSE) {
+            my_class = paste0("foosball-avatar",
+                              ifelse(is.null(side), "", side))
+            what <- match.arg(what, c("icon", "tile"))
+            tags <- pt$tags
+            tag_id <-
+              tags |>
+              dplyr::filter(.data$PERSON_ID == person_id) |>
+              dplyr::sample_n(min(c(dplyr::n(), 1L))) |>
+              dplyr::pull("TAG_ID")
+            if (length(tag_id) == 1) {
+              fp <- file.path(tempdir(), "avatars",
+                              sprintf("%s%i.png", what, tag_id))
+              if (!file.exists(fp)) {
+                img_dat <- anonym[[what]]
+              } else {
+                img_dat <- readBin( fp, "raw", file.size(fp) ) |>
+                  base64enc::dataURI(mime = "image/png")
+              }
+            } else {
+              img_dat <- anonym[[what]]
+            }
+            parse_image(img_dat, ns("face_click"), person_id, my_class, clickable)
+          }
+        } else {
+          function(person_id, what = "icon", side = NULL, clickable = FALSE) {
+            my_class = paste0("foosball-avatar",
+                              ifelse(is.null(side), "", side))
+            img_dat <- anonym[[what]]
+            parse_image(img_dat, ns("face_click"), person_id, my_class, clickable)
+          }
+        }
+      })
+
+      shiny::observe({
+        refresh()
+        con <- db()$connect()
+        on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+        peops <- dplyr::tbl(con, "persons") |>
+          dplyr::collect()
+        if (!identical(peops, people_cache())) {
+          people_cache(peops)
+        }
+      })
+      
+      get_options <- shiny::reactive({
+        peops  <- people_cache()
+        opts   <- structure(peops$PERSON_ID, names = peops$PERSON_NAME)[
+          order(tolower(peops$PERSON_NAME)) ]
+        img    <- lapply(as.numeric(opts), \(x) {
+          get_avatar()(x, what = "icon") %||% ""
+        }) |>
+          unlist()
+        names(opts) <- sprintf("<span>%s %s</span>", img, names(opts))
+        attr(opts, "PERSON_NAME") <- peops$PERSON_NAME[order(tolower(peops$PERSON_NAME))]
+        opts
+      })
+
       return(
         shiny::reactive({
-          status <- avatar_generator$status()
-          if (status == "success") {
-            pt <- get_picture_tags()
-            list(
-              click = input$face_click,
-              tagged_persons = get_tagged_persons(),
-              get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
-                my_class = paste0("foosball-avatar",
-                                  ifelse(is.null(side), "", side))
-                what <- match.arg(what, c("icon", "tile"))
-                tags <- pt$tags
-                tag_id <-
-                  tags |>
-                  dplyr::filter(.data$PERSON_ID == person_id) |>
-                  dplyr::sample_n(min(c(dplyr::n(), 1L))) |>
-                  dplyr::pull("TAG_ID")
-                if (length(tag_id) == 1) {
-                  fp <- file.path(tempdir(), "avatars",
-                                  sprintf("%s%i.png", what, tag_id))
-                  if (!file.exists(fp)) {
-                    img_dat <- anonym[[what]]
-                  } else {
-                    img_dat <- readBin( fp, "raw", file.size(fp) ) |>
-                      base64enc::dataURI(mime = "image/png")
-                  }
-                } else {
-                  img_dat <- anonym[[what]]
-                }
-                parse_image(img_dat, ns("face_click"), person_id, my_class, clickable)
-              }
-            )
-          } else {
-            list(
-              click = input$face_click,
-              tagged_persons = get_tagged_persons(),
-              get_avatar = function(person_id, what = "icon", side = NULL, clickable = FALSE) {
-                my_class = paste0("foosball-avatar",
-                                  ifelse(is.null(side), "", side))
-                img_dat <- anonym[[what]]
-                parse_image(img_dat, ns("face_click"), person_id, my_class, clickable)
-              }
-            )
-          }
+          list(
+            click           = input$face_click,
+            tagged_persons  = get_tagged_persons(),
+            get_avatar      = get_avatar(),
+            options         = get_options(),
+            refresh_options = \() refresh(refresh() + 1L)
+          )
         })
       )
     }

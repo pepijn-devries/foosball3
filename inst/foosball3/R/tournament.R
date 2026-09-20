@@ -20,7 +20,9 @@ tournamentUI <- function(id, picUI) {
             shiny::actionButton(ns("btnNew"), "New Tournament",
                                 icon = bsicons::bs_icon("folder-plus")),
             shiny::actionButton(ns("btnEdit"), "Edit Tournament",
-                                icon = bsicons::bs_icon("pencil-square"))
+                                icon = bsicons::bs_icon("pencil-square")),
+            shiny::actionButton(ns("btnDelete"), "Delete Tournament",
+                                icon = bsicons::bs_icon("trash3-fill"))
           )
         ),
         bslib::card(
@@ -302,6 +304,17 @@ tournamentServer <- function(id, db, avatars) {
         mode <- "edit"
         attr(mode, "ts") <- Sys.time()
         edit_mode(mode)
+      })
+      
+      shiny::observeEvent(input$btnDelete, {
+        id <- get_selected()
+        msg <- NULL
+        if (length(id) == 0) msg <- "Select a tournament first"
+        if (length(msg) > 0) {
+          shinyWidgets::show_alert( "Can't delete", msg, type = "warning" )
+        } else {
+          browser() #TODO
+        }
       })
       
       mod_tourn_stats <- tournamentStatsServer("mod_tourn_stats", get_it_all)

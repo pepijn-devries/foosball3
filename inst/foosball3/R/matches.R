@@ -38,9 +38,9 @@ matchesServer <- function(id, tournament, avatars) {
       move_detector <- shiny::reactiveVal()
       
       mod_match  <- matchServer("mod_match", get_selected_match, avatars)
-      mod_gen    <- matchGeneratorServer("mod_gen", get_selected_match)
-      mod_penal  <- penaltyServer("mod_penal", tournament, avatars)
       mod_phases <- phasesServer("mod_phases", tournament)
+      mod_gen    <- matchGeneratorServer("mod_gen", get_selected_match, avatars, mod_phases)
+      mod_penal  <- penaltyServer("mod_penal", tournament, avatars)
       
       shiny::observe({
         ## We nee to observer mod_match() here to ensure that changes
@@ -77,6 +77,8 @@ matchesServer <- function(id, tournament, avatars) {
       
       observeEvent(move_detector(), {
         current <- input$selectMatch
+        ## Note that this cache will not update name changes made during
+        ## a tournament
         mtchs <- matches_cache()
         if (!is.null(current) && !is.null(mtchs) && nrow(mtchs) > 0) {
           move <- move_detector()
