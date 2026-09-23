@@ -60,16 +60,15 @@ CREATE TABLE table_sides( --- Descriptions of either side of the foosball table.
   SIDE_DESCRIPTION TEXT --- A descriptive text indicating a table side.
 );
 CREATE TABLE side_properties( --- Properties of any side of the foosball table. It is primarily used to document the colour of the players on a specific side.
-  SIDE_PROP_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier for each side property.
   SIDE_ID INTEGER NOT NULL, --- Identifier of either side of the table.
   TABLE_CODE TEXT NOT NULL, --- Identifier of a specific table.
   COLOR_NAME TEXT NOT NULL, --- Name of the colour on the indicated side.
   COLOR_RGB TEXT CONSTRAINT CHECK_COLOR CHECK ( --- RGB code of the colour on the indicated side. Should start with a hash sign, followed by 6 capitalised hexadecimal characters.
     COLOR_RGB GLOB '#[0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F]'
   ),
+  PRIMARY KEY(SIDE_ID, TABLE_CODE),
   FOREIGN KEY(SIDE_ID) REFERENCES table_sides(SIDE_ID),
-  FOREIGN KEY(TABLE_CODE) REFERENCES tables(TABLE_CODE),
-  UNIQUE(TABLE_CODE, SIDE_ID)
+  FOREIGN KEY(TABLE_CODE) REFERENCES tables(TABLE_CODE)
 );
 CREATE TABLE roles( --- The roles a player can have (i.e., defense or strike).
   ROLE_CODE TEXT PRIMARY KEY NOT NULL, --- A unique identifier for each role.

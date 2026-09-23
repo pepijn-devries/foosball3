@@ -18,7 +18,10 @@ recordUI <- function(id, table, label = "Edit record") {
           stringr::str_to_title()
         
         if (!is.na(.data$parent_table)) {
-          lookupUI(ns(widget_name), label, "Edit record")
+          lookupUI(ns(widget_name), label, ifelse(is_pk, "Identifier", "Edit record")) |>
+            disab_cond(is_pk)
+        } else if (grepl("RGB", .data$column)) {
+          shinyWidgets::colorPickr(ns(widget_name), label)
         } else {
           switch(
             type,
@@ -105,46 +108,40 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
         shiny::req(record_picker())
         shiny::req(tournaments())
         rec_id <- record_picker()$id
+        if (rec_id == "") return(NULL)
 
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         pk <- get_primary_key_global(table_name)
         tp <- get_type_global(table_name, pk)
-        if (tp == "INTEGER") rec_id <- as.integer(rec_id) |> suppressWarnings()
-        dplyr::tbl(con, table_name) |>
-          dplyr::filter(!!rlang::sym(pk) == !!rec_id) |>
-          dplyr::collect()
+        if (length(tp) > 1) {
+          rec_id <- strsplit(rec_id, "\\|") |> unlist()
+        }
+        rec_id <- mapply(\(rec_type, rid) {
+          if (rec_type == "INTEGER") rid <- as.integer(rid) |>
+              suppressWarnings()
+          rid
+        }, rec_type = tp, rid = rec_id, SIMPLIFY = FALSE)
+        lazy_table <- dplyr::tbl(con, table_name)
+        for (i in seq_along(pk)) {
+          lazy_table <-
+            dplyr::filter(lazy_table, !!rlang::sym(pk[[i]]) == !!rec_id[[i]])
+        }
+        lazy_table |> dplyr::collect()
       })
 
       shiny::observeEvent(get_record(), {
-        fields <- db_join_keys() |>
-          dplyr::filter(.data$table == .env$table_name)
         rec <- get_record()
-        fields |>
-          dplyr::rowwise() |>
-          dplyr::mutate(
-            updates = {
-              widget_name <- paste(table_name, .data$column, sep = "-")
-              current <- input[[widget_name]]
-              if (!identical(current, rec[[.data$column]])) {
-                if (!is.na(.data$parent_table)) {
-                  lu <- lookups[[.data$column]]()
-                  lu$set_selected(rec[[.data$column]])
-                } else {
-                  switch(
-                    .data$data_type,
-                    INTEGER = {
-                      shiny::updateNumericInput(inputId = widget_name, value = rec[[.data$column]])
-                    },
-                    TEXT = {
-                      shiny::updateTextInput(inputId = widget_name, value = rec[[.data$column]])
-                    }, {
-                      warning("Data type not implemented")
-                    })
-                }
-              }
-              0
-            })
+        for (field in colnames(rec)) {
+          update_value(field, rec[[field]])
+        }
+      })
+      
+      shiny::observeEvent(input$btnNew, {
+        rec <- get_record()
+        for (field in colnames(rec)) {
+          update_value(field, NA)
+        }
       })
 
       get_new_pk <- shiny::reactive({
@@ -181,9 +178,24 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
         pk <- get_primary_key_global(table_name)
         fk <- db_static_fk |>
           dplyr::filter(.data$child_table == .env$table_name)
-        new_key <- input[[paste(table_name, pk, sep = "-")]]
-        if (is.na(new_key) || new_key == "") {
-          new_key <- get_new_pk()
+        is_new <- FALSE
+        new_key <-
+          lapply(pk, \(k) {
+            nk <- input[[paste(table_name, k, sep = "-")]]
+            is_lookup <- is.null(nk)
+            if (is_lookup) nk <- lookups[[k]]()$id
+            if (!is_lookup && (is.na(nk) || nk == "")) {
+              nk <- get_new_pk()
+              is_new <<- TRUE
+            }
+            nk
+          }) |>
+          unlist()
+        if (length(new_key) == 0 || (length(new_key) > 1L && is_new)) {
+          shinyWidgets::show_alert(
+            "Cannot create new record for this table",
+            type = "error")
+          return()
         }
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
@@ -201,8 +213,8 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             src <- src[sel]
             src_field <- src_field[sel]
           }
-          if (pk %in% src_field) {
-            val <- new_key
+          if (any(pk %in% src_field)) {
+            val <- new_key[pk %in% src_field]
           } else {
             val <- input[[src]]
           }
@@ -216,11 +228,12 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
           dplyr::rows_upsert(
             lazy_tib,
             edited_row,
-            by = pk,
+            by       = pk,
             in_place = TRUE,
-            copy = TRUE
+            copy     = TRUE
           )
-          record_picker()$add(edited_row[[pk]])
+          create_crucial_foreigns(table_name, edited_row)
+          if (length(pk) == 1L) record_picker()$add(edited_row[[pk]])
         }, error = \(e) {
           shinyWidgets::show_alert( "Failed to Save Record", strip_ansi(e$parent$message),
                                     "error" )
@@ -228,6 +241,34 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
 
       })
 
+      create_crucial_foreigns <- function(table_name, edited_row) {
+        
+        switch(
+          table_name,
+          tables = {
+            con <- tournaments()$database$connect()
+            on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
+            lazy_tib <-
+              dplyr::tbl(con, "side_properties")
+            edited_row <-
+              expand.grid(
+                SIDE_ID = 1L:2L,
+                TABLE_CODE = edited_row$TABLE_CODE
+              ) |>
+              dplyr::mutate(
+                COLOR_NAME = c("Side 1", "Side 2"),
+                COLOR_RGB = c("#FFFFFF", "#000000")
+              )
+            dplyr::rows_upsert(
+              lazy_tib,
+              edited_row,
+              by       = c("SIDE_ID", "TABLE_CODE"),
+              in_place = TRUE,
+              copy     = TRUE
+            )
+          })
+      }
+      
       shiny::observeEvent(input$btnDelete, {
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
@@ -243,23 +284,42 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
                                     strip_ansi(e$message), "error" )
         })
       })
-      
-      shiny::observeEvent(input$btnNew, {
-        pk <- get_primary_key_global(table_name)
-        tp <- get_type_global(table_name, pk)
-        widget_name <- paste(table_name, pk, sep = "-")
-        switch(
-          tp,
-          INTEGER = {
-            shiny::updateNumericInput(inputId = widget_name, value = NA)
-          },
-          TEXT = {
-            shiny::updateTextInput(inputId = widget_name, value = NA)
-          }
 
-        )
+      update_value <- function(fields, val) {
+        tp <- get_type_global(table_name, fields)
+        fk <- db_join_keys() |>
+          dplyr::filter(.data$table == !!table_name &
+                          !is.na(.data$parent_table))
+        widget_name <- paste(table_name, fields, sep = "-")
+        mapply(\(key_type, wn, is_foreign, cl) {
+          if (is_foreign) {
+            lu <- lookups[[cl]]()
+            if (!identical(as.character(val), lu$id)) {
+              lu$set_selected(val)
+            }
+          } else if (grepl("RGB", cl)) {
+            if (!identical(as.character(val), as.character(input[[wn]]))) {
+              shinyWidgets::updateColorPickr(
+                inputId = wn, value = val, session = session
+              )
+            }
+          } else {
+            if (!identical(as.character(val), as.character(input[[wn]]))) {
+              switch(
+                key_type,
+                INTEGER = {
+                  shiny::updateNumericInput(inputId = wn, value = val, session = session)
+                },
+                TEXT = {
+                  shiny::updateTextInput(inputId = wn, value = val, session = session)
+                }
+              )
+            }
+          }
+          
+        }, key_type = tp, wn = widget_name, is_foreign = fields %in% fk$column, cl = fields)
         NULL
-      })
+      }
       
       return( shiny::reactive({ }) )
     }

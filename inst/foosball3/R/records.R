@@ -65,9 +65,23 @@ recordsServer <- function(id, tournaments) {
         nms <- colnames(lazy_table)
         pk <- get_primary_key_global(input$nav_recs)
         descript <- get_description_field(pk, nms)
+        opts <- lazy_table |>
+          dplyr::collect() |>
+          dplyr::rowwise() |>
+          dplyr::summarise(
+            opts = paste(unlist(dplyr::pick(dplyr::any_of(pk))), collapse = "|"),
+            descript1 = gsub("\\|", ", ", .data$opts),
+            descript2 = dplyr::pick(dplyr::any_of(descript))) |>
+          dplyr::arrange(.data$descript2, .data$descript1)
+        descript <-
+          if (length(pk) > 1) {
+            opts$descript1 |> unlist() |> unname()
+          } else {
+            opts$descript2 |> unlist() |> unname()
+          }
         opts <- structure(
-          lazy_table |> dplyr::pull(pk),
-          names = lazy_table |> dplyr::pull(descript),
+          opts$opts,
+          names = descript,
           class = "list"
         ) |> as.list()
         if (!identical(options_cache(), opts)) {

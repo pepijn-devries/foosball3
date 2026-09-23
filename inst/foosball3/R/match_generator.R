@@ -50,11 +50,11 @@ matchGeneratorServer <- function(id, matches, avatars, phases) {
       start_final  <- shiny::reactiveVal()
       start_consol <- shiny::reactiveVal()
       mod_semi     <- finalGeneratorServer(
-        "mod_semi", "semi", matches, start_semi, avatars, phases)
+        "mod_semi", "Semi final", matches, start_semi, avatars, phases)
       mod_final    <- finalGeneratorServer(
-        "mod_final", "final", matches, start_final, avatars, phases)
+        "mod_final", "Final", matches, start_final, avatars, phases)
       mod_consol   <- finalGeneratorServer(
-        "mod_consol", "consol", matches, start_consol, avatars, phases)
+        "mod_consol", "Consolation final", matches, start_consol, avatars, phases)
 
       shiny::observeEvent(matches(), {
         bslib::nav_select("phase-generator", matches()$phase$selected)

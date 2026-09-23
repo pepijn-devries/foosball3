@@ -1,4 +1,4 @@
-personPickerUI <- function(id, ..., dropboxWrapper = "card") {
+personPickerUI <- function(id, ..., dropboxWrapper = "body") {
   ns <- shiny::NS(id)
   shinyWidgets::virtualSelectInput(
     ns("selectPeople"), ..., choices = character(0),
@@ -10,7 +10,7 @@ personPickerUI <- function(id, ..., dropboxWrapper = "card") {
 
 personPickerServer <- function(
     id, tournaments, init, avatars, validator, min_required = 0L,
-    this_tournament_only = FALSE, allow_new = FALSE) {
+    allow_new = FALSE, filter_id = \() NULL) {
   
   shiny::moduleServer(
     id,
@@ -88,30 +88,45 @@ personPickerServer <- function(
         }
       }
 
-      shiny::observe({
+      get_options <- shiny::reactive({
         opts <- avatars()$options
-        sel <- select_cache()
-        needs_update <- FALSE
+        fid <- filter_id()
+        if (!is.null(fid)) {
+          filt <- opts %in% fid
+          attr(opts, "PERSON_NAME") <- attr(opts, "PERSON_NAME")[filt]
+          opts[filt]
+        } else opts
+      })
+      
+      shiny::observeEvent(get_options(), {
+        opts <- get_options()
+        sel <- shiny::isolate(select_cache())
+        
         if (!is.null(sel)) {
           unsel <- sel[!sel %in% as.character(unname(opts))]
           sel <- sel[sel %in% as.character(unname(opts))]
-          needs_update <- TRUE
+          
           if (length(unsel) > 0) {
-            new_sel <-
-              unname(opts)[match(tolower(unsel), tolower(attr(opts, "PERSON_NAME")))] |>
+            new_sel <- unname(opts)[match(tolower(unsel), tolower(attr(opts, "PERSON_NAME")))] |>
               as.character()
             if (length(new_sel) > 0 && !any(is.na(new_sel))) {
-              select_cache(union(new_sel, sel))
+              sel <- union(new_sel, sel)
+              select_cache(sel)
             }
           }
         }
-        if (needs_update || !is.null(opts)) {
+        
+        current_ui_val <- shiny::isolate(input$selectPeople)
+        if (!identical(current_ui_val, sel) || !is.null(opts)) {
           shinyWidgets::updateVirtualSelect(
-            "selectPeople", selected = sel, choices = opts
+            session = session,
+            inputId = "selectPeople", 
+            selected = sel, 
+            choices = opts
           )
         }
-      })
-
+      }, ignoreNULL = FALSE)
+      
       shiny::observeEvent(input$selectPeople, {
         add_fun(input$selectPeople)
         select_cache(input$selectPeople)
