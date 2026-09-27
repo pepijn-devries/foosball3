@@ -22,10 +22,10 @@ CREATE TABLE picture_tags( --- Table containing coordinates that tag faces insid
 );
 CREATE TABLE periods( --- Time periods. It is used to track when I table was located at which location.
   PERIOD_ID INTEGER PRIMARY KEY NOT NULL, --- Unique identifier for a period.
-  PERIOD_START TEXT NOT NULL CONSTRAINT CHECK_START_DATE CHECK ( --- Start date of the period, formated as YYYY-MM-DD
+  PERIOD_START TEXT NOT NULL CONSTRAINT CHECK_START_DATE CHECK ( --- Start date of the period, formatted as YYYY-MM-DD
     PERIOD_START GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
   ),
-  PERIOD_END TEXT CONSTRAINT CHECK_END_DATE CHECK ( --- End date of the period, formated as YYYY-MM-DD
+  PERIOD_END TEXT CONSTRAINT CHECK_END_DATE CHECK ( --- End date of the period, formatted as YYYY-MM-DD
     PERIOD_END GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
   ),
   TABLE_CODE TEXT NOT NULL, --- Table to which the period applies.
@@ -86,25 +86,25 @@ CREATE TABLE positions( --- A table of positions around the table. It is a combi
   UNIQUE(ROLE_CODE, SIDE_ID)
 );
 CREATE TABLE genders( --- A list of genders that can optionally be associated with people
-  GENDER_CODE TEXT PRIMARY KEY NOT NULL DEFAULT 'NS',
-  GENDER TEXT NOT NULL DEFAULT 'Not specified'
+  GENDER_CODE TEXT PRIMARY KEY NOT NULL DEFAULT 'NS', --- A unique code that represents a person's gender
+  GENDER TEXT NOT NULL DEFAULT 'Not specified' --- A description of a gender representing a person
 );
 CREATE TABLE persons( --- A list of persons. It can also include spectators, or just anyone.
-  PERSON_ID INTEGER PRIMARY KEY NOT NULL,
-  PERSON_NAME TEXT NOT NULL UNIQUE,
-  GENDER_CODE TEXT NOT NULL DEFAULT 'NS',
-  QUALIFICATION_CODE TEXT NOT NULL DEFAULT 'H',
-  HOME_BASE TEXT,
+  PERSON_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier for a person
+  PERSON_NAME TEXT NOT NULL UNIQUE, --- A unique name of a person. Add nicknames or other unique elements for persons with the same name
+  GENDER_CODE TEXT NOT NULL DEFAULT 'NS', --- Optional, the gender of a person
+  QUALIFICATION_CODE TEXT NOT NULL DEFAULT 'H', --- A code that represents the experience level of a person. When set to 'H' historical information from the database is used to determine this
+  HOME_BASE TEXT, --- Location code that best represents the location at which the person is based
   FOREIGN KEY(GENDER_CODE) REFERENCES genders(GENDER_CODE),
   FOREIGN KEY(QUALIFICATION_CODE) REFERENCES qualifications(QUALIFICATION_CODE),
   FOREIGN KEY(HOME_BASE) REFERENCES locations(LOCATION_CODE)
 );
 CREATE TABLE qualifications( --- Qualifications that can be assigned to (new) players.
-  QUALIFICATION_CODE TEXT PRIMARY KEY NOT NULL,
-  QUALIFICATION TEXT NOT NULL UNIQUE,
-  QUALIFICATION_RATIO REAL NOT NULL,
-  QUALIFICATION_SUCCESS REAL NOT NULL,
-  QUALIFICATION_DESCR TEXT
+  QUALIFICATION_CODE TEXT PRIMARY KEY NOT NULL, --- A unique identifier for qualifier that represents the experience level of a person
+  QUALIFICATION TEXT NOT NULL UNIQUE, --- A short descriptive text on the level of expertise
+  QUALIFICATION_RATIO REAL NOT NULL, --- A goal ratio that best represents the average performance of a player. Average ratio between goals scored and goals conceded.
+  QUALIFICATION_SUCCESS REAL NOT NULL, --- The success rate that best represents the average performance of a player. A rate of 0.5 means that the person wins 50% of the times
+  QUALIFICATION_DESCR TEXT --- A more detailed description on the qualification class
 );
 CREATE TABLE participants( --- A table of participants. A person will get a unique participation number for each tournament he/she joins. This will let you keep track of the person progress in a tournament, but will also let you keep track of historical performance.
   PARTICIPANT_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier for each participant.
@@ -132,11 +132,11 @@ CREATE TABLE match_players( --- Participants that play in specific matches.
   UNIQUE(MATCH_ID, PARTICIPANT_ID, POSITION_CODE)
 );
 CREATE TABLE matches( --- A list of matches associated with a tournament
-  MATCH_ID INTEGER PRIMARY KEY NOT NULL,
-  TOURNAMENT_ID INTEGER NOT NULL,
-  TOURNAMENT_PHASE_CODE TEXT NOT NULL,
-  TABLE_CODE TEXT NOT NULL,
-  BALL_ID INTEGER NOT NULL,
+  MATCH_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier for a match
+  TOURNAMENT_ID INTEGER NOT NULL, --- The tournament in which the match was played
+  TOURNAMENT_PHASE_CODE TEXT NOT NULL, --- Phase of the tournament in which the match was played
+  TABLE_CODE TEXT NOT NULL, --- Table on which the match was played
+  BALL_ID INTEGER NOT NULL, --- Ball that was used during the match
   FOREIGN KEY(TOURNAMENT_ID) REFERENCES tournaments(TOURNAMENT_ID),
   FOREIGN KEY(TOURNAMENT_PHASE_CODE) REFERENCES tournament_phases(TOURNAMENT_PHASE_CODE),
   FOREIGN KEY(TABLE_CODE) REFERENCES tables(TABLE_CODE),
@@ -144,16 +144,16 @@ CREATE TABLE matches( --- A list of matches associated with a tournament
   UNIQUE(MATCH_ID, TOURNAMENT_ID)
 );
 CREATE TABLE balls( --- Balls that can be used in a tournament.
-  BALL_ID INTEGER PRIMARY KEY NOT NULL,
-  BALL_DESCRIPTION TEXT NOT NULL UNIQUE
+  BALL_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier for a ball
+  BALL_DESCRIPTION TEXT NOT NULL UNIQUE --- A description of a specific ball
 );
 CREATE TABLE tournament_phase_flow( --- Overview of how phases of a tournament flow for a specific tournament type
-  TOURNAMENT_TYPE_CODE TEXT NOT NULL DEFAULT 'I',
-  PHASE_ORDER INTEGER NOT NULL CONSTRAINT PHASE_ORDER_CHECK CHECK (
+  TOURNAMENT_TYPE_CODE TEXT NOT NULL DEFAULT 'I', --- Unique identifier for tournament types
+  PHASE_ORDER INTEGER NOT NULL CONSTRAINT PHASE_ORDER_CHECK CHECK ( --- Order of succession of each phase in the specified tournament type
     PHASE_ORDER > 0
   ),
-  TOURNAMENT_PHASE_CODE TEXT NOT NULL,
-  IS_OPTIONAL INTEGER NOT NULL CONSTRAINT CHECK_IS_OPTIONAL CHECK(
+  TOURNAMENT_PHASE_CODE TEXT NOT NULL, --- A specific phase that can be expected for the specified tournament type
+  IS_OPTIONAL INTEGER NOT NULL CONSTRAINT CHECK_IS_OPTIONAL CHECK( --- Value that indicates if the specified is optional (1) or mandatory (0)
     IS_OPTIONAL IN (0, 1)
   ),
   PRIMARY KEY(TOURNAMENT_TYPE_CODE, TOURNAMENT_PHASE_CODE),
@@ -161,48 +161,48 @@ CREATE TABLE tournament_phase_flow( --- Overview of how phases of a tournament f
   FOREIGN KEY(TOURNAMENT_PHASE_CODE) REFERENCES tournament_phases(TOURNAMENT_PHASE_CODE)
 );
 CREATE TABLE tournament_types( --- Types of tournaments
-  TOURNAMENT_TYPE_CODE TEXT PRIMARY KEY NOT NULL DEFAULT 'I',
-  TOURNAMENT_TYPE TEXT NOT NULL UNIQUE DEFAULT 'Individual',
-  TOURNAMENT_TYPE_DESCRIPTION TEXT
+  TOURNAMENT_TYPE_CODE TEXT PRIMARY KEY NOT NULL DEFAULT 'I', --- A unique identifier for tournament types
+  TOURNAMENT_TYPE TEXT NOT NULL UNIQUE DEFAULT 'Individual', --- A short description of the tournament type
+  TOURNAMENT_TYPE_DESCRIPTION TEXT --- A longer description of the tournament type
 );
 CREATE TABLE tournaments( --- A list of tournaments.
-  TOURNAMENT_ID INTEGER PRIMARY KEY NOT NULL,
-  TOURNAMENT_TYPE_CODE TEXT NOT NULL DEFAULT 'I',
-  TOURNAMENT_DATE TEXT CONSTRAINT CHECK_DATE CHECK ( --- YYYY-MM-DD
+  TOURNAMENT_ID INTEGER PRIMARY KEY NOT NULL, --- Unique identifier of a tournament
+  TOURNAMENT_TYPE_CODE TEXT NOT NULL DEFAULT 'I', --- Type of tournament
+  TOURNAMENT_DATE TEXT CONSTRAINT CHECK_DATE CHECK ( --- Date at which the tournament took place. Should be formatted: YYYY-MM-DD
     TOURNAMENT_DATE GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
   ),
-  TOURNAMENT_DURATION FLOAT CONSTRAINT CHECK_DURATION CHECK (
+  TOURNAMENT_DURATION FLOAT CONSTRAINT CHECK_DURATION CHECK ( --- Duration of the tournament in hours. It is used to calculate duration of individual matches
     TOURNAMENT_DURATION > 0
   ),
-  POINT_SYSTEM_ID INTEGER,
-  LOCATION_CODE TEXT,
-  TOURNAMENT_STATE_CODE TEXT NOT NULL,
-  TOURNAMENT_COMMENTS TEXT,
+  POINT_SYSTEM_ID INTEGER, --- Method to count points during the tournament
+  LOCATION_CODE TEXT, --- Location of the tournament
+  TOURNAMENT_STATE_CODE TEXT NOT NULL, --- State of the tournament
+  TOURNAMENT_COMMENTS TEXT, --- Comments about the tournament
   FOREIGN KEY(LOCATION_CODE) REFERENCES locations(LOCATION_CODE),
   FOREIGN KEY(TOURNAMENT_TYPE_CODE) REFERENCES tournament_types(TOURNAMENT_TYPE_CODE),
   FOREIGN KEY(POINT_SYSTEM_ID) REFERENCES point_systems(POINT_SYSTEM_ID),
   FOREIGN KEY(TOURNAMENT_STATE_CODE) REFERENCES tournament_states(TOURNAMENT_STATE_CODE)
 );
 CREATE TABLE tournament_states( --- States that can be applied to each tournament.
-  TOURNAMENT_STATE_CODE TEXT PRIMARY KEY NOT NULL,
-  TOURNAMENT_STATE TEXT NOT NULL UNIQUE
+  TOURNAMENT_STATE_CODE TEXT PRIMARY KEY NOT NULL, --- A unique identifier of tournament states
+  TOURNAMENT_STATE TEXT NOT NULL UNIQUE --- A short description of the tournament state
 );
 CREATE TABLE point_systems( --- System for counting points based on match results during the tournament.
-  POINT_SYSTEM_ID INTEGER PRIMARY KEY NOT NULL,
-  POINT_SYSTEM_DESCRIPTION TEXT NOT NULL,
-  MAX_POINTS_PER_MATCH INTEGER NOT NULL
+  POINT_SYSTEM_ID INTEGER PRIMARY KEY NOT NULL, --- A unique identifier to represent point systems
+  POINT_SYSTEM_DESCRIPTION TEXT NOT NULL, --- A description of the system used to count points
+  MAX_POINTS_PER_MATCH INTEGER NOT NULL --- Specifies a cap (if any) on number of goals per match
 );
 CREATE TABLE tournament_organisers( --- People that organised a tournament
-  TOURNAMENT_ID INTEGER NOT NULL,
-  PERSON_ID INTEGER NOT NULL,
+  TOURNAMENT_ID INTEGER NOT NULL, --- Tournament being organised
+  PERSON_ID INTEGER NOT NULL, --- Person organising the tournament
   FOREIGN KEY(TOURNAMENT_ID) REFERENCES tournaments(TOURNAMENT_ID),
   FOREIGN KEY(PERSON_ID) REFERENCES persons(PERSON_ID),
   UNIQUE(TOURNAMENT_ID, PERSON_ID)
 );
 CREATE TABLE tournament_phases( --- Phases of matches in a tournament
-  TOURNAMENT_PHASE_CODE TEXT PRIMARY KEY NOT NULL,
-  TOURNAMENT_PHASE TEXT NOT NULL,
-  IS_NESTED INTEGER NOT NULL CONSTRAINT CHECK_NESTED CHECK(
+  TOURNAMENT_PHASE_CODE TEXT PRIMARY KEY NOT NULL, --- A unique identifier of tournament phases
+  TOURNAMENT_PHASE TEXT NOT NULL, --- A short description of tournament phases
+  IS_NESTED INTEGER NOT NULL CONSTRAINT CHECK_NESTED CHECK( --- Specifies if a phase has nested structure
     IS_NESTED IN (0, 1)
   ) DEFAULT 0
 );

@@ -38,8 +38,7 @@ penaltyServer <- function(id, tournaments, avatars) {
       
       mod_naughty <-
         personPickerServer(
-          "mod_naughty", tournaments,
-          \() NULL, avatars, NULL, 1L, TRUE)
+          "mod_naughty", tournaments, avatars, NULL, 1L, TRUE)
 
       get_participant <- shiny::reactive({
         con <- tournaments()$database$connect()

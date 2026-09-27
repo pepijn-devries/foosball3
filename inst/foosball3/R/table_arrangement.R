@@ -30,13 +30,16 @@ tableArrangementUI <- function(id) {
 
 tableArrangementServer <- function(id, tournaments, avatars, person_filter,
                                    required_players = \() NULL,
-                                   teams = \() NULL, restrict_teams = TRUE) {
+                                   teams = \() NULL, restrict_teams = TRUE,
+                                   current_config = \() NULL) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
       ns <- session$ns
       
-      validator <- NULL #TODO
+      validator    <- NULL #TODO
+      config_cache <- shiny::reactiveVal()
+      
       mod_table <- lookupServer(
         "mod_table", "Table", tournaments, "tables", "%s", validator)
       
@@ -59,7 +62,7 @@ tableArrangementServer <- function(id, tournaments, avatars, person_filter,
       
       shiny::observe({
         tm <- teams() #TODO
-        if (!is.null(tm)) browser()
+        # if (!is.null(tm)) browser()
       })
       
       shiny::observe({
@@ -80,16 +83,57 @@ tableArrangementServer <- function(id, tournaments, avatars, person_filter,
       
       mod_d1 <-
         personPickerServer(
-          "mod_d1", tournaments, \() NULL, avatars, NULL, 1L, TRUE, person_filter)
+          "mod_d1", tournaments, avatars, NULL, 1L, TRUE, person_filter)
       mod_s1 <-
         personPickerServer(
-          "mod_s1", tournaments, \() NULL, avatars, NULL, 1L, TRUE, person_filter)
+          "mod_s1", tournaments, avatars, NULL, 1L, TRUE, person_filter)
       mod_d2 <-
         personPickerServer(
-          "mod_d2", tournaments, \() NULL, avatars, NULL, 1L, TRUE, person_filter)
+          "mod_d2", tournaments, avatars, NULL, 1L, TRUE, person_filter)
       mod_s2 <-
         personPickerServer(
-          "mod_s2", tournaments, \() NULL, avatars, NULL, 1L, TRUE, person_filter)
+          "mod_s2", tournaments, avatars, NULL, 1L, TRUE, person_filter)
+      
+      shiny::observeEvent(config_cache(), {
+        cc <- config_cache()
+        get_pos <- \(pos_id) {
+          result <-
+            cc |>
+            dplyr::filter(.data$POSITION_CODE == !!pos_id) |>
+            dplyr::pull("PERSON_ID") |>
+            as.character()
+          if (length(result) == 0) result <- ""
+          result
+        }
+        
+        d1 <- mod_d1()
+        d2 <- mod_d2()
+        s1 <- mod_s1()
+        s2 <- mod_s2()
+        if (d1$id != get_pos("D1")) d1$select(get_pos("D1"))
+        if (d2$id != get_pos("D2")) d2$select(get_pos("D2"))
+        if (s1$id != get_pos("S1")) s1$select(get_pos("S1"))
+        if (s2$id != get_pos("S2")) s2$select(get_pos("S2"))
+      })
+      
+      shiny::observeEvent(person_filter(), {
+        cc <- current_config() |>
+          dplyr::mutate(
+            POSITION_CODE = {
+              pc <- .data$POSITION_CODE
+              u1_count <- cumsum(pc == "U1")
+              u2_count <- cumsum(pc == "U2")
+              pc[pc == "U1" & u1_count == 1] <- "D1"
+              pc[pc == "U1" & u1_count == 2] <- "S1"
+              pc[pc == "U2" & u2_count == 1] <- "D2"
+              pc[pc == "U2" & u2_count == 2] <- "S2"
+              pc
+            }
+          )
+        if (nrow(cc) > 0) {
+          if (!identical(config_cache(), cc)) config_cache(cc)
+        }
+      })
       
       return(shiny::reactive({}))
     }

@@ -9,7 +9,7 @@ personPickerUI <- function(id, ..., dropboxWrapper = "body") {
 }
 
 personPickerServer <- function(
-    id, tournaments, init, avatars, validator, min_required = 0L,
+    id, tournaments, avatars, validator, min_required = 0L,
     allow_new = FALSE, filter_id = \() NULL) {
   
   shiny::moduleServer(

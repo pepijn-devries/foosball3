@@ -35,13 +35,11 @@ tournamentEditorServer <- function(
       validator <- shinyvalidate::InputValidator$new()
       
       mod_orgs <-
-        personPickerServer("mod_orgs", tournaments,
-                           tournament_people()$organisers,
-                           avatars, validator, 1L, allow_new = TRUE)
+        personPickerServer(
+          "mod_orgs", tournaments, avatars, validator, 1L, allow_new = TRUE)
       mod_part <-
-        personPickerServer("mod_part", tournaments,
-                           tournament_people()$participants,
-                           avatars, validator, 4L, allow_new = TRUE)
+        personPickerServer(
+          "mod_part", tournaments, avatars, validator, 4L, allow_new = TRUE)
       mod_loc <- lookupServer(
         "mod_loc", "Location", tournaments, "locations", "%s", validator)
       mod_ps <- lookupServer(

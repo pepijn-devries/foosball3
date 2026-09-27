@@ -13,11 +13,36 @@ finalGeneratorServer <- function(id, type, matches, btnStart, avatars, phases) {
       person_filter <- shiny::reactiveVal()
       
       get_match_id <- shiny::reactive({
-        matches()$matches$MATCH_ID
-      })
+        tnmt <- matches()$tournament
+        con <- tnmt$database$connect()
+        on.exit( { RSQLite::dbDisconnect(con) }, add = TRUE)
+        
+        dplyr::tbl(con, "matches") |>
+          dplyr::left_join(
+            dplyr::tbl(con, "tournament_phases") |>
+              dplyr::select(dplyr::any_of(c("TOURNAMENT_PHASE_CODE",
+                                           "TOURNAMENT_PHASE"))),
+            by = "TOURNAMENT_PHASE_CODE"
+          ) |>
+          dplyr::filter(.data$TOURNAMENT_ID %in% !!tnmt$selected$TOURNAMENT_ID &
+                          .data$TOURNAMENT_PHASE %in% !!type) |>
+          dplyr::collect()
+        })
       
-      shiny::observe({
-        get_match_id()#TODO
+      get_match_config <- shiny::reactive({
+        m <- get_match_id()
+        tnmt <- matches()$tournament
+        con <- tnmt$database$connect()
+        on.exit( { RSQLite::dbDisconnect(con) }, add = TRUE)
+        dplyr::tbl(con, "match_players") |>
+          dplyr::filter(.data$MATCH_ID %in% !!m$MATCH_ID) |>
+          dplyr::left_join(
+            dplyr::tbl(con, "participants"),
+            by = "PARTICIPANT_ID"
+          ) |>
+          dplyr::select(dplyr::any_of(c(
+            "PERSON_ID", "POSITION_CODE"))) |>
+          dplyr::collect()
       })
       
       get_previous_results <- shiny::reactive({
@@ -42,7 +67,7 @@ finalGeneratorServer <- function(id, type, matches, btnStart, avatars, phases) {
             `Consolation final` = 3:4, ## Players ranking 3 and 4 from semi final
             `Semi final`        = 1:4) ## Players ranking 1 to 4 from qualification
         prev |>
-          dplyr::arrange(-.data$RESULT) |>
+          dplyr::arrange(-.data$TOURNAMENT_POINTS) |>
           dplyr::filter(dplyr::row_number() %in% !!rank_nr) |>
           dplyr::pull("PERSON_ID")
       })
@@ -60,10 +85,11 @@ finalGeneratorServer <- function(id, type, matches, btnStart, avatars, phases) {
             `second and third` = pf[2L:3L])
         } else NULL
       })
-      
+
       mod_table <- tableArrangementServer(
         "mod_table", shiny::reactive({ matches()$tournament }),
-        avatars, person_filter, person_filter, teams_filter)
+        avatars, person_filter, person_filter, teams_filter, TRUE,
+        get_match_config)
       
       shiny::observe({mod_table()}) #TODO
       
