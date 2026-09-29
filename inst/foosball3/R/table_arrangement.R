@@ -1,5 +1,7 @@
 tableArrangementUI <- function(id) {
   ns <- shiny::NS(id)
+  val_host <- shiny::textInput(ns("validation_host"), "", "", width = "100%")
+  val_host$children <- val_host$children[-1]
   tagList(
     lookupUI(ns("mod_table"), "Table", "On which the matches are played"),
     bslib::layout_columns(
@@ -24,7 +26,10 @@ tableArrangementUI <- function(id) {
           personPickerUI(ns("mod_d2"), "Defense")
         )
       )
-    )
+    ),
+    val_host,
+    shinyjs::inlineCSS(sprintf("#%s { display:none !important; }",
+                               ns("validation_host"))),
   )
 }
 
@@ -36,10 +41,48 @@ tableArrangementServer <- function(id, tournaments, avatars, person_filter,
     id,
     function(input, output, session) {
       ns <- session$ns
-      
-      validator    <- NULL #TODO
       config_cache <- shiny::reactiveVal()
       
+      validator <- shinyvalidate::InputValidator$new()
+      
+      validator$add_rule("validation_host", ~{
+        check <- all(required_players() %in% unlist(config()))
+        if (!check) "All required players need to be placed"
+      })
+      
+      if (restrict_teams) {
+        validator$add_rule("validation_host", ~{
+          pl <- config() |> unlist()
+          tms <- teams()
+          if (is.null(tms)) return(NULL)
+          check <-
+            (all(pl[c("d1", "s1")] %in% tms[[1]]) ||
+               all(pl[c("d1", "s1")] %in% tms[[2]])) &&
+            (all(pl[c("d2", "s2")] %in% tms[[1]]) ||
+               all(pl[c("d2", "s2")] %in% tms[[2]]))
+          
+          if (!check) {
+            sprintf("Teams restriction is not honourated. Team '%s' and '%s' should play on opposite sides",
+                    names(tms)[1], names(tms)[2])
+          }
+        })
+      }
+      
+      validator$add_rule("validation_host", ~{
+        if (any(unlist(config()) == ""))
+          "All positions should be assigned to a player"
+      })
+      
+      validator$add_rule("validation_host", ~{
+        pl <- config() |> unlist()
+        check <- any(pl[c("d1", "s1")] %in% pl[c("d2", "s2")])
+        if (check) {
+          "The same person can not play on both sides of the table simultaneously"
+        }
+      })
+      
+      validator$enable()
+
       mod_table <- lookupServer(
         "mod_table", "Table", tournaments, "tables", "%s", validator)
       
@@ -58,11 +101,6 @@ tableArrangementServer <- function(id, tournaments, avatars, person_filter,
             COLOR_RGB  = c("#FFFFFF", "#000000")
           )
         }
-      })
-      
-      shiny::observe({
-        tm <- teams() #TODO
-        # if (!is.null(tm)) browser()
       })
       
       shiny::observe({
@@ -135,7 +173,25 @@ tableArrangementServer <- function(id, tournaments, avatars, person_filter,
         }
       })
       
-      return(shiny::reactive({}))
+      config <- shiny::reactive({
+        list(
+          d1 = mod_d1()$id,
+          s1 = mod_s1()$id,
+          d2 = mod_d2()$id,
+          s2 = mod_s2()$id
+        )
+      })
+      
+      result <- shiny::reactive({
+        c(
+          config(),
+          list(
+            validate = validator$validate()
+          )
+        )
+      })
+      
+      return(result)
     }
   )
 }

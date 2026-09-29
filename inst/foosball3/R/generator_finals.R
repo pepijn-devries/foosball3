@@ -1,8 +1,7 @@
 finalGeneratorUI <- function(id, type) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    tableArrangementUI(ns("mod_table")),
-    "TODO"
+    tableArrangementUI(ns("mod_table"))
   )
 }
 
@@ -91,7 +90,10 @@ finalGeneratorServer <- function(id, type, matches, btnStart, avatars, phases) {
         avatars, person_filter, person_filter, teams_filter, TRUE,
         get_match_config)
       
-      shiny::observe({mod_table()}) #TODO
+      shiny::observeEvent(btnStart(), {
+        m <- mod_table()
+        browser() #TODO
+      })
       
       return(shiny::reactive({}))
     }
