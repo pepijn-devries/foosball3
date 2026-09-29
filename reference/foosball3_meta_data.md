@@ -23,7 +23,7 @@ Returns a `data.frame` with description information
 
 ``` r
 foosball3_meta_data()
-#> # A tibble: 132 × 3
+#> # A tibble: 121 × 3
 #>    table        field_name          description                                 
 #>    <chr>        <chr>               <chr>                                       
 #>  1 pictures     CREATE              Optional pictures of the tournament. Ideal …
@@ -36,5 +36,5 @@ foosball3_meta_data()
 #>  8 picture_tags CREATE              Table containing coordinates that tag faces…
 #>  9 picture_tags TAG_ID              Unique identifier for each tag.             
 #> 10 picture_tags PICTURE_ID          Picture that is being tagged.               
-#> # ℹ 122 more rows
+#> # ℹ 111 more rows
 ```
