@@ -3,7 +3,8 @@ tableArrangementUI <- function(id) {
   val_host <- shiny::textInput(ns("validation_host"), "", "", width = "100%")
   val_host$children <- val_host$children[-1]
   tagList(
-    lookupUI(ns("mod_table"), "Table", "On which the matches are played"),
+    lookupUI(ns("mod_table"), "Table", "On which the match is played"),
+    lookupUI(ns("mod_ball"), "Ball", "With which the match is played"),
     bslib::layout_columns(
       col_widths = c(6, 6),
       bslib::card(
@@ -56,10 +57,10 @@ tableArrangementServer <- function(id, tournaments, avatars, person_filter,
           tms <- teams()
           if (is.null(tms)) return(NULL)
           check <-
-            (all(pl[c("d1", "s1")] %in% tms[[1]]) ||
-               all(pl[c("d1", "s1")] %in% tms[[2]])) &&
-            (all(pl[c("d2", "s2")] %in% tms[[1]]) ||
-               all(pl[c("d2", "s2")] %in% tms[[2]]))
+            (all(pl[c("D1", "S1")] %in% tms[[1]]) ||
+               all(pl[c("D1", "S1")] %in% tms[[2]])) &&
+            (all(pl[c("D2", "S2")] %in% tms[[1]]) ||
+               all(pl[c("D2", "S2")] %in% tms[[2]]))
           
           if (!check) {
             sprintf("Teams restriction is not honourated. Team '%s' and '%s' should play on opposite sides",
@@ -75,7 +76,7 @@ tableArrangementServer <- function(id, tournaments, avatars, person_filter,
       
       validator$add_rule("validation_host", ~{
         pl <- config() |> unlist()
-        check <- any(pl[c("d1", "s1")] %in% pl[c("d2", "s2")])
+        check <- any(pl[c("D1", "S1")] %in% pl[c("D2", "S2")])
         if (check) {
           "The same person can not play on both sides of the table simultaneously"
         }
@@ -85,6 +86,8 @@ tableArrangementServer <- function(id, tournaments, avatars, person_filter,
 
       mod_table <- lookupServer(
         "mod_table", "Table", tournaments, "tables", "%s", validator)
+      mod_ball <- lookupServer(
+        "mod_ball", "Ball", tournaments, "balls", "%s", validator)
       
       get_color_tab <- shiny::reactive({
         tab <- mod_table()
@@ -175,17 +178,19 @@ tableArrangementServer <- function(id, tournaments, avatars, person_filter,
       
       config <- shiny::reactive({
         list(
-          d1 = mod_d1()$id,
-          s1 = mod_s1()$id,
-          d2 = mod_d2()$id,
-          s2 = mod_s2()$id
+          D1 = mod_d1()$id,
+          S1 = mod_s1()$id,
+          D2 = mod_d2()$id,
+          S2 = mod_s2()$id
         )
       })
       
       result <- shiny::reactive({
         c(
-          config(),
           list(
+            config   = config(),
+            table    = mod_table(),
+            ball     = mod_ball(),
             validate = validator$validate()
           )
         )

@@ -92,7 +92,66 @@ finalGeneratorServer <- function(id, type, matches, btnStart, avatars, phases) {
       
       shiny::observeEvent(btnStart(), {
         m <- mod_table()
-        browser() #TODO
+        msg <-
+          m$validate |> lapply(`[[`, "message") |> unlist() |>
+          paste(collapse = "\n")
+        if (msg != "") {
+          shinyWidgets::show_alert(
+            "Cannot generate final match",
+            msg, "error"
+          )
+        } else {
+          tnmt <- matches()$tournament
+          con <- tnmt$database$connect()
+          on.exit( { RSQLite::dbDisconnect(con) }, add = TRUE)
+          new_id <-
+            dplyr::tbl(con, "matches") |>
+            dplyr::summarise(MATCH_ID = max(.data$MATCH_ID, na.rm = TRUE) + 1L) |>
+            dplyr::pull(MATCH_ID)
+          dplyr::tbl(con, "matches")
+          phase_code <-
+            dplyr::tbl(con, "tournament_phases") |>
+            dplyr::filter(.data$TOURNAMENT_PHASE %in% type) |>
+            dplyr::pull("TOURNAMENT_PHASE_CODE")
+          new_match <-
+            dplyr::tibble(
+              MATCH_ID              = new_id,
+              TOURNAMENT_ID         = tnmt$selected$TOURNAMENT_ID,
+              TOURNAMENT_PHASE_CODE = phase_code,
+              TABLE_CODE            = mod_table()$table$id,
+              BALL_ID               = as.integer(mod_table()$ball$id),
+            )
+          match_results <-
+            dplyr::tibble(
+              MATCH_ID = new_id,
+              RESULT = NA_integer_,
+              SIDE_ID = 1L:2L
+            )
+          parts <-
+            dplyr::tbl(con, "participants") |>
+            dplyr::filter(
+              .data$TOURNAMENT_ID == !!tnmt$selected$TOURNAMENT_ID,
+              .data$PERSON_ID %in% !!unlist(mod_table()$config)
+            ) |>
+            dplyr::collect()
+          parts <-
+            dplyr::tibble(
+              PERSON_ID = as.integer(unlist(mod_table()$config))
+            ) |>
+            dplyr::left_join(parts, by = "PERSON_ID") |>
+            dplyr::pull("PARTICIPANT_ID")
+          match_players <-
+            dplyr::tibble(
+              MATCH_ID       = new_id,
+              PARTICIPANT_ID = parts,
+              POSITION_CODE  = mod_table()$config |> names()
+            )
+          dplyr::copy_to(con, new_match, "matches", append = TRUE, temporary = FALSE)
+          dplyr::copy_to(con, match_players, "match_players", append = TRUE, temporary = FALSE)
+          dplyr::copy_to(con, match_results, "match_results", append = TRUE, temporary = FALSE)
+          
+          tnmt$trigger_refresh()
+        }
       })
       
       return(shiny::reactive({}))
