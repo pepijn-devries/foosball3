@@ -8,7 +8,7 @@ qualGeneratorUI <- function(id) {
       lookupUI(ns("mod_ball"), "Ball", "Ball that will be used in tournament"),
       shiny::numericInput(ns("numRevs"), "Number of revolutions", 2L, 1L, step = 1L),
       shiny::numericInput(ns("numNSim"), "Number of simulations", 1000L, 10L, step = 1L),
-      shiny::numericInput(ns("numSeed"), "Random seed", NA)
+      shiny::numericInput(ns("numSeed"), "Random seed", NULL)
     ),
     bslib::accordion(
       open = FALSE,

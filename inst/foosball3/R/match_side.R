@@ -78,7 +78,7 @@ matchSideServer <- function(id, match, side, avatars) {
           }
         pc <- players_cache()
         if (!identical(pid, pc[, !(colnames(pc) %in% "avt")])) {
-          if (nrow(pid) != 2) {
+          if (nrow(pid) == 0) {
             NULL
           } else {
             avt <- avatars()
@@ -109,18 +109,19 @@ matchSideServer <- function(id, match, side, avatars) {
         m <- get_selected_match()
         shiny::req(players_cache())
         pid <- players_cache()
-        if (nrow(pid) != 2) {
+        if (nrow(pid) == 0) {
           NULL
         } else {
           order_fun <- I
           if (side == 2) order_fun <- rev
+
           txt <-
             c(
               paste(
                 order_fun(
                   c(
                     sprintf("<strong>Defense</strong>: %s", m[[paste0("PLAYER_DEFENSE_", side)]]),
-                    pid$avt[[which(pid$POSITION_CODE == paste0("D", side))]]
+                    pid$avt[[utils::head(which(grepl(paste0("[D|U]", side), pid$POSITION_CODE)), 1L)]]
                   )
                 ),
                 collapse = " "
@@ -129,7 +130,7 @@ matchSideServer <- function(id, match, side, avatars) {
                 order_fun(
                   c(
                     sprintf("<strong>Strike</strong>: %s", m[[paste0("PLAYER_STRIKE_", side)]]),
-                    pid$avt[[which(pid$POSITION_CODE == paste0("S", side))]]
+                    pid$avt[[utils::tail(which(grepl(paste0("[S|U]", side), pid$POSITION_CODE)), 1L)]]
                   )
                 ),
                 collapse = " "

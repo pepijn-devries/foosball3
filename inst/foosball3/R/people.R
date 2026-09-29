@@ -25,8 +25,8 @@ peopleServer <- function(id, tournaments, avatars, picture) {
     id,
     function(input, output, session) {
       mod_peop_pick <-
-        personPickerServer("mod_peop_pick", tournaments,
-                           \() NULL, avatars, NULL, 1L)
+        personPickerServer(
+          "mod_peop_pick", tournaments, avatars, NULL, 1L, allow_new = TRUE)
       
       record_pick <- shiny::reactive({
         shiny::req(mod_peop_pick())

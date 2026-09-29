@@ -84,7 +84,7 @@ foosball3_create_db <- function(file, ...) {
   copy_data(
     dplyr::tibble(
       TOURNAMENT_TYPE_CODE = "I",
-      PHASE_ORDER = c(1L, 2L, 3L, 3L, 4L),
+      PHASE_ORDER = c(1L, 2L, 3L, 4L, 4L),
       TOURNAMENT_PHASE_CODE = c("P", "Q", "S", "N", "F"),
       IS_OPTIONAL = as.integer(c(TRUE, FALSE, FALSE, TRUE, FALSE))),
     "tournament_phase_flow")

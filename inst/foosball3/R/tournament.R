@@ -20,7 +20,9 @@ tournamentUI <- function(id, picUI) {
             shiny::actionButton(ns("btnNew"), "New Tournament",
                                 icon = bsicons::bs_icon("folder-plus")),
             shiny::actionButton(ns("btnEdit"), "Edit Tournament",
-                                icon = bsicons::bs_icon("pencil-square"))
+                                icon = bsicons::bs_icon("pencil-square")),
+            shiny::actionButton(ns("btnDelete"), "Delete Tournament",
+                                icon = bsicons::bs_icon("trash3-fill"))
           )
         ),
         bslib::card(
@@ -302,6 +304,36 @@ tournamentServer <- function(id, db, avatars) {
         mode <- "edit"
         attr(mode, "ts") <- Sys.time()
         edit_mode(mode)
+      })
+      
+      shiny::observeEvent(input$btnDelete, {
+        id <- get_selected()
+        msg <- NULL
+        if (length(id) == 0) msg <- "Select a tournament first"
+        if (length(msg) > 0) {
+          shinyWidgets::show_alert( "Can't delete", msg, type = "warning" )
+        } else {
+          tryCatch({
+            con <- db()$connect()
+            on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+            RSQLite::dbBegin(con)
+            lapply(c("tournament_organisers", "participants", "tournaments"), \(x) {
+              RSQLite::dbExecute(
+                con,
+                sprintf("DELETE FROM %s WHERE TOURNAMENT_ID = '%s'",
+                        x, input$selectTournament
+                )
+              )
+            })
+            RSQLite::dbCommit(con)
+            trigger_refresh()
+            
+          }, error = \(e) {
+            RSQLite::dbRollback(con)
+            shinyWidgets::show_alert(
+              "Can't delete tournament", e$message, type = "error" )
+          })
+        }
       })
       
       mod_tourn_stats <- tournamentStatsServer("mod_tourn_stats", get_it_all)

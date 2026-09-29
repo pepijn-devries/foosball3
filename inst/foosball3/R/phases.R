@@ -172,22 +172,26 @@ phasesServer <- function(id, tournaments) {
         phase_completed(input$selectPhase)
       })
       
+      get_previous_phase <- function(current, phs) {
+        if (nrow(phs) == 0 || current == "") return(NULL)
+
+        current_order <-
+          phs |>
+          dplyr::filter(.data$TOURNAMENT_PHASE == !!current) |>
+          dplyr::pull("PHASE_ORDER")
+        phs |>
+          dplyr::filter(.data$PHASE_ORDER == (.env$current_order - 1L) &
+                          !.data$IS_OPTIONAL)
+      }
+      
       previous_completed <- shiny::reactive({
         ## Tests if all previous required phases were completed:
         ## There are matches registered in this phase
         ## And they all have results
-        phs <- get_phases()
-        if (nrow(phs) == 0 || input$selectPhase == "") return(TRUE)
-        current_order <-
-          phs |>
-          dplyr::filter(.data$TOURNAMENT_PHASE == !!input$selectPhase) |>
-          dplyr::pull("PHASE_ORDER")
-        previous_phases <-
-          phs |>
-          dplyr::filter(.data$PHASE_ORDER == (.env$current_order - 1L) &
-                          !.data$IS_OPTIONAL)
-        if (nrow(previous_phases) == 0) return(TRUE)
-        phase_completed(previous_phases$TOURNAMENT_PHASE)
+        prev <- get_previous_phase(input$selectPhase, get_phases())
+        if (is.null(prev)) return(TRUE)
+        if (nrow(prev) == 0) return(TRUE)
+        phase_completed(prev$TOURNAMENT_PHASE)
       })
       
       generator_message <- shiny::reactive({
@@ -203,10 +207,12 @@ phasesServer <- function(id, tournaments) {
       
       return(shiny::reactive({
         list(
+          available           = get_phases(),
           selected            = input$selectPhase,
           completed           = current_completed(),
           previouse_completed = previous_completed(),
-          message             = generator_message()
+          message             = generator_message(),
+          get_previous        = get_previous_phase
         )
       }))
     }

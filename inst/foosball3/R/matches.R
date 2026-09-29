@@ -38,9 +38,9 @@ matchesServer <- function(id, tournament, avatars) {
       move_detector <- shiny::reactiveVal()
       
       mod_match  <- matchServer("mod_match", get_selected_match, avatars)
-      mod_gen    <- matchGeneratorServer("mod_gen", get_selected_match)
-      mod_penal  <- penaltyServer("mod_penal", tournament, avatars)
       mod_phases <- phasesServer("mod_phases", tournament)
+      mod_gen    <- matchGeneratorServer("mod_gen", get_selected_match, avatars, mod_phases)
+      mod_penal  <- penaltyServer("mod_penal", tournament, avatars)
       
       shiny::observe({
         ## We nee to observer mod_match() here to ensure that changes
@@ -59,16 +59,17 @@ matchesServer <- function(id, tournament, avatars) {
           ) |>
           dplyr::collect() |>
           dplyr::mutate(
+            duos1 = cbind(.data$PLAYER_DEFENSE_1, .data$PLAYER_STRIKE_1) |>
+              apply(1, \(x) paste(unique(x), collapse = " + ")),
+            duos2 = cbind(.data$PLAYER_DEFENSE_2, .data$PLAYER_STRIKE_2) |>
+              apply(1, \(x) paste(unique(x), collapse = " + ")),
             match_name =
               ifelse(is.na(.data$PLAYER_DEFENSE_1) | is.na(.data$PLAYER_DEFENSE_2) |
                        is.na(.data$PLAYER_STRIKE_1) | is.na(is.na(.data$PLAYER_STRIKE_2)),
                      "Match generating...",
                      paste0(
                        dplyr::row_number(), " - ",
-                       .data$PLAYER_DEFENSE_1, " + ",
-                       .data$PLAYER_STRIKE_1, " vs. ",
-                       .data$PLAYER_DEFENSE_2, " + ",
-                       .data$PLAYER_STRIKE_2
+                       .data$duos1, " vs. ", .data$duos2
                      )
               )
           )
@@ -77,6 +78,8 @@ matchesServer <- function(id, tournament, avatars) {
       
       observeEvent(move_detector(), {
         current <- input$selectMatch
+        ## Note that this cache will not update name changes made during
+        ## a tournament
         mtchs <- matches_cache()
         if (!is.null(current) && !is.null(mtchs) && nrow(mtchs) > 0) {
           move <- move_detector()

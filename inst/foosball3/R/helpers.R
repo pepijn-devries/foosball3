@@ -22,6 +22,7 @@ strip_ansi <- function(x) gsub("(\\x9B|\\x1B\\[)[0-?]*[ -/]*[@-~]",
                                "", x, perl = TRUE)
 
 get_description_field <- function(primary_key, field_names) {
+  if (length(primary_key) > 1) return(paste(primary_key, collapse = "|"))
   object <- stringr::str_replace_all(primary_key, "_ID$|_CODE", "")
   df <- field_names[
     grepl(
@@ -35,7 +36,7 @@ get_description_field <- function(primary_key, field_names) {
 
 get_type_global <- function(table_name, field_name) {
   db_static_dictionary |>
-    dplyr::filter(.data$table == table_name & .data$column == field_name) |>
+    dplyr::filter(.data$table %in% table_name & .data$column %in% field_name) |>
     dplyr::pull("data_type")
 }
 

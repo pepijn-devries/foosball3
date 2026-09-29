@@ -35,8 +35,11 @@ foosball3_meta_data <- function(...) {
     tidyr::fill(.data$is_view) |>
     dplyr::filter(
       is.na(.data$is_view) &
-        !.data$field_name %in% c("PRAGMA", "FOREIGN", "CONSTRAINT", 
+        !.data$field_name %in% c("PRAGMA", "FOREIGN", "PRIMARY", "CONSTRAINT", 
                                  "UNIQUE") & !is.na(.data$field_name)) |>
     tidyr::fill(.data$table) |>
+    dplyr::filter(
+      !duplicated(dplyr::pick(.data$table, .data$field_name))
+    ) |>
     dplyr::select(-"is_view")
 }
