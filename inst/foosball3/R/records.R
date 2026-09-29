@@ -98,7 +98,7 @@ recordsServer <- function(id, tournaments) {
           current <- as.character(new_id)
           new_record_id(NULL) 
         } else if (!is.null(current) && !current %in% opts) {
-          current <- NA_character_
+          current <- ""
         }
         
         shiny::updateSelectizeInput(

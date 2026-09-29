@@ -26,7 +26,7 @@ recordUI <- function(id, table, label = "Edit record") {
           switch(
             type,
             INTEGER = {
-              shiny::numericInput(ns(widget_name), label, NA_integer_, step = 1L)
+              shiny::numericInput(ns(widget_name), label, NULL, step = 1L)
             },
             TEXT = {
               shiny::textInput(ns(widget_name), label, "")
@@ -308,9 +308,11 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
               switch(
                 key_type,
                 INTEGER = {
+                  if (length(val) == 0 || is.na(val)) val <- NULL
                   shiny::updateNumericInput(inputId = wn, value = val, session = session)
                 },
                 TEXT = {
+                  if (length(val) == 0) val <- ""
                   shiny::updateTextInput(inputId = wn, value = val, session = session)
                 }
               )

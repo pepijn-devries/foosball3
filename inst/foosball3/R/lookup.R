@@ -41,9 +41,10 @@ lookupServer <- function(id, label, tournaments, table, fmt = "%s", validator = 
         opts <- choices_cache()
         sel  <- selected_cache()
         # If selection isn't valid for current options, fall back safely
-        if (length(sel) > 0 && (length(opts) == 0 || !sel %in% opts)) {
+        if (length(sel) > 0 && (length(opts) == 0 || !sel %in% opts || is.na(sel))) {
           sel <- ""
         }
+        if (length(sel) == 0) sel <- ""
         
         shiny::updateSelectizeInput(
           session = session,

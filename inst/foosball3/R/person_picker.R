@@ -118,6 +118,7 @@ personPickerServer <- function(
         
         current_ui_val <- shiny::isolate(input$selectPeople)
         if (!identical(current_ui_val, sel) || !is.null(opts)) {
+          if (length(sel) == 0 || is.na(sel)) sel <- ""
           shinyWidgets::updateVirtualSelect(
             session = session,
             inputId = "selectPeople", 
