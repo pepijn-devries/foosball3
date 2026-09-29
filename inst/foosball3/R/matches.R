@@ -59,16 +59,17 @@ matchesServer <- function(id, tournament, avatars) {
           ) |>
           dplyr::collect() |>
           dplyr::mutate(
+            duos1 = cbind(.data$PLAYER_DEFENSE_1, .data$PLAYER_STRIKE_1) |>
+              apply(1, \(x) paste(unique(x), collapse = " + ")),
+            duos2 = cbind(.data$PLAYER_DEFENSE_2, .data$PLAYER_STRIKE_2) |>
+              apply(1, \(x) paste(unique(x), collapse = " + ")),
             match_name =
               ifelse(is.na(.data$PLAYER_DEFENSE_1) | is.na(.data$PLAYER_DEFENSE_2) |
                        is.na(.data$PLAYER_STRIKE_1) | is.na(is.na(.data$PLAYER_STRIKE_2)),
                      "Match generating...",
                      paste0(
                        dplyr::row_number(), " - ",
-                       .data$PLAYER_DEFENSE_1, " + ",
-                       .data$PLAYER_STRIKE_1, " vs. ",
-                       .data$PLAYER_DEFENSE_2, " + ",
-                       .data$PLAYER_STRIKE_2
+                       .data$duos1, " vs. ", .data$duos2
                      )
               )
           )
