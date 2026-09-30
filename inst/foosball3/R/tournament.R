@@ -79,6 +79,8 @@ tournamentServer <- function(id, db, avatars) {
       current_organisers   <- shiny::reactiveVal()
       current_participants <- shiny::reactiveVal()
       
+      mod_tourn_stats <- tournamentStatsServer("mod_tourn_stats", get_it_all)
+
       get_tournament_people <- shiny::reactive({
         list(
           organisers = current_organisers,
@@ -335,8 +337,6 @@ tournamentServer <- function(id, db, avatars) {
           })
         }
       })
-      
-      mod_tourn_stats <- tournamentStatsServer("mod_tourn_stats", get_it_all)
       
       return(get_it_all)
     }

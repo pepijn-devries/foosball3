@@ -73,7 +73,10 @@ matchesServer <- function(id, tournament, avatars) {
                      )
               )
           )
-        if (!identical(mc, matches)) matches_cache(matches)
+        if (!identical(mc, matches)) {
+          tnmt$trigger_refresh()
+          matches_cache(matches)
+        }
       })
       
       observeEvent(move_detector(), {
