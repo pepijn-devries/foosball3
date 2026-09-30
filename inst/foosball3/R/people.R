@@ -15,7 +15,7 @@ peopleUI <- function(id) {
     bslib::nav_panel(
       "Statistics",
       icon = bsicons::bs_icon("graph-up-arrow"),
-      "TODO"
+      personStatUI(ns("mod_stat"))
     )
   )
 }
@@ -27,6 +27,8 @@ peopleServer <- function(id, tournaments, avatars, picture) {
       mod_peop_pick <-
         personPickerServer(
           "mod_peop_pick", tournaments, avatars, NULL, 1L, allow_new = TRUE)
+      
+      mod_stat <- personStatServer("mod_stat", tournaments, mod_peop_pick)
       
       record_pick <- shiny::reactive({
         shiny::req(mod_peop_pick())

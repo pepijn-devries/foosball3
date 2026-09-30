@@ -78,13 +78,22 @@ tournamentStatsServer <- function(id, tournaments) {
           )
       })
       
-      mod_stat <- plotServer(
-        "mod_stat", get_data,
-        ggplot2::aes(x       = .data$Participant,
-                     y       = .data$`Tournament points`,
-                     fill    = .data$State,
-                     tooltip = .data$Points,
-                     data_id = .data$Participant))
+      get_layers <- shiny::reactive({
+        ggplot2::ggplot() +
+        ggiraph::geom_bar_interactive(
+          mapping =
+            ggplot2::aes(x       = .data$Participant,
+                         y       = .data$`Tournament points`,
+                         fill    = .data$State,
+                         tooltip = .data$Points,
+                         data_id = .data$Participant),
+          data = get_data(),
+          stat = "identity") +
+          ggplot2::scale_fill_brewer(palette = "Pastel1", name = "Points") +
+          ggplot2::scale_x_discrete(guide = ggplot2::guide_axis(angle = 45))
+      })
+      
+      mod_stat <- plotServer("mod_stat", get_layers)
       
     }
   )
