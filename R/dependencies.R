@@ -1,9 +1,9 @@
 ## Generated automatically with data-raw/dependencies.R, do not edit by hand
 #' @title Internal Shiny Dependencies
 #' @description This file automatically registers dependencies used only in inst/.
-#' @importFrom dplyr add_row any_of arrange bind_rows collect copy_to filter first left_join mutate n pull row_number rows_update rows_upsert rowwise sample_n select slice_sample summarise tbl tibble
+#' @importFrom dplyr add_row any_of arrange bind_rows collect copy_to filter first left_join mutate n pick pull row_number rows_update rows_upsert rowwise sample_n select slice_sample summarise tbl tibble
 #' @importFrom rlang !! !!! .data := sym
-#' @importFrom RSQLite dbConnect dbDisconnect dbExecute dbGetQuery dbListTables SQLite
+#' @importFrom RSQLite dbBegin dbCommit dbConnect dbDisconnect dbExecute dbGetQuery dbListTables dbRollback SQLite
 #' @importFrom shiny a absolutePanel actionButton checkboxInput div downloadButton downloadHandler downloadLink ExtendedTask fileInput h2 HTML img includeCSS invalidateLater isolate modalDialog moduleServer NS numericInput observe observeEvent p reactive reactiveVal renderText renderUI req selectInput selectizeInput shinyApp showModal sliderInput span tagList tags textInput textOutput uiOutput updateNumericInput updateSelectInput updateSelectizeInput updateTextInput
 #' @importFrom stringr str_extract str_like str_replace_all str_to_title
 #' @importFrom tidyr pivot_longer unnest unnest_longer

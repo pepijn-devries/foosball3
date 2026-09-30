@@ -12,11 +12,14 @@ export(foosball3_suggests_ok)
 import(dbplyr)
 importFrom(RSQLite,
   SQLite,
+  dbBegin,
+  dbCommit,
   dbConnect,
   dbDisconnect,
   dbExecute,
   dbGetQuery,
-  dbListTables
+  dbListTables,
+  dbRollback
 )
 importFrom(dplyr,
   add_row,
@@ -30,6 +33,7 @@ importFrom(dplyr,
   left_join,
   mutate,
   n,
+  pick,
   pull,
   row_number,
   rows_update,

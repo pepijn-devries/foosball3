@@ -33,7 +33,7 @@ matchGeneratorUI <- function(id) {
         ),
         bslib::nav_panel_hidden(
           "Practice",
-          "TODO"
+          "Practice match generator not yet implemented"
         ),
       )
     )
