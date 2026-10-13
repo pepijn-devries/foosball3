@@ -9,9 +9,6 @@ tableDetailsUI <- function(id) {
     bslib::nav_panel(
       "Contents",
       shiny::uiOutput(ns("contents"))
-    ),
-    footer = bslib::toolbar(
-      shiny::actionButton(ns("btnDismiss"), "Back to Diagram")
     )
   )
 }
@@ -61,10 +58,6 @@ tableDetailsServer <- function(id, database, selected) {
               shiny::HTML()
           )
         }
-      })
-      
-      shiny::observeEvent(input$btnDismiss, {
-        database()$menu_selector("Diagram", NULL)
       })
       
       output$contents <-  shiny::renderUI({

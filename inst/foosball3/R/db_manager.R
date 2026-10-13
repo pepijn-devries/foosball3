@@ -139,7 +139,21 @@ dbManagerServer <- function(id) {
       })
       
       output$header <- shiny::renderUI({
-        input$db_set
+        bslib::toolbar(
+          align = "left",
+          width = "100%",
+          input$db_set,
+          bslib::toolbar_spacer(),
+          if (input$db_set != "Diagram") {
+            bslib::toolbar_input_button(ns("btnDismiss"), bsicons::bs_icon("x-lg"))
+          } else {
+            NULL
+          }
+        )
+      })
+
+      shiny::observeEvent(input$btnDismiss, {
+        menu_selector(list(item = "Diagram", arg = NULL))
       })
       
       return(database)
