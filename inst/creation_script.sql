@@ -153,7 +153,7 @@ CREATE TABLE tournament_phase_flow( --- Overview of how phases of a tournament f
     PHASE_ORDER > 0
   ),
   TOURNAMENT_PHASE_CODE TEXT NOT NULL, --- A specific phase that can be expected for the specified tournament type
-  IS_OPTIONAL INTEGER NOT NULL CONSTRAINT CHECK_IS_OPTIONAL CHECK( --- Value that indicates if the specified is optional (1) or mandatory (0)
+  IS_OPTIONAL INTEGER NOT NULL CONSTRAINT CHECK_IS_OPTIONAL CHECK( --- Value that indicates if the specified phase is optional (1) or mandatory (0)
     IS_OPTIONAL IN (0, 1)
   ),
   PRIMARY KEY(TOURNAMENT_TYPE_CODE, TOURNAMENT_PHASE_CODE),

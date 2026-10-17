@@ -1,2 +1,9 @@
-﻿type,message,message_fun,message_params
-no_tournament_selected,Create or select a tournament to get regular news updates,,
+﻿type,message,pick_weight,filter_fun,message_table,message_field
+no_tournament_selected,Create and select a tournament to get regular news updates.,1,,,
+no_tournament_selected,The database contains %i tournament(s),10,,tournaments_view,\nrow
+no_tournament_selected,"The answer to the ultimate question of life, the universe, and everything, is… 42!",1,,,
+tournament_news,Tournament dates range from %s to %s,1,,tournaments_view,TOURNAMENT_DATE|\min|TOURNAMENT_DATE|\max
+tournament_news,%i of %i qualification matches in the tournament have been played.,2,tournament_filter,tournaments_view,MATCHES_PLAYED|NUMBER_OF_MATCHES
+tournament_news,This tournament has %i participants.,1,tournament_filter,tournaments_view,NUMBER_OF_PARTICIPANTS
+participant_news,"%s has played %i/%i matches of which %i %s won, %i %s a draw and %i %s lost.",1,participant_filter,participant_tournament_results,PARTICIPANT|MATCHES_PLAYED|TOTAL_MATCHES|WINS|\isare|DRAWS|\isare|LOSSES|\isare
+person_news,%s has a success rate of %.f%% in all past qualification matches.,1,person_filter,\pivot_results|participant_match_results,PARTICIPANT|SUCCESS_RATE_ANY_ANYTIME
