@@ -18,7 +18,9 @@ foosball3_install_suggests(ignore = "mirai", update = TRUE, ...)
 
   A vector of packages to ignore. By default `"mirai"` is ignored, as
   this package is not needed for basic functionality. It is recommended
-  to install for better performance.
+  to install for better performance. `"testthat"` is also ignored by
+  default. It is only used during package development and is not
+  required for the GUI at all.
 
 - update:
 
@@ -39,5 +41,5 @@ invisible `NULL`
 
 ``` r
 foosball3_suggests_ok()
-#> [1] FALSE
+#> [1] TRUE
 ```

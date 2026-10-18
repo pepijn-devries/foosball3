@@ -8,7 +8,7 @@ are available.
 ## Usage
 
 ``` r
-foosball3_suggests_ok(ignore = "mirai", ...)
+foosball3_suggests_ok(ignore = c("testthat", "mirai"), ...)
 ```
 
 ## Arguments
@@ -17,7 +17,9 @@ foosball3_suggests_ok(ignore = "mirai", ...)
 
   A vector of packages to ignore. By default `"mirai"` is ignored, as
   this package is not needed for basic functionality. It is recommended
-  to install for better performance.
+  to install for better performance. `"testthat"` is also ignored by
+  default. It is only used during package development and is not
+  required for the GUI at all.
 
 - ...:
 
@@ -32,5 +34,5 @@ A `logical` value, indicating of all required suggests are available.
 
 ``` r
 foosball3_suggests_ok()
-#> [1] FALSE
+#> [1] TRUE
 ```
