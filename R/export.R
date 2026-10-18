@@ -68,7 +68,8 @@ foosball3_export_db <- function(source, destination, validate = FALSE, ...) {
       )
     utils::write.csv(
       data,
-      file.path(temp_storage, sprintf("%s.csv", tab))
+      file.path(temp_storage, sprintf("%s.csv", tab)),
+      row.names = FALSE
     )
   }
   RSQLite::dbDisconnect(con)
