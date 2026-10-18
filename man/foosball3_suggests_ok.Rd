@@ -4,12 +4,14 @@
 \alias{foosball3_suggests_ok}
 \title{Check if All Suggested Packages Are Available}
 \usage{
-foosball3_suggests_ok(ignore = "mirai", ...)
+foosball3_suggests_ok(ignore = c("testthat", "mirai"), ...)
 }
 \arguments{
 \item{ignore}{A vector of packages to ignore. By default
 \code{"mirai"} is ignored, as this package is not needed for basic
-functionality. It is recommended to install for better performance.}
+functionality. It is recommended to install for better performance.
+\code{"testthat"} is also ignored by default. It is only used during
+package development and is not required for the GUI at all.}
 
 \item{...}{Arguments passed to \code{\link[=foosball3_list_suggests]{foosball3_list_suggests()}}}
 }

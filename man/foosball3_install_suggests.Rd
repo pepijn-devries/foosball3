@@ -9,7 +9,9 @@ foosball3_install_suggests(ignore = "mirai", update = TRUE, ...)
 \arguments{
 \item{ignore}{A vector of packages to ignore. By default
 \code{"mirai"} is ignored, as this package is not needed for basic
-functionality. It is recommended to install for better performance.}
+functionality. It is recommended to install for better performance.
+\code{"testthat"} is also ignored by default. It is only used during
+package development and is not required for the GUI at all.}
 
 \item{update}{A \code{logical} value. If \code{TRUE}, it will try to update
 suggested packages that are already installed. If \code{FALSE}, it
