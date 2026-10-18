@@ -25,9 +25,11 @@ required by its graphical user interface.
 
 ``` r
 foosball3_list_suggests()
-#>  [1] "base64enc"     "bsicons"       "bslib"         "DiagrammeR"   
-#>  [5] "DiagrammeRsvg" "dm"            "DT"            "ggplot2"      
-#>  [9] "ggiraph"       "imager"        "jsonlite"      "knitr"        
-#> [13] "lubridate"     "mirai"         "promises"      "shinybusy"    
-#> [17] "shinyjs"       "shinyvalidate" "shinyWidgets" 
+#>  [1] "base64enc"           "bsicons"             "bslib"              
+#>  [4] "DiagrammeR"          "DiagrammeRsvg"       "dm"                 
+#>  [7] "DT"                  "ggplot2"             "ggiraph"            
+#> [10] "imager"              "jsonlite"            "knitr"              
+#> [13] "lubridate"           "mirai"               "promises"           
+#> [16] "shinybusy"           "shinyjs"             "shinyvalidate"      
+#> [19] "shinyWidgets"        "testthat (>= 3.0.0)"
 ```

@@ -32,5 +32,5 @@ A `logical` value, indicating of all required suggests are available.
 
 ``` r
 foosball3_suggests_ok()
-#> [1] TRUE
+#> [1] FALSE
 ```

@@ -1,7 +1,7 @@
 # foosball3
 
-Create a database to manage foosball tournaments, facilitate live
-matches and visualise match results and player statistics.
+Create a database to manage leisure foosball tournaments, facilitate
+live matches and visualise match results and player statistics.
 
 ## Installation
 
@@ -32,6 +32,12 @@ To start the graphical user interface just call:
 
 foosball3()
 ```
+
+## Disclaimer
+
+This tool is meant to be used for leisure tournaments. It is not
+designed to comply with [International Table Soccer
+Federation](https://www.tablesoccer.org/) rules and regulations.
 
 ## Code of Conduct
 

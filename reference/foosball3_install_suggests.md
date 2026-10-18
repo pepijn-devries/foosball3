@@ -39,5 +39,5 @@ invisible `NULL`
 
 ``` r
 foosball3_suggests_ok()
-#> [1] TRUE
+#> [1] FALSE
 ```
