@@ -16,7 +16,8 @@ foosball3_list_suggests <- function(...) {
 
 .foosball_suggest <- function(ignore, ...) {
   suggests <- foosball3_list_suggests(...)
-  suggests <- suggests[!(suggests %in% ignore)]
+  check <- grepl(paste(sprintf("^%s($|\\s)", ignore), collapse = "|"), suggests)
+  suggests <- suggests[!check]
   state <- lapply(suggests, requireNamespace, quietly = TRUE) |> unlist()
   suggests[!state]
 }
@@ -29,12 +30,14 @@ foosball3_list_suggests <- function(...) {
 #' @param ignore A vector of packages to ignore. By default
 #' `"mirai"` is ignored, as this package is not needed for basic
 #' functionality. It is recommended to install for better performance.
+#' `"testthat"` is also ignored by default. It is only used during
+#' package development and is not required for the GUI at all.
 #' @returns A `logical` value, indicating of all required suggests are
 #' available.
 #' @examples
 #' foosball3_suggests_ok()
 #' @export
-foosball3_suggests_ok <- function(ignore = "mirai", ...) {
+foosball3_suggests_ok <- function(ignore = c("testthat", "mirai"), ...) {
   length(.foosball_suggest(ignore, ...)) == 0
 }
 

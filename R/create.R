@@ -108,7 +108,7 @@ foosball3_create_db <- function(file, ...) {
     dplyr::tibble(
       BRAND_CODE = c("UNK", "BUF", "DTM", "GTS", "VDM"),
       BRAND_NAME =
-        c("Unknown", "Buffalo", "Deutscher Meisters", "GTS Original Gametables",
+        c("Unknown", "Buffalo", "Deutscher Meister", "GTS Original Gametables",
           "Van der Meulen"),
       BRAND_COUNTRY = c(NA_character_, "NL", "DE", NA_character_, "NL")
     ), "brands")
