@@ -103,7 +103,6 @@ foosball3_import_db <- function(file, target, ...) {
         dplyr::tbl(con_imp, tb) |>
         dplyr::collect()
     }
-    col_imp   <- colnames(dat)
     if (any(duplicated(dat))) {
       warning_messages <- c(
         warning_messages,
