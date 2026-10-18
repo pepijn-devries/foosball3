@@ -120,7 +120,6 @@ foosball3_generate_matches <- function(
     attempts <- 0
     ## pick random quartets:
     samples_to_set <- seq_len(nsim)
-    proc_time <- proc.time()
     if (!missing(progressbar) && i %% 2) {
       progressbar(i/(npart*nfact))
     }

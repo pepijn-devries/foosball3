@@ -1,9 +1,9 @@
-#' Export an Foosball SQLite Database to csv Format
+#' Export an Foosball SQLite Database to CSV Format
 #' 
-#' Export a database to a collection of csv-files. Note that you will
+#' Export a database to a collection of CSV-files. Note that you will
 #' lose all views, relational information and constraints from the database.
 #' @param source File path, where the source SQLite database can be found
-#' @param destination File path, where the zipped collection of csv-files
+#' @param destination File path, where the zipped collection of CSV-files
 #' should be stored
 #' @param validate A `logical` value. If `TRUE`, the `source` will be imported
 #' to check for validity (slower). If `FALSE`, `source` will be used directly without

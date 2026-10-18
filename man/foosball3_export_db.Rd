@@ -2,14 +2,14 @@
 % Please edit documentation in R/export.R
 \name{foosball3_export_db}
 \alias{foosball3_export_db}
-\title{Export an Foosball SQLite Database to csv Format}
+\title{Export an Foosball SQLite Database to CSV Format}
 \usage{
 foosball3_export_db(source, destination, validate = FALSE, ...)
 }
 \arguments{
 \item{source}{File path, where the source SQLite database can be found}
 
-\item{destination}{File path, where the zipped collection of csv-files
+\item{destination}{File path, where the zipped collection of CSV-files
 should be stored}
 
 \item{validate}{A \code{logical} value. If \code{TRUE}, the \code{source} will be imported
@@ -22,7 +22,7 @@ checks.}
 \code{NULL} invisible
 }
 \description{
-Export a database to a collection of csv-files. Note that you will
+Export a database to a collection of CSV-files. Note that you will
 lose all views, relational information and constraints from the database.
 }
 \examples{
