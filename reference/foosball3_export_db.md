@@ -1,6 +1,6 @@
-# Export an Foosball SQLite Database to csv Format
+# Export an Foosball SQLite Database to CSV Format
 
-Export a database to a collection of csv-files. Note that you will lose
+Export a database to a collection of CSV-files. Note that you will lose
 all views, relational information and constraints from the database.
 
 ## Usage
@@ -17,7 +17,7 @@ foosball3_export_db(source, destination, validate = FALSE, ...)
 
 - destination:
 
-  File path, where the zipped collection of csv-files should be stored
+  File path, where the zipped collection of CSV-files should be stored
 
 - validate:
 
