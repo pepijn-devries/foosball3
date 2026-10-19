@@ -68,6 +68,14 @@ foosball3_import_db <- function(file, target, ...) {
     
     if (is_zip) {
       dat <- utils::read.csv(file.path(temp_storage, sprintf("%s.csv", tb)))
+      dat <-
+        dat |>
+        dplyr::mutate(
+          dplyr::across(
+            dplyr::where(is.character),
+            ~ iconv(., to = "ASCII//TRANSLIT", sub = "?")
+          )
+        )
       if (dir.exists(file.path(temp_storage, tb))) {
         blob_cols <-
           dplyr::tbl(con_new, tb) |>
@@ -82,7 +90,7 @@ foosball3_import_db <- function(file, target, ...) {
           fileext <- if (startsWith(bc, "JPG")) ".jpg" else ""
           bcf <-
             if (startsWith(bc, "JPG") &&
-                !any(startsWith(bc, list.files(file.path(temp_storage, tb))))) "pic" else
+                !any(startsWith(list.files(file.path(temp_storage, tb)), bc))) "pic" else
                   bc
           blob_dat <-
             lapply(

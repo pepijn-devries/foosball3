@@ -1,0 +1,98 @@
+PERSON_ID,PERSON_NAME,GENDER_CODE,QUALIFICATION_CODE,HOME_BASE
+1,Deanna Troi,F,H,QOQA
+2,Beverly Crusher,F,H,QOQA
+3,Keiko O'Brien,F,H,QOQA
+4,Q,M,H,ROKI
+5,Geordi La Forge,M,H,QOQA
+6,Tasha Yar,F,H,QOQA
+7,K'Ehleyr,F,H,QOQA
+8,Lursa,F,H,QOQA
+9,Wesley Crusher,M,H,ROKI
+10,Katherine Pulaski,F,H,QOQA
+11,Miles O'Brien,M,H,ROKI
+12,Reginald Barclay,M,H,QOQA
+13,Edwin van H,M,H,ROKI
+14,Guinan,F,H,QOQA
+15,Ro Laren,F,H,ROKI
+16,Lore,M,H,QOQA
+17,Lwaxana Troi,F,H,ROKI
+18,Sarek,M,H,QOQA
+19,Spock,M,H,ROKI
+20,B'Etor,F,H,ROKI
+21,Sela,F,H,QOQA
+22,Kurn,M,H,ROKI
+23,Lal,F,H,QOQA
+24,Montgomery Scott,M,H,QOQA
+25,The Borg Queen,F,H,ROKI
+26,Tomalak,M,H,QOQA
+27,Gowron,M,H,ROKI
+28,James T. Kirk,M,H,ROKI
+29,Sam Lavelle,M,H,ROKI
+30,Selar,F,H,ROKI
+31,Sito Jaxa,F,H,ROKI
+32,Alexander Rozhenko,M,H,QOQA
+33,Ro Laren,F,H,QOQA
+34,Mendak,M,H,QOQA
+35,Data,M,H,QOQA
+36,Duras,M,H,QOQA
+37,Julianna Soong,F,H,QOQA
+38,Kestra Troi,F,H,QOQA
+39,Sonya Gomez,F,H,QOQA
+40,Alidar Jarok,M,H,QOQA
+41,Locutus of Borg,M,H,QOQA
+42,Gul Madred,M,H,ROKI
+43,Hugh,M,H,QOQA
+44,Linda Lin,F,H,QOQA
+45,Rachel Garrett,F,H,ROKI
+46,Dr. Noonien Soong,M,H,QOQA
+47,B-4,M,H,ROKI
+48,Jack Crusher,M,H,ROKI
+49,Jean-Luc Picard,M,H,QOQA
+50,Kila Marr,F,H,ROKI
+51,Ian Andrew Troi,M,H,QOQA
+52,Alyssa Ogawa,F,H,QOQA
+53,Jordi Mendoza,M,H,ROKI
+54,William T. Riker,M,H,QOQA
+55,Worf,M,H,QOQA
+56,Taurik,M,H,QOQA
+57,Kamala,F,H,QOQA
+58,Eline,F,H,QOQA
+59,Ardra,F,H,QOQA
+60,Paul Stubbs,M,H,QOQA
+61,Richard Castillo,M,H,ROKI
+62,Kamin,M,H,ROKI
+63,Batai,M,H,ROKI
+64,Kevin Uxbridge,M,H,QOQA
+65,Rishon Uxbridge,F,H,ROKI
+66,The Traveler,M,H,QOQA
+67,Elisa,F,H,QOQA
+68,Tam Elbrun,M,H,QOQA
+69,Gomtuu,F,H,ROKI
+70,Yareena,F,H,QOQA
+71,Lutan,M,H,QOQA
+72,Armus,M,H,ROKI
+73,Nagilum,M,H,QOQA
+74,Vash,F,H,QOQA
+75,Kevin Riley,M,H,ROKI
+76,Ronan,M,H,ROKI
+77,Kivas Fajo,M,H,ROKI
+78,Berlinghoff Rasmussen,M,H,ROKI
+79,Professor Moriarty,M,H,QOQA
+80,Countess Regina Bartholomew,F,H,QOQA
+81,Jeremy Aster,M,H,QOQA
+82,Paul Manheim,M,H,QOQA
+83,Mr. Homn,M,H,QOQA
+84,Timicin,M,H,ROKI
+85,Devinoni Ral,M,H,ROKI
+86,Kieran MacDuff,M,H,ROKI
+87,Edward Jellico,M,H,ROKI
+88,Marouk,F,H,ROKI
+89,J'Dan,M,H,ROKI
+90,Tarmin,M,H,ROKI
+91,Yuta,F,H,ROKI
+92,Rashella,F,H,ROKI
+93,Jenice Manheim,F,H,ROKI
+94,Thomas Riker,M,H,QOQA
+95,Alynna Nechayev,F,H,QOQA
+96,Geoffrey Mott,M,H,ROKI
+97,Kyle Riker,M,H,ROKI

@@ -106,11 +106,11 @@ foosball3_create_db <- function(file, ...) {
   
   copy_data(
     dplyr::tibble(
-      BRAND_CODE = c("UNK", "BUF", "DTM", "GTS", "VDM"),
+      BRAND_CODE = c("UNK", "BUF", "DTM", "GTS", "VDM", "BNZ", "FPD"),
       BRAND_NAME =
         c("Unknown", "Buffalo", "Deutscher Meister", "GTS Original Gametables",
-          "Van der Meulen"),
-      BRAND_COUNTRY = c(NA_character_, "NL", "DE", NA_character_, "NL")
+          "Van der Meulen", "Bonzini", "Fas Pendezza"),
+      BRAND_COUNTRY = c(NA_character_, "NL", "DE", "NL", "NL", "IT", "FR")
     ), "brands")
   
   copy_data(

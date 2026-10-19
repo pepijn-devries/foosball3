@@ -1,0 +1,6 @@
+"QUALIFICATION_CODE","QUALIFICATION","QUALIFICATION_RATIO","QUALIFICATION_SUCCESS","QUALIFICATION_DESCR"
+"H","Historic",1,0.5,"Based on historical performance"
+"R","Plays rarely/never",0.71,0.3,
+"O","Plays ocasionally",0.88,0.43,
+"F","Plays frequently",1,0.5,
+"E","Plays frequently and excels",1.7,0.71,
