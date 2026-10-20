@@ -2,6 +2,7 @@
 
 * Fix in CSV export
 * Fix in CSV import
+* Added example data
 
 # foosball3 0.0.1
 
