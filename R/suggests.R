@@ -53,7 +53,7 @@ foosball3_suggests_ok <- function(ignore = c("testthat", "mirai"), ...) {
 #' will only install suggested packages that are not yet available.
 #' @returns invisible `NULL`
 #' @export
-foosball3_install_suggests <- function(ignore = "mirai", update = TRUE, ...) {
+foosball3_install_suggests <- function(ignore = c("testthat", "mirai"), update = TRUE, ...) {
   suggests <- if (update) {
     sg <- foosball3_list_suggests()
     sg[!(sg %in% ignore)]

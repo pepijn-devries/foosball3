@@ -4,7 +4,7 @@
 \alias{foosball3_install_suggests}
 \title{Install Packages Suggested by \code{foosball3}}
 \usage{
-foosball3_install_suggests(ignore = "mirai", update = TRUE, ...)
+foosball3_install_suggests(ignore = c("testthat", "mirai"), update = TRUE, ...)
 }
 \arguments{
 \item{ignore}{A vector of packages to ignore. By default

@@ -10,7 +10,7 @@ foosball3(...)
 \item{...}{Ignored}
 }
 \value{
-Returns \code{NULL} invisibly.
+Returns a \code{shiny.appobj} object.
 }
 \description{
 Renders the Graphical User Interface and starts the server

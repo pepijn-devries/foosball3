@@ -1,6 +1,6 @@
-`!!` <- rlang::`!!`
+`!!`  <- rlang::`!!`
 `!!!` <- rlang::`!!!`
-`:=` <- rlang::`:=`
+`:=`  <- rlang::`:=`
 .data <- rlang::`.data`
 
 if (requireNamespace("mirai", quietly = TRUE))
@@ -81,24 +81,8 @@ db_join_keys <- function() {
 }
 
 get_schema_static <- function(con, include_views) {
-  tbls <- RSQLite::dbListTables(con)
-  
-  my_dm <- dm::dm_from_con(con, learn_keys = TRUE)
-  if (include_views) {
-    all_tbls <- RSQLite::dbListTables(con)
-    unreferenced <- setdiff(all_tbls, names(my_dm))
-    unreferenced <- unreferenced[!grepl("^sqlite_", unreferenced)]
-    
-    unreferenced <-
-      lapply(unreferenced, dplyr::tbl, src = con) |>
-      stats::setNames(unreferenced)
-    for (i in seq_along(unreferenced)) {
-      my_dm <-
-        my_dm |>
-        dm::dm(!!names(unreferenced)[[i]] := unreferenced[[i]])
-    }
-  }
-  dm::dm_draw(my_dm) |>
+  foosball3_get_schema(con, include_views) |>
+    dm::dm_draw() |>
     DiagrammeRsvg::export_svg()
 }
 

@@ -31,8 +31,16 @@ ui <- bslib::page_navbar(
                    icon = bsicons::bs_icon("hammer")),
   bslib::nav_panel("People",           peopleUI("mod_peops"),
                    icon = bsicons::bs_icon("people-fill")),
-  bslib::nav_panel("About",            md2html("www/about.md"),
-                   icon = bsicons::bs_icon("info-circle-fill")),
+  bslib::nav_panel("About",
+                   shiny::div(
+                     shiny::img(src   = "img/web-app-manifest-192x192.png",
+                                alt   = "logo",
+                                width = "192px",
+                                style = "float: right; margin-right: 15px;"),
+                     shiny::h2("About Foosball3"),
+                     shiny::h3("The History of the Foosball App"),
+                     shiny::markdown(readLines("www/about.md"))
+                   )),
   bslib::nav_menu(
     bsicons::bs_icon("gear-fill"),
     nav_switch("checkTimer", "stopwatch-fill", "Timer", FALSE),

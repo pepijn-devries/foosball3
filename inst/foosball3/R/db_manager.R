@@ -150,6 +150,7 @@ dbManagerServer <- function(id) {
       })
       
       output$header <- shiny::renderUI({
+        shiny::req(input$db_set)
         bslib::toolbar(
           align = "left",
           width = "100%",
