@@ -39,19 +39,17 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
 
+      - name: Install XQuartz (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          brew install --cask xquartz
+          echo "DYLD_LIBRARY_PATH=/opt/X11/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
           needs: check
-          
-      # FORCE INSTALL SUGGESTS ON MACOS USING YOUR CUSTOM FUNCTION
-      - name: Run foosball3 custom installer (macOS only)
-        if: runner.os == 'macOS'
-        run: |
-          Rscript -e "install.packages('devtools')"
-          Rscript -e "devtools::load_all(); foosball3::foosball3_install_suggests()"
-        shell: bash
-        
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
