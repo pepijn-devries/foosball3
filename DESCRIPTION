@@ -61,6 +61,10 @@ Collate:
     'import.R'
     'meta.R'
     'schema.R'
+Config/Needs/check-suggests: base64enc, bsicons, bslib, DiagrammeR,
+    DiagrammeRsvg, dm, DT, ggplot2, ggiraph, imager, jsonlite, knitr,
+    lubridate, shinybusy, shinyjs, shinyvalidate, shinyWidgets,
+    rmarkdown
 Config/roxygen2/version: 8.1.0
 Config/testthat/edition: 3
 VignetteBuilder: knitr
