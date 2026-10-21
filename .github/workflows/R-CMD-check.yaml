@@ -39,6 +39,12 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
 
+      - name: Install XQuartz (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          brew install --cask xquartz
+          echo "DYLD_LIBRARY_PATH=/opt/X11/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
