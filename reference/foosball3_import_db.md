@@ -37,15 +37,10 @@ Creates a new clean copy of the database. Returns `NULL` invisibly.
 ## Examples
 
 ``` r
-tf <- tempfile()
-export <- tempfile(fileext = ".zip")
-import <- tempfile()
-foosball3_create_db(tf)
-foosball3_export_db(tf, export)
-foosball3_import_db(export, import)
+target   <- tempfile(fileext = ".db")
+zip_file <- system.file(package = "foosball3", "example.zip")
+foosball3_import_db(zip_file, target)
 
-# Clean up example files
-unlink(tf, TRUE, TRUE)
-unlink(export, TRUE, TRUE)
-unlink(import, TRUE, TRUE)
+# Cleanup
+unlink(target)
 ```

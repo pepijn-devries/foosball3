@@ -17,4 +17,4 @@ foosball3(...)
 
 ## Value
 
-Returns `NULL` invisibly.
+Returns a `shiny.appobj` object.

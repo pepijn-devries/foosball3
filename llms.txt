@@ -62,6 +62,9 @@ By contributing to this project, you agree to abide by its terms.
 - [`foosball3_generate_matches()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_generate_matches.md)
   : Generate Matches for a Tournament Phase
 
+- [`foosball3_get_schema()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_get_schema.md)
+  : Get foosball3 Schema Data
+
 - [`foosball3_import_db()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_import_db.md)
   : Import Foosball Tournament Data from a File
 
@@ -81,3 +84,9 @@ By contributing to this project, you agree to abide by its terms.
 - [`foosball3_suggests_ok()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_suggests_ok.md)
   : Check if All Suggested Packages Are Available
 
+# Articles
+
+### All vignettes
+
+- [The History of the foosball3
+  App](https://pepijn-devries.github.io/foosball3/articles/foosball3-history.md):

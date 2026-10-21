@@ -31,5 +31,5 @@ foosball3_list_suggests()
 #> [10] "imager"              "jsonlite"            "knitr"              
 #> [13] "lubridate"           "mirai"               "promises"           
 #> [16] "shinybusy"           "shinyjs"             "shinyvalidate"      
-#> [19] "shinyWidgets"        "testthat (>= 3.0.0)"
+#> [19] "shinyWidgets"        "testthat (>= 3.0.0)" "rmarkdown"          
 ```

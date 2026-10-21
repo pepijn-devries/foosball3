@@ -9,7 +9,7 @@ run the graphical user interface
 ## Usage
 
 ``` r
-foosball3_install_suggests(ignore = "mirai", update = TRUE, ...)
+foosball3_install_suggests(ignore = c("testthat", "mirai"), update = TRUE, ...)
 ```
 
 ## Arguments

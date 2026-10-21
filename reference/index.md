@@ -14,6 +14,9 @@
 - [`foosball3_generate_matches()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_generate_matches.md)
   : Generate Matches for a Tournament Phase
 
+- [`foosball3_get_schema()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_get_schema.md)
+  : Get foosball3 Schema Data
+
 - [`foosball3_import_db()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_import_db.md)
   : Import Foosball Tournament Data from a File
 
