@@ -106,11 +106,11 @@ foosball3_create_db <- function(file, ...) {
   
   copy_data(
     dplyr::tibble(
-      BRAND_CODE = c("UNK", "BUF", "DTM", "GTS", "VDM"),
+      BRAND_CODE = c("UNK", "BUF", "DTM", "GTS", "VDM", "BNZ", "FPD"),
       BRAND_NAME =
         c("Unknown", "Buffalo", "Deutscher Meister", "GTS Original Gametables",
-          "Van der Meulen"),
-      BRAND_COUNTRY = c(NA_character_, "NL", "DE", NA_character_, "NL")
+          "Van der Meulen", "Bonzini", "Fas Pendezza"),
+      BRAND_COUNTRY = c(NA_character_, "NL", "DE", "NL", "NL", "IT", "FR")
     ), "brands")
   
   copy_data(
@@ -144,13 +144,14 @@ foosball3_create_db <- function(file, ...) {
     ) |>
     dplyr::mutate(
       POSITION =
-        paste(dplyr::case_match(.data$ROLE_CODE,
-                                "D" ~ "Defense",
-                                "S" ~ "Strike",
-                                "U" ~ "Unknown role"),
-              c("opposite unknown side",
-                "unknown side",
-                "Side 1", "Side 2")[(.data$SIDE_ID + 2L)]),
+        paste(dplyr::recode_values(
+          .data$ROLE_CODE,
+          "D" ~ "Defense",
+          "S" ~ "Strike",
+          "U" ~ "Unknown role"),
+          c("opposite unknown side",
+            "unknown side",
+            "Side 1", "Side 2")[(.data$SIDE_ID + 2L)]),
       POSITION_CODE =
         paste0(.data$ROLE_CODE,
                c("O", "U", "1", "2")[(.data$SIDE_ID + 2L)]),

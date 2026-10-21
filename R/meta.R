@@ -32,14 +32,14 @@ foosball3_meta_data <- function(...) {
       lapply(\(x) if (length(x) == 0) NA_character_ else trimws(x)) |>
       unlist()
   ) |>
-    tidyr::fill(.data$is_view) |>
+    tidyr::fill("is_view") |>
     dplyr::filter(
       is.na(.data$is_view) &
         !.data$field_name %in% c("PRAGMA", "FOREIGN", "PRIMARY", "CONSTRAINT", 
                                  "UNIQUE") & !is.na(.data$field_name)) |>
-    tidyr::fill(.data$table) |>
+    tidyr::fill("table") |>
     dplyr::filter(
-      !duplicated(dplyr::pick(.data$table, .data$field_name))
+      !duplicated(dplyr::pick("table", "field_name"))
     ) |>
     dplyr::select(-"is_view")
 }

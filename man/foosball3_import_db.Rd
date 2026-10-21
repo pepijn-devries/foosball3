@@ -26,15 +26,10 @@ of the database (using \code{\link[=foosball3_create_db]{foosball3_create_db()}}
 complies with the latest database scheme specification used by this package.
 }
 \examples{
-tf <- tempfile()
-export <- tempfile(fileext = ".zip")
-import <- tempfile()
-foosball3_create_db(tf)
-foosball3_export_db(tf, export)
-foosball3_import_db(export, import)
+target   <- tempfile(fileext = ".db")
+zip_file <- system.file(package = "foosball3", "example.zip")
+foosball3_import_db(zip_file, target)
 
-# Clean up example files
-unlink(tf, TRUE, TRUE)
-unlink(export, TRUE, TRUE)
-unlink(import, TRUE, TRUE)
+# Cleanup
+unlink(target)
 }

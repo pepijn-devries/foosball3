@@ -45,6 +45,7 @@ personStatServer <- function(id, tournaments, person_picker) {
       })
       
       get_layers <- shiny::reactive({
+        density <- NULL
         nbreaks <- 15
         breaks <- seq(-50/nbreaks, 100 + 50/nbreaks, 100/nbreaks)
         ggplot2::ggplot(
@@ -55,7 +56,7 @@ personStatServer <- function(id, tournaments, person_picker) {
           data = get_person_hist_data()
         ) +
           ggiraph::geom_histogram_interactive(
-            ggplot2::aes(y = .data$..density..),
+            ggplot2::aes(y = ggplot2::after_stat(density)),
             alpha = 0.8, breaks = breaks,
             position = ggplot2::position_dodge(3)) +
           ggplot2::stat_density(

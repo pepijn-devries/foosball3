@@ -9,6 +9,8 @@ dbManagerUI <- function(id) {
       bslib::card_header( "Database menu" ),
       bslib::card_body(
         shiny::fileInput(ns("uploadSQLite"), "Upload SQLite or zip"),
+        shiny::actionButton(ns("btnLoadExample"), "Load example",
+                            icon = bsicons::bs_icon("grid-fill")),
         shiny::selectInput(
           ns("selectFormat"), "Download format",
           c(SQLite = ".sqlite", `Zipped csv files` = ".zip"), ".sqlite"),
@@ -44,6 +46,36 @@ dbManagerServer <- function(id) {
       menu_selector <- shiny::reactiveVal()
       
       db_path <- shiny::reactiveVal( db_file )
+
+      set_file <- function(f, target, pt) {
+        tryCatch({
+          withCallingHandlers({
+            foosball3::foosball3_import_db(f, target)
+            file.copy(target, pt, TRUE)
+            unlink(target, TRUE, TRUE)
+            db_path(pt)
+          }, warning = \(w) {
+            shinyWidgets::show_alert(
+              "Please be aware of the following",
+              paste(w$message, collapse = " "),
+              type = "warning")
+            invokeRestart("muffleWarning")
+          })
+        }, error = \(e) {
+          shinyWidgets::show_alert(
+            "Import failed",
+            paste(e$message, collapse = " "),
+            type = "error")
+        })
+      }
+      
+      shiny::observeEvent(input$btnLoadExample, {
+        pt <- db_path()
+        attr(pt, "timestamp") <- Sys.time()
+        new_path <- tempfile(fileext = ".sqlite")
+        old_path <- system.file(package = "foosball3", "example.zip")
+        set_file(old_path, new_path, pt)
+      })
       
       shiny::observeEvent(input$uploadSQLite, {
         bslib::show_toast(
@@ -63,28 +95,7 @@ dbManagerServer <- function(id) {
         pt <- db_path()
         attr(pt, "timestamp") <- Sys.time()
         new_path <- tempfile(fileext = ".sqlite")
-        tryCatch({
-          withCallingHandlers({
-            foosball3::foosball3_import_db(
-              input$uploadSQLite$datapath,
-              new_path
-            )
-            file.copy(new_path, pt, TRUE)
-            unlink(new_path, TRUE, TRUE)
-            db_path(pt)
-          }, warning = \(w) {
-            shinyWidgets::show_alert(
-              "Please be aware of the following",
-              paste(w$message, collapse = " "),
-              type = "warning")
-            invokeRestart("muffleWarning")
-          })
-        }, error = \(e) {
-          shinyWidgets::show_alert(
-            "Import failed",
-            paste(e$message, collapse = " "),
-            type = "error")
-        })
+        set_file(input$uploadSQLite$datapath, new_path, pt)
         bslib::hide_toast(ns("import_toast"))
       })
       
@@ -139,6 +150,7 @@ dbManagerServer <- function(id) {
       })
       
       output$header <- shiny::renderUI({
+        shiny::req(input$db_set)
         bslib::toolbar(
           align = "left",
           width = "100%",

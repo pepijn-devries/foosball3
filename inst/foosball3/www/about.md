@@ -1,8 +1,3 @@
-<img src="img/web-app-manifest-192x192.png" alt="logo" style="float: right; margin-right: 15px;">
-
-## About Foosball3
-
-### The History of the Foosball App
 
 Back in 2013 our office got its first foosball table, where are colleagues were
 convinced they were the best player in the building. We realised that we needed

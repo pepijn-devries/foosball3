@@ -12,17 +12,12 @@
 #' @param ... Ignored
 #' @returns Creates a new clean copy of the database. Returns `NULL` invisibly.
 #' @examples
-#' tf <- tempfile()
-#' export <- tempfile(fileext = ".zip")
-#' import <- tempfile()
-#' foosball3_create_db(tf)
-#' foosball3_export_db(tf, export)
-#' foosball3_import_db(export, import)
+#' target   <- tempfile(fileext = ".db")
+#' zip_file <- system.file(package = "foosball3", "example.zip")
+#' foosball3_import_db(zip_file, target)
 #' 
-#' # Clean up example files
-#' unlink(tf, TRUE, TRUE)
-#' unlink(export, TRUE, TRUE)
-#' unlink(import, TRUE, TRUE)
+#' # Cleanup
+#' unlink(target)
 #' @export
 foosball3_import_db <- function(file, target, ...) {
   foosball3_create_db(target)
@@ -68,6 +63,14 @@ foosball3_import_db <- function(file, target, ...) {
     
     if (is_zip) {
       dat <- utils::read.csv(file.path(temp_storage, sprintf("%s.csv", tb)))
+      dat <-
+        dat |>
+        dplyr::mutate(
+          dplyr::across(
+            dplyr::where(is.character),
+            ~ iconv(., to = "ASCII//TRANSLIT", sub = "?")
+          )
+        )
       if (dir.exists(file.path(temp_storage, tb))) {
         blob_cols <-
           dplyr::tbl(con_new, tb) |>
@@ -82,7 +85,7 @@ foosball3_import_db <- function(file, target, ...) {
           fileext <- if (startsWith(bc, "JPG")) ".jpg" else ""
           bcf <-
             if (startsWith(bc, "JPG") &&
-                !any(startsWith(bc, list.files(file.path(temp_storage, tb))))) "pic" else
+                !any(startsWith(list.files(file.path(temp_storage, tb)), bc))) "pic" else
                   bc
           blob_dat <-
             lapply(
