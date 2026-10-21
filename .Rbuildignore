@@ -11,3 +11,4 @@
 ^docs-src$
 ^\.quarto$
 ^_quarto\.yml$
+^codecov\.yml$
