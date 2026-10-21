@@ -1,10 +1,11 @@
 # Changelog
 
-## foosball3 0.0.1.0001
+## foosball3 0.0.1.0002
 
 - Fix in CSV export
 - Fix in CSV import
 - Added example data
+- Added vignettes
 
 ## foosball3 0.0.1
 
