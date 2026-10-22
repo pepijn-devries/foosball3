@@ -163,7 +163,7 @@ tournamentServer <- function(id, db, avatars) {
       get_selected <- shiny::reactive({
         new_id()
         get_tournaments() |>
-          dplyr::filter(TOURNAMENT_ID == input$selectTournament) |>
+          dplyr::filter(.data$TOURNAMENT_ID == input$selectTournament) |>
           as.list()
       })
       

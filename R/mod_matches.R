@@ -79,7 +79,7 @@ matchesServer <- function(id, tournament, avatars) {
         }
       })
       
-      observeEvent(move_detector(), {
+      shiny::observeEvent(move_detector(), {
         current <- input$selectMatch
         ## Note that this cache will not update name changes made during
         ## a tournament

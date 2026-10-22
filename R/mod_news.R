@@ -1,6 +1,3 @@
-news_tree     <- readLines("www/data/newstree.json") |>
-  jsonlite::fromJSON(FALSE)
-news_messages <- utils::read.csv("www/data/news.csv")
 
 newsUI <- function(id) {
   ns <- shiny::NS(id)
@@ -15,6 +12,11 @@ newsUI <- function(id) {
 }
 
 newsServer <- function(id, matches, mod_avatar, show) {
+  pth <- shiny::resourcePaths()["foosball3"]
+  news_tree     <- readLines(file.path(pth, "data", "newstree.json")) |>
+    jsonlite::fromJSON(FALSE)
+  news_messages <- utils::read.csv(file.path(pth, "data", "news.csv"))
+  
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -73,7 +75,7 @@ newsServer <- function(id, matches, mod_avatar, show) {
               .data$TOURNAMENT_ID %in% !!tour_id, 10, 1
             ),
             pick_weight = cumsum(.data$pick_weight) / sum(.data$pick_weight),
-            threshold = runif(1)
+            threshold = stats::runif(1)
           ) |>
           dplyr::filter(.data$pick_weight > .data$threshold) |>
           dplyr::slice_head(n = 1)
@@ -123,9 +125,9 @@ newsServer <- function(id, matches, mod_avatar, show) {
             RESULT              = sum(.data$RESULT, na.rm = TRUE),
             RESULT_OPPONENT     = sum(.data$RESULT_OPPONENT, na.rm = TRUE),
             RESULT_TOTAL        = sum(.data$RESULT + .data$RESULT_OPPONENT, na.rm = TRUE),
-            RESULT_SD           = sd(.data$RESULT, na.rm = TRUE),
-            RESULT_OPPPONENT_SD = sd(.data$RESULT_OPPONENT, na.rm = TRUE),
-            SUCCESS_SD          = sd(100*.data$RESULT / (.data$RESULT + .data$RESULT_OPPONENT), na.rm = TRUE),
+            RESULT_SD           = stats::sd(.data$RESULT, na.rm = TRUE),
+            RESULT_OPPPONENT_SD = stats::sd(.data$RESULT_OPPONENT, na.rm = TRUE),
+            SUCCESS_SD          = stats::sd(100*.data$RESULT / (.data$RESULT + .data$RESULT_OPPONENT), na.rm = TRUE),
             WINS                = sum(.data$CONCLUSION == "WIN", na.rm = TRUE),
             LOSSES              = sum(.data$CONCLUSION == "LOSE", na.rm = TRUE),
             DRAWS               = sum(.data$CONCLUSION == "DRAW", na.rm = TRUE),
@@ -286,14 +288,14 @@ newsServer <- function(id, matches, mod_avatar, show) {
               dplyr::filter( .data$type == what ) |>
               dplyr::mutate(
                 pick_weight = cumsum(.data$pick_weight)/ sum(.data$pick_weight),
-                threshold = runif(1)
+                threshold = stats::runif(1)
               ) |>
               dplyr::filter(.data$pick_weight > .data$threshold) |>
               dplyr::slice_head(n = 1) |>
               .process_message()
           } else {
             picked <-
-              which(runif(1) < chances) |>
+              which(stats::runif(1) < chances) |>
               utils::head(1)
             walk_tree(tree[branches][[picked]], names(picked))
           }

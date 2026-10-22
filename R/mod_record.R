@@ -1,16 +1,19 @@
+#' @include mod_lookup.R
+#' @noRd
 recordUI <- function(id, table, label = "Edit record") {
   ns <- shiny::NS(id)
   disab_cond <- function(x, cond) {
     if (cond) shinyjs::disabled(x) else (x)
   }
+  rels <- .db_rel()
   widgets <-
-    db_join_keys() |>
+    .db_join_keys(rels$dictionary, rels$primary, rels$foreign) |>
     dplyr::filter(.data$table == .env$table) |>
     dplyr::rowwise() |>
     dplyr::mutate(
       widget = list({
         is_pk <- !is.na(.data$autoincrement)
-        type <- get_type_global(table, .data$column)
+        type <- .get_type_global(table, .data$column, rels$dictionary)
         widget_name <- paste(table, .data$column, sep = "-")
         label <-
           .data$column |>
@@ -90,9 +93,10 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
     id,
     function(input, output, session) {
 
+      rels <- .db_rel()
       ## initiate lookupServers
       keys <-
-        db_join_keys() |>
+        .db_join_keys(rels$dictionary, rels$primary, rels$foreign) |>
         dplyr::filter(.data$table == .env$table_name &
                         !is.na(.data$parent_table))
       lookups <-
@@ -112,8 +116,8 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
 
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
-        pk <- get_primary_key_global(table_name)
-        tp <- get_type_global(table_name, pk)
+        pk <- .get_primary_key_global(table_name, rels$primary)
+        tp <- .get_type_global(table_name, pk, rels$dictionary)
         if (length(tp) > 1) {
           rec_id <- strsplit(rec_id, "\\|") |> unlist()
         }
@@ -145,7 +149,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       })
 
       get_new_pk <- shiny::reactive({
-        pk <- get_primary_key_global(table_name)
+        pk <- .get_primary_key_global(table_name, rels$primary)
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con)}, add = TRUE)
         existing_keys <-
@@ -159,7 +163,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             }, {
               lazy_table <- dplyr::tbl(con, table_name)
               cur_keys <- lazy_table |> dplyr::pull(pk)
-              descr <- get_description_field(pk, colnames(lazy_table))
+              descr <- .get_description_field(pk, colnames(lazy_table))
               new_key <- input[[paste(table_name, descr, sep = "-")]] |> toupper()
               for (i in 4L:nchar(new_key)) {
                 temp <- abbreviate(new_key, i)
@@ -175,8 +179,8 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
       })
       
       shiny::observeEvent(input$btnSave, {
-        pk <- get_primary_key_global(table_name)
-        fk <- db_static_fk |>
+        pk <- .get_primary_key_global(table_name, rels$primary)
+        fk <- .db_rel()$foreign |>
           dplyr::filter(.data$child_table == .env$table_name)
         is_new <- FALSE
         new_key <-
@@ -235,7 +239,7 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
           create_crucial_foreigns(table_name, edited_row)
           if (length(pk) == 1L) record_picker()$add(edited_row[[pk]])
         }, error = \(e) {
-          shinyWidgets::show_alert( "Failed to Save Record", strip_ansi(e$parent$message),
+          shinyWidgets::show_alert( "Failed to Save Record", .strip_ansi(e$parent$message),
                                     "error" )
         })
 
@@ -276,18 +280,19 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
           RSQLite::dbExecute(
             con,
             sprintf("DELETE FROM %s WHERE %s = '%s'",
-                    table_name, get_primary_key_global(table_name), record_picker()$id
+                    table_name, .get_primary_key_global(table_name, rels$primary),
+                    record_picker()$id
             ))
           record_picker()$add(NA)
         }, error = \(e) {
           shinyWidgets::show_alert( "Failed to Delete Record",
-                                    strip_ansi(e$message), "error" )
+                                    .strip_ansi(e$message), "error" )
         })
       })
 
       update_value <- function(fields, val) {
-        tp <- get_type_global(table_name, fields)
-        fk <- db_join_keys() |>
+        tp <- .get_type_global(table_name, fields, rels$dictionary)
+        fk <- .db_join_keys(rels$dictionary, rels$primary, rels$foreign) |>
           dplyr::filter(.data$table == !!table_name &
                           !is.na(.data$parent_table))
         widget_name <- paste(table_name, fields, sep = "-")

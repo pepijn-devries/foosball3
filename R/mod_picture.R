@@ -17,7 +17,7 @@ pictureServer <- function(id, tournament, avatars) {
         face_click(avatars()$click)
       }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
-      output$picture <- renderUI({
+      output$picture <- shiny::renderUI({
         tnmt <- tournament()
         id <- tnmt$selected$TOURNAMENT_ID
         if (length(id) == 0) {

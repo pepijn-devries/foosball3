@@ -32,7 +32,7 @@ tableDetailsServer <- function(id, database, selected) {
       get_meta <- shiny::reactive({
         tab_name <- selected()$arg$title
         if (!is.null(tab_name)) {
-          foosball_meta |>
+          foosball3_meta_data() |>
             dplyr::filter(.data$table == !!tab_name)
         } else {
           NULL

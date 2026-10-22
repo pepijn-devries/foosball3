@@ -28,6 +28,8 @@ recordsUI <- function(id) {
 }
 
 recordsServer <- function(id, tournaments) {
+  rels <- .db_rel()
+  
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -63,8 +65,8 @@ recordsServer <- function(id, tournaments) {
         on.exit({ RSQLite::dbDisconnect(con) }, add = TRUE)
         lazy_table <- dplyr::tbl(con, input$nav_recs)
         nms <- colnames(lazy_table)
-        pk <- get_primary_key_global(input$nav_recs)
-        descript <- get_description_field(pk, nms)
+        pk <- .get_primary_key_global(input$nav_recs, rels$primary)
+        descript <- .get_description_field(pk, nms)
         opts <- lazy_table |>
           dplyr::collect() |>
           dplyr::rowwise() |>
@@ -108,14 +110,14 @@ recordsServer <- function(id, tournaments) {
         )
       })
       
-      observe({
+      shiny::observe({
         for (nm in names(rec_servers)) {
           rec_servers[[nm]]()
         }
       })
       
       output$uiTableDetails <- shiny::renderUI({
-        foosball_meta |>
+        foosball3_meta_data() |>
           dplyr::filter(.data$table == input$nav_recs &
                           .data$field_name == "CREATE") |>
           dplyr::pull("description")

@@ -5,8 +5,8 @@ meta:
 
 logo:
   images:
-    arcade-light-bg: "www/img/logo-black.png"
-    arcade-dark-bg: "www/img/logo-white.png"
+    arcade-light-bg: "foosball3/img/logo-black.png"
+    arcade-dark-bg: "foosball3/img/logo-white.png"
     
 defaults:
   shiny:

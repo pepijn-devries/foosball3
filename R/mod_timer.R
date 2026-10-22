@@ -1,9 +1,9 @@
 timerUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    tags$audio(id = "foosball-aud-countdown", src = "audio/countdown.mp3", type = "audio/mp3"),
-    tags$audio(id = "foosball-aud-precount", src = "audio/precount.mp3", type = "audio/mp3"),
-    tags$audio(id = "foosball-aud-midmatch", src = "audio/midmatch.mp3", type = "audio/mp3"),
+    shiny::tags$audio(id = "foosball-aud-countdown", src = "foosball3/audio/countdown.mp3", type = "audio/mp3"),
+    shiny::tags$audio(id = "foosball-aud-precount", src = "foosball3/audio/precount.mp3", type = "audio/mp3"),
+    shiny::tags$audio(id = "foosball-aud-midmatch", src = "foosball3/audio/midmatch.mp3", type = "audio/mp3"),
     shiny::absolutePanel(
       id = ns("timerPanel"),
       bottom = 20, left = 20, width = 400,
@@ -21,7 +21,7 @@ timerUI <- function(id) {
               shiny::actionButton(ns("btnStart"), bsicons::bs_icon("play-fill")),
               shiny::actionButton(ns("btnStop"),  bsicons::bs_icon("stop-fill"))
             ),
-            div(
+            shiny::div(
               class = "foosball-timer",
               id = ns("foosball-timer"),
               shiny::tags$span("\u200700:00"))

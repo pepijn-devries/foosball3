@@ -8,6 +8,8 @@ lookupUI <- function(id, label, placeholder = "Select an option") {
 }
 
 lookupServer <- function(id, label, tournaments, table, fmt = "%s", validator = NULL) {
+  rels <- .db_rel()
+  
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -22,9 +24,9 @@ lookupServer <- function(id, label, tournaments, table, fmt = "%s", validator = 
       shiny::observeEvent(tournaments(), {
         con <- tournaments()$database$connect()
         on.exit({ RSQLite::dbDisconnect(con) }, add = TRUE)
-        pk <- get_primary_key_global(table)
+        pk <- .get_primary_key_global(table, rels$primary)
         lazy_table <- dplyr::tbl(con, table)
-        descr <- get_description_field(pk, colnames(lazy_table))
+        descr <- .get_description_field(pk, colnames(lazy_table))
         opts <- lazy_table |>
           dplyr::select(dplyr::any_of(c(pk, descr))) |>
           dplyr::collect()
@@ -55,7 +57,7 @@ lookupServer <- function(id, label, tournaments, table, fmt = "%s", validator = 
       })
       
       shiny::observeEvent(input$selectLookup, {
-        req(choices_cache())
+        shiny::req(choices_cache())
         current_input <- input$selectLookup
         
         if (identical(current_input, "")) current_input <- NULL 

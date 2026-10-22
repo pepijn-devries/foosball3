@@ -56,10 +56,10 @@ matchServer <- function(id, match, avatars) {
           "Select a match first"
         } else {
           coupling1 <-
-            dictionary |> dplyr::filter(lang == !!announce_lang) |>
+            dictionary |> dplyr::filter(.data$lang == !!announce_lang) |>
             dplyr::pull("and")
           coupling2 <-
-            dictionary |> dplyr::filter(lang == !!announce_lang) |>
+            dictionary |> dplyr::filter(.data$lang == !!announce_lang) |>
             dplyr::pull("vs")
           paste(m$PLAYER_DEFENSE_1, coupling1, m$PLAYER_STRIKE_1, coupling2,
                 m$PLAYER_STRIKE_2, coupling1, m$PLAYER_DEFENSE_2)

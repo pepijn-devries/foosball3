@@ -102,7 +102,7 @@ tournamentEditorServer <- function(
                 TOURNAMENT_DATE = format(input$pickDate, "%Y-%m-%d"),
                 TOURNAMENT_DURATION = input$numDuration,
                 POINT_SYSTEM_ID = mod_ps()$id |>
-                  as(Class = typeof(tnmt$POINT_SYSTEM_ID)),
+                  methods::as(Class = typeof(tnmt$POINT_SYSTEM_ID)),
                 LOCATION_CODE = mod_loc()$id,
                 TOURNAMENT_STATE_CODE = "ACT"
               ),

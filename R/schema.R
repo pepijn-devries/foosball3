@@ -20,31 +20,8 @@
 #'   
 #'   foosball3_get_schema(con, TRUE)
 #' }
+#' @include create.R
 #' @export
 foosball3_get_schema <- function(con, include_views = FALSE, ...) {
-  tbls <- RSQLite::dbListTables(con)
-  
-  if (requireNamespace("dm")) {
-    my_dm <- dm::dm_from_con(con, learn_keys = TRUE)
-    if (include_views) {
-      all_tbls <- RSQLite::dbListTables(con)
-      unreferenced <- setdiff(all_tbls, names(my_dm))
-      unreferenced <- unreferenced[!grepl("^sqlite_", unreferenced)]
-      
-      unreferenced <-
-        lapply(unreferenced, dplyr::tbl, src = con) |>
-        stats::setNames(unreferenced)
-      for (i in seq_along(unreferenced)) {
-        my_dm <-
-          my_dm |>
-          dm::dm(!!names(unreferenced)[[i]] := unreferenced[[i]])
-      }
-    }
-    return(my_dm)
-  } else {
-    rlang::abort(c(
-      x = "This function needs the 'dm' package",
-      i = "Please install 'dm' and try again"
-    ))
-  }
+  .foosball3_get_schema(con, include_views, ...)
 }

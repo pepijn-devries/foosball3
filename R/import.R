@@ -18,6 +18,7 @@
 #' 
 #' # Cleanup
 #' unlink(target)
+#' @include create.R
 #' @export
 foosball3_import_db <- function(file, target, ...) {
   foosball3_create_db(target)

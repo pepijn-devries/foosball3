@@ -1,15 +1,15 @@
 matchSideUI <- function(id, side) { # Side is either 1L or 2L
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   opposite_id <- stringr::str_replace_all(
     id, "[12]", \(x) ifelse(x == "1", "2", "1") )
-  inputnum <- numericInput(
+  inputnum <- shiny::numericInput(
     ns("numScore"), "Score", NULL, 0L, 10L, 1L, width = "200px",
     updateOn = "blur"
   )
   inputnum$children[[1]] <- NULL
   inputnum$children[[1]] <-
     inputnum$children[[1]] |>
-    tagAppendAttributes(
+    shiny::tagAppendAttributes(
       class = "foosball-score",
       onfocusout = sprintf("$(`#%s`).focus();", ns(opposite_id))
     )
@@ -28,7 +28,7 @@ matchSideUI <- function(id, side) { # Side is either 1L or 2L
 }
 
 matchSideServer <- function(id, match, side, avatars) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       ## Use cache to ensure that UI is only updated when the data actually changes

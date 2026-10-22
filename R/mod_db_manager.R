@@ -1,5 +1,3 @@
-db_file <- file.path(tempdir(), "foosball.sqlite")
-if (!file.exists(db_file)) foosball3::foosball3_create_db(db_file)
 
 dbManagerUI <- function(id) {
   ns <- shiny::NS(id)
@@ -38,7 +36,9 @@ dbManagerUI <- function(id) {
   )
 }
 
-dbManagerServer <- function(id) {
+#' @include create.R
+#' @noRd
+dbManagerServer <- function(id, db_file) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -81,11 +81,11 @@ dbManagerServer <- function(id) {
         bslib::show_toast(
           bslib::toast(
             "Please wait while importing data from uploaded file",
-            div(
+            shiny::div(
               class = "spinner-border text-primary flex-shrink-0", 
               role = "status",
               style = "width: 1.5rem; height: 1.5rem; border-width: 0.2em;",
-              tags$span(class = "visually-hidden", "Loading...")
+              shiny::tags$span(class = "visually-hidden", "Loading...")
             ),
             id = ns("import_toast"),
             duration_s = NA,
@@ -145,7 +145,7 @@ dbManagerServer <- function(id) {
       mod_diagram <- diagramServer("mod_diagram", sub_mod_react)
       mod_details <- tableDetailsServer("mod_details", sub_mod_react, menu_selector)
       
-      observeEvent(menu_selector(), {
+      shiny::observeEvent(menu_selector(), {
         bslib::nav_select("db_set", menu_selector()$item)
       })
       
