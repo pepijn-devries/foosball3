@@ -1,6 +1,6 @@
 phasesUI <- function(id) {
   ns <- shiny::NS(id)
-  div(
+  shiny::div(
     class = "d-flex align-items-center gap-5",
     shiny::selectInput(
       ns("selectPhase"), "Tournament Phase",
@@ -70,7 +70,7 @@ phasesServer <- function(id, tournaments) {
           to = outer(phs$PHASE_ORDER, phs$PHASE_ORDER - 1L, `==`) |>
             apply(1, which)
         ) |>
-          tidyr::unnest(to) |>
+          tidyr::unnest("to") |>
           dplyr::mutate(
             phase = .env$phs$TOURNAMENT_PHASE[.data$from]
           ) |>

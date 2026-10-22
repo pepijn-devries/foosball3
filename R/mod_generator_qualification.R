@@ -70,7 +70,7 @@ qualGeneratorServer <- function(id, matches, btnStart) {
             pgf = progress_file
           ), parent = parent.frame())
           
-          eval(avatar_expression, envir = eval_env)
+          eval(generator_expression, envir = eval_env)
           return(TRUE)
         }
       })
@@ -114,7 +114,7 @@ qualGeneratorServer <- function(id, matches, btnStart) {
         sel <- matches()$tournament$selected
         if (!validator$is_valid()) {
           msgs <- lapply(validator$validate(), `[[`, "message")
-          msgs <- do.call(tagList, msgs) |> unlist() |> unique()
+          msgs <- do.call(shiny::tagList, msgs) |> unlist() |> unique()
           msgs <- paste(msgs, collapse = " ")
           shinyWidgets::show_alert(
             "Invalid input",
@@ -156,7 +156,7 @@ qualGeneratorServer <- function(id, matches, btnStart) {
               MATCH_ID = max(.data$MATCH_ID, na.rm = TRUE)
             ) |>
             dplyr::mutate(
-              MATCH_ID = ifelse(is.na(MATCH_ID), 0L, MATCH_ID)
+              MATCH_ID = ifelse(is.na(.data$MATCH_ID), 0L, .data$MATCH_ID)
             ) |>
             dplyr::pull("MATCH_ID")
           

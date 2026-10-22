@@ -1,12 +1,12 @@
 personStatUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     plotUI(ns("mod_plot"))
   )
 }
 
 personStatServer <- function(id, tournaments, person_picker) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       get_person_hist_data <- shiny::reactive({

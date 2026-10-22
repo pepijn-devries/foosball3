@@ -1,6 +1,6 @@
 Package: foosball3
 Title: An App to Manage and Organise Foosball Tournaments
-Version: 0.0.1.0002
+Version: 0.0.1.0003
 Authors@R: c(person("Pepijn", "de Vries", role = c("aut", "cre", "dtc"),
     email = "pepijn.devries@outlook.com",
     comment = c(ORCID = "0000-0002-7961-6646")))
@@ -51,16 +51,48 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/pepijn-devries/foosball3, https://pepijn-devries.github.io/foosball3/
 BugReports: https://github.com/pepijn-devries/foosball3/issues
-Collate: 
-    'create.R'
-    'dependencies.R'
-    'export.R'
-    'suggests.R'
-    'foosball3.R'
-    'generate.R'
-    'import.R'
-    'meta.R'
-    'schema.R'
 Config/roxygen2/version: 8.1.0
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+Collate: 
+    'mod_lookup.R'
+    'mod_record.R'
+    'mod_records.R'
+    'mod_table_details.R'
+    'mod_diagram.R'
+    'create.R'
+    'mod_db_manager.R'
+    'mod_warming_up.R'
+    'suggests.R'
+    'foosball3.R'
+    'app_server.R'
+    'mod_person_stats.R'
+    'mod_people.R'
+    'mod_penalty.R'
+    'mod_table_arrangement.R'
+    'mod_generator_finals.R'
+    'mod_generator_qualification.R'
+    'mod_match_generator.R'
+    'mod_match_side.R'
+    'mod_match.R'
+    'mod_phases.R'
+    'mod_matches.R'
+    'mod_plot.R'
+    'mod_tournament_stats.R'
+    'mod_person_picker.R'
+    'mod_tournament_editor.R'
+    'mod_picture.R'
+    'mod_tournament.R'
+    'schema.R'
+    'mod_helpers.R'
+    'app_ui.R'
+    'export.R'
+    'foosball3-package.R'
+    'generate.R'
+    'import.R'
+    'meta.R'
+    'mod_avatar.R'
+    'mod_coin.R'
+    'mod_news.R'
+    'mod_progress.R'
+    'mod_timer.R'

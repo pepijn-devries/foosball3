@@ -107,7 +107,7 @@ finalGeneratorServer <- function(id, type, matches, btnStart, avatars, phases) {
           new_id <-
             dplyr::tbl(con, "matches") |>
             dplyr::summarise(MATCH_ID = max(.data$MATCH_ID, na.rm = TRUE) + 1L) |>
-            dplyr::pull(MATCH_ID)
+            dplyr::pull("MATCH_ID")
           dplyr::tbl(con, "matches")
           phase_code <-
             dplyr::tbl(con, "tournament_phases") |>

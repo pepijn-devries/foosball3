@@ -31,7 +31,7 @@ penaltyServer <- function(id, tournaments, avatars) {
       )
       validator$enable()
       
-      observe({
+      shiny::observe({
         shinyjs::toggleState(
           "numPenalty", condition = "ACT" %in% tournaments()$selected$TOURNAMENT_STATE_CODE)
       })

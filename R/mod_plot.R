@@ -16,7 +16,7 @@ plotServer <- function(id, layers) {
               dplyr::tibble(
                 x = 0, y = 0, label = "No data to plot"
               ),
-              ggplot2::aes(x = x, y = y, label = label)
+              ggplot2::aes(x = .data$x, y = .data$y, label = .data$label)
             ) +
               ggplot2::geom_text() +
               ggplot2::theme_void()

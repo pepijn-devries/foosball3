@@ -10,7 +10,7 @@ diagramUI <- function(id) {
         bsicons::bs_icon("filetype-svg", "2em", title = "Download diagram svg"))
     ),
     shiny::uiOutput(ns("diagram")),
-    tags$script(HTML(sprintf("
+    shiny::tags$script(shiny::HTML(sprintf("
         (function() {
           const bodyId = '%s';
           const inputId = '%s';
@@ -38,6 +38,20 @@ diagramUI <- function(id) {
 }
 
 diagramServer <- function(id, database) {
+  tf <- tempfile()
+  foosball3_create_db(tf)
+  con <- RSQLite::dbConnect(RSQLite::SQLite(), tf)
+  get_schema_static <- function(con, include_views) {
+    .foosball3_get_schema(con, include_views) |>
+      dm::dm_draw() |>
+      DiagrammeRsvg::export_svg()
+  }
+  
+  db_schemas_static <-
+    lapply(c(TRUE, FALSE), get_schema_static, con = con)
+  RSQLite::dbDisconnect(con)
+  rm(con, tf)
+  
   shiny::moduleServer(
     id,
     function(input, output, session) {

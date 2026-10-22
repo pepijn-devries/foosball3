@@ -2,7 +2,7 @@ tableArrangementUI <- function(id) {
   ns <- shiny::NS(id)
   val_host <- shiny::textInput(ns("validation_host"), "", "", width = "100%")
   val_host$children <- val_host$children[-1]
-  tagList(
+  shiny::tagList(
     lookupUI(ns("mod_table"), "Table", "On which the match is played"),
     lookupUI(ns("mod_ball"), "Ball", "With which the match is played"),
     bslib::layout_columns(

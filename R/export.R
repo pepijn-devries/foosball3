@@ -19,6 +19,7 @@
 #' ## Clean up the files created in this example
 #' unlink(new_db, TRUE, TRUE)
 #' unlink(new_export, TRUE, TRUE)
+#' @include create.R
 #' @export
 foosball3_export_db <- function(source, destination, validate = FALSE, ...) {
   if (validate) {

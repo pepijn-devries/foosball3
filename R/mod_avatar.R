@@ -1,7 +1,8 @@
 avatarServer <- function(id, db) {
   TILE_SIZE <- 75
   ICON_SIZE <- 25
-  anonym <- imager::load.image("www/img/anonymous.png")
+  pth <- shiny::resourcePaths()["foosball3"]
+  anonym <- imager::load.image(file.path(pth, "img" , "anonymous.png"))
   anonym <- lapply(c(ICON_SIZE, TILE_SIZE), \(sz) {
     im <- imager::resize(anonym, sz, sz, interpolation_type = 5)
     tf <- tempfile(fileext = ".jpg")
