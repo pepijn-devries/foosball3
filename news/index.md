@@ -1,6 +1,6 @@
 # Changelog
 
-## foosball3 0.0.1.0003
+## foosball3 0.0.1.0004
 
 - Fix in CSV export
 - Fix in CSV import
