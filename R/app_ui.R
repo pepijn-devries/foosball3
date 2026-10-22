@@ -31,7 +31,9 @@ ui <- function(id, appdir) {
                                            "announce")),
       shiny::tags$head(
         shiny::includeCSS(file.path(appdir, "www", "custom.css")),
-        shiny::tags$script(src = "foosball3/js/extra.js")
+        shiny::tags$script(src = "foosball3/js/extra.js"),
+        shiny::tags$link(rel = "shortcut icon",
+                         href = "foosball3/favicon.ico")
       ),
       shiny::tagList(
         shinybusy::add_busy_gif("foosball3/img/banana.gif", 100, "top-right",

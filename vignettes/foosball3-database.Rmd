@@ -1,0 +1,165 @@
+---
+title: "The foosball3 Database"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The foosball3 Database}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(tibble.print_max = 5, tibble.print_min = 5)
+```
+
+## Introduction
+
+At the core of the foosball3 package lies the database. It is an
+[SQLite](https://www.sqlite.org/) relational database meant to store
+foosball tournaments and its results.
+
+You can create a virtually blank database with `foosball3_create_db()`,
+but you can also import existing data using `foosball3_import_db()`.
+The latter let's you import data from previously exported foosball data.
+This can be an SQLite database file, or a zip-archive containing all
+required data tables (as CSV files).
+
+This import function will create a copy of the database at the designated
+location, and will attempt to fix changes in database structure introduced
+since the database was last stored.
+
+Let's import the example data provided with the package, such that we can
+have a closer look at how the data is organised.
+
+```{r setup, message=FALSE}
+library(foosball3)
+library(dplyr)
+library(RSQLite)
+example_file <- system.file(package = "foosball3", "example.zip")
+target_file  <- tempfile(fileext = ".db")
+foosball3_import_db(example_file, target_file)
+```
+
+## Database Structure
+
+In order to work with the database, we need to open a connection to it:
+
+```{r connection}
+con <- dbConnect(SQLite(), target_file)
+```
+
+If you have both `dm` and `DiagrammeRsvg` installed, you will see a visualisation
+of the database relations below.
+
+```{r structure, include={requireNamespace("dm") && requireNamespace("DiagrammeRsvg")}, results='asis', echo=FALSE}
+foosball3_get_schema(con, FALSE) |>
+  dm::dm_draw() |>
+  DiagrammeRsvg::export_svg() |>
+  ## strip DOCTYPE from svg code
+  stringr::str_replace("(?s).*?(?=<svg)", "") |>
+  cat()
+```
+
+From this scheme, a few important tables will be highlighted.
+
+### Tournaments
+
+At the center of all tables is the table named 'tournaments'. It contains
+a list of tournaments and some essential information about it, such as:
+
+  * Where is it held?
+  * When was it held?
+  * What kind of tournament is it?
+
+```{r tournaments}
+tbl(con, "tournaments") |> collect()
+```
+
+Technically, the database structure is capable of handling different
+types of tournament structures, but the graphical user interface
+([`foosball3()`]), currently only implements one type.
+<!-- a vignette on tournament structure(s) should be written,
+and a link inserted here -->
+
+### People
+
+Another important table is the table named 'persons'. It contains a list
+of people and their name. This list is used to enroll participants in
+tournament or assign then as tournament organisers. Note that a single
+individual can join multiple tournaments. For each tournament, a person
+is given a unique participant id. This means that a single person can
+have multiple participant ids.
+
+```{r persons}
+tbl(con, "persons") |> collect()
+```
+
+> ## Disclaimer
+> Note that the example data is based on real tournament data. To protect
+> participant's privacy, locations and names have been anonymised using
+> Star Trek locations and characters.
+> 
+> Star Trek and all associated names are trademarks of CBS/Paramount. This
+> open-source package is purely for educational/utility purposes and is not
+> affiliated with, endorsed, or sponsored by the copyright holders.
+
+An advantage of this approach is that statistics of individuals can
+be collected and these statistics can be used to balance players
+skill levels in matches.
+
+### Locations, Tables and Balls
+
+The database records 'locations' (where tables are located, tournaments
+are organised, and where players are based); as well as 'tables' (and
+accompanying 'periods' describing when tables are where); and 'balls'
+to specify which ball is used during a match. You can of course use
+dummies if you don't want to record these kinds of detail.
+
+### And Many More
+
+As the diagram with all tables in the database show, there are many
+more tables. You can get details on each of these tables using
+[foosball3_meta_data()]. It will give a description for each table
+(next to each `"CREATE"` `field_name`) and all columns in the table.
+
+## Views
+
+All tables discussed above are plain tables, containing raw data.
+The advantage of having them in a database is that *views* of the
+data can be created. They can be used to simplify database complexity,
+don't require physical storage of data.
+
+Not all views will be presented here, but some notable ones will be
+addressed. For completeness all available views are listed here:
+
+```{r views, results='asis', echo=FALSE}
+paste(
+  "* ",
+  RSQLite::dbGetQuery(con, "SELECT name FROM sqlite_master WHERE type = 'view';") |>
+    pull("name") |> sort()) |> paste(collapse = "\n") |>
+  cat()
+```
+
+You can use 'participant_match_results' to find results of a specific
+participant in any match of any tournament:
+
+```{r match_result}
+tbl(con, "participant_match_results")
+```
+
+But you can also look for aggregated results. For instance, player
+statistics are summarised in 'player_statistics':
+
+```{r player_stats}
+tbl(con, "player_statistics")
+```
+
+Have fun exploring the provided example database, or collect your own
+tournament results.
+
+```{r cleanup, include = FALSE}
+unlink(target_file, TRUE, TRUE)
+```
