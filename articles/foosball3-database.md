@@ -161,7 +161,7 @@ participant in any match of any tournament:
 
 tbl(con, "participant_match_results")
 #> # A query:  ?? x 18
-#> # Database: sqlite 3.53.3 [/tmp/RtmpcQksME/file1e9d1445faa2.db]
+#> # Database: sqlite 3.53.3 [/tmp/Rtmp9vPlLA/file1f7f67f9d1b2.db]
 #>   TOURNAMENT_ID TOURNAMENT_DATE LOCATION_NAME LOCATION_CITY TOURNAMENT_PHASE
 #>           <int> <chr>           <chr>         <chr>         <chr>           
 #> 1             1 2013-11-21      First City    Qo'noS        Qualification   
@@ -184,7 +184,7 @@ statistics are summarised in ‘player_statistics’:
 
 tbl(con, "player_statistics")
 #> # A query:  ?? x 14
-#> # Database: sqlite 3.53.3 [/tmp/RtmpcQksME/file1e9d1445faa2.db]
+#> # Database: sqlite 3.53.3 [/tmp/Rtmp9vPlLA/file1f7f67f9d1b2.db]
 #>   PERSON_ID QUALIFICATION_CODE PARTICIPANT     TOURNAMENT_PHASE  GOALS_SCORED
 #>       <int> <chr>              <chr>           <chr>                    <int>
 #> 1        52 H                  Alyssa Ogawa    Consolation final            2
