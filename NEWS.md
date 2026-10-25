@@ -1,4 +1,4 @@
-# foosball3 0.0.1.0005
+# foosball3 0.0.1.0006
 
 * Fix in CSV export
 * Fix in CSV import
