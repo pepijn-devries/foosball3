@@ -4,7 +4,10 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/pepijn-devries/foosball3/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/pepijn-devries/foosball3/actions/workflows/R-CMD-check.yaml)
-<!--[![Codecov test coverage](https://codecov.io/gh/pepijn-devries/foosball3/graph/badge.svg)](https://app.codecov.io/gh/pepijn-devries/foosball3)-->
+[![foosball3 status
+badge](https://pepijn-devries.r-universe.dev/badges/foosball3)](https://pepijn-devries.r-universe.dev/foosball3)
+[![Codecov test
+coverage](https://codecov.io/gh/pepijn-devries/foosball3/graph/badge.svg)](https://app.codecov.io/gh/pepijn-devries/foosball3)
 <!-- badges: end -->
 
 Create a database to manage leisure foosball tournaments, facilitate
@@ -25,7 +28,8 @@ all suggested packages as well.
 library(foosball3)
 
 if (!foosball3_suggests_ok()) {
-  foosball3_install_suggests()
+  foosball3_list_suggests() |>
+    install.packages()
 }
 ```
 

@@ -40,25 +40,3 @@ foosball3_list_suggests <- function(...) {
 foosball3_suggests_ok <- function(ignore = c("testthat", "mirai"), ...) {
   length(.foosball_suggest(ignore, ...)) == 0
 }
-
-#' Install Packages Suggested by `foosball3`
-#' 
-#' Call this function if [foosball3_suggests_ok()] returns `FALSE`.
-#' This will install all suggested packages required to run the graphical
-#' user interface ([foosball3()]).
-#' @inherit foosball3_suggests_ok
-#' @param ... Arguments passed to [utils::install.packages()]
-#' @param update A `logical` value. If `TRUE`, it will try to update
-#' suggested packages that are already installed. If `FALSE`, it
-#' will only install suggested packages that are not yet available.
-#' @returns invisible `NULL`
-#' @export
-foosball3_install_suggests <- function(ignore = c("testthat", "mirai"), update = TRUE, ...) {
-  suggests <- if (update) {
-    sg <- foosball3_list_suggests()
-    sg[!(sg %in% ignore)]
-  } else {
-    .foosball_suggest(ignore)
-  }
-  utils::install.packages(pkgs = suggests, ...)
-}

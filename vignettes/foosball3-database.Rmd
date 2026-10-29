@@ -12,6 +12,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+old_print_max <- getOption("tibble.print_max")
+old_print_min <- getOption("tibble.print_min")
 options(tibble.print_max = 5, tibble.print_min = 5)
 ```
 
@@ -161,5 +163,6 @@ Have fun exploring the provided example database, or collect your own
 tournament results.
 
 ```{r cleanup, include = FALSE}
+options(tibble.print_max = old_print_max, tibble.print_min = old_print_min)
 unlink(target_file, TRUE, TRUE)
 ```
