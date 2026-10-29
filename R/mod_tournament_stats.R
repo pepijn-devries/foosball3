@@ -24,24 +24,46 @@ tournamentStatsUI <- function(id) {
   )
 }
 
-.get_tournament_stats <- function(con, tournament_id, player_order = NULL, ...) {
+.get_tournament_stats <- function(con, tournament_id, player_order = NULL,
+                                  person_id = NULL, ...) {
+  filt1 <-
+    if (is.null(tournament_id)) I else {
+      \(x) dplyr::filter(x, .data$TOURNAMENT_ID %in% !!tournament_id)
+    }
+  filt2 <-
+    if (is.null(person_id)) I else {
+      \(x) dplyr::filter(x, .data$PERSON_ID %in% !!person_id)
+    }
   dat <- 
     dplyr::tbl(con, "participant_tournament_results") |>
-    dplyr::filter(.data$TOURNAMENT_ID %in% !!tournament_id &
-                    .data$TOURNAMENT_PHASE == "Qualification") |>
+    filt1() |> filt2() |>
+    dplyr::filter(.data$TOURNAMENT_PHASE == "Qualification") |>
+    dplyr::left_join(
+      dplyr::tbl(con, "tournaments_view") |>
+        dplyr::select("TOURNAMENT_ID", "NUMBER_OF_PARTICIPANTS", "POINT_SYSTEM_ID"),
+      "TOURNAMENT_ID"
+    ) |>
     dplyr::collect() |>
     dplyr::rename(
       Remaining   = "REMAINING_POINTS",
       Secured     = "TOURNAMENT_POINTS",
       Participant = "PARTICIPANT"
+    ) |>
+    dplyr::mutate(
+      Point_system = sprintf("Point System %i", .data$POINT_SYSTEM_ID),
+      Tournament_name = paste(
+        format(format = "%Y-%m", lubridate::as_date(.data$TOURNAMENT_DATE)),
+        abbreviate(.data$LOCATION_CITY, 6L)
+      )
     )
     
   if (is.null(player_order)) return(dat)
   name_order <-
     .order_parts(.get_tournament_points_from_dat(dat), player_order)
   dat |>
-    dplyr::mutate(Participant = factor(.data$Participant,
-                                       name_order))
+    dplyr::mutate(
+      Participant = factor(.data$Participant, name_order)
+    )
 }
 
 .order_parts <- function(dat, player_order, ...) {
@@ -95,18 +117,32 @@ tournamentStatsUI <- function(id) {
                                        name_order))
 }
 
-.get_tournament_player_stats <- function(con, tournament_id, player_order, ...) {
-  name_order <-
-    .order_parts(.get_tournament_points(con, tournament_id), player_order)
-  
-  dplyr::tbl(con, "participant_match_results") |>
-    dplyr::filter(.data$TOURNAMENT_ID %in% !!tournament_id &
-                    .data$TOURNAMENT_PHASE == "Qualification") |>
+.get_tournament_player_stats <- function(con, tournament_id, player_order, person_id = NULL, ...) {
+  if (!is.null(player_order)) {
+    name_order <-
+      .order_parts(.get_tournament_points(con, tournament_id), player_order)
+  }
+  filt1 <- if (length(tournament_id) == 0) I else
+    \(x) dplyr::filter(x, .data$TOURNAMENT_ID %in% !!tournament_id)
+  filt2 <- if (length(person_id) == 0) I else
+    \(x) dplyr::filter(x, .data$PERSON_ID %in% !!person_id)
+  dat <-
+    dplyr::tbl(con, "participant_match_results") |>
+    filt1() |> filt2() |>
+    dplyr::filter(.data$TOURNAMENT_PHASE == "Qualification") |>
     dplyr::rename(
       Participant = "PARTICIPANT"
     ) |>
-    dplyr::collect() |>
+    dplyr::collect()
+  
+  if (is.null(player_order)) name_order <- unique(dat$Participant)
+
+  dat |>
     dplyr::mutate(
+      Tournament_name = paste(
+        format(format = "%Y-%m", lubridate::as_date(.data$TOURNAMENT_DATE)),
+        abbreviate(.data$LOCATION_CITY, 6L)
+      ),
       `Role` = dplyr::recode_values(
         .data$ROLE_CODE,
         "D" ~ "Defender",
@@ -114,7 +150,7 @@ tournamentStatsUI <- function(id) {
         default = "Unknown"
       ),
       Conclusion = dplyr::recode_values(
-        .data$CONCLUSION,
+        as.character(.data$CONCLUSION),
         "WIN" ~ "Win",
         "DRAW" ~ "Draw",
         "LOSE" ~ "Lost",
