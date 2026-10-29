@@ -20,11 +20,6 @@
 - [`foosball3_import_db()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_import_db.md)
   : Import Foosball Tournament Data from a File
 
-- [`foosball3_install_suggests()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_install_suggests.md)
-  :
-
-  Install Packages Suggested by `foosball3`
-
 - [`foosball3_list_suggests()`](https://pepijn-devries.github.io/foosball3/reference/foosball3_list_suggests.md)
   :
 

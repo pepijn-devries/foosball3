@@ -20,7 +20,8 @@ all suggested packages as well.
 library(foosball3)
 
 if (!foosball3_suggests_ok()) {
-  foosball3_install_suggests()
+  foosball3_list_suggests() |>
+    install.packages()
 }
 ```
 

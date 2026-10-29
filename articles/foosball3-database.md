@@ -161,7 +161,7 @@ participant in any match of any tournament:
 
 tbl(con, "participant_match_results")
 #> # A query:  ?? x 18
-#> # Database: sqlite 3.53.3 [/tmp/Rtmp9vPlLA/file1f7f67f9d1b2.db]
+#> # Database: sqlite 3.53.3 [/tmp/RtmprRWv0Z/file1dabd55570d.db]
 #>   TOURNAMENT_ID TOURNAMENT_DATE LOCATION_NAME LOCATION_CITY TOURNAMENT_PHASE
 #>           <int> <chr>           <chr>         <chr>         <chr>           
 #> 1             1 2013-11-21      First City    Qo'noS        Qualification   
@@ -184,13 +184,13 @@ statistics are summarised in ‘player_statistics’:
 
 tbl(con, "player_statistics")
 #> # A query:  ?? x 14
-#> # Database: sqlite 3.53.3 [/tmp/Rtmp9vPlLA/file1f7f67f9d1b2.db]
+#> # Database: sqlite 3.53.3 [/tmp/RtmprRWv0Z/file1dabd55570d.db]
 #>   PERSON_ID QUALIFICATION_CODE PARTICIPANT     TOURNAMENT_PHASE  GOALS_SCORED
 #>       <int> <chr>              <chr>           <chr>                    <int>
 #> 1        52 H                  Alyssa Ogawa    Consolation final            2
 #> 2        36 H                  Duras           Consolation final            7
-#> 3        13 H                  Edwin van H     Consolation final            5
-#> 4        49 H                  Jean-Luc Picard Consolation final           20
+#> 3        49 H                  Jean-Luc Picard Consolation final           20
+#> 4        13 H                  K'Mpec          Consolation final            5
 #> 5        23 H                  Lal             Consolation final           13
 #> # ℹ more rows
 #> # ℹ 9 more variables: GOALS_CONCEDED <int>, GOAL_RATIO <dbl>,
