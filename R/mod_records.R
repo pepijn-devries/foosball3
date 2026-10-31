@@ -62,12 +62,6 @@ recordsServer <- function(id, tournaments) {
           )
         }
       })
-      # ## Initiate recordServers #TODO
-      # rec_servers <- lapply(editable_tables, \(tab) {
-      #   recordServer(
-      #     sprintf("mod_%s", tab), tournaments, record_picker, tab )
-      # }) |>
-      #   stats::setNames(editable_tables)
 
       shiny::observe({
         shiny::req(input$nav_recs)
@@ -118,12 +112,6 @@ recordsServer <- function(id, tournaments) {
           choices = opts,
           selected = current
         )
-      })
-      
-      shiny::observe({
-        for (nm in names(rec_servers)) {
-          rec_servers[[nm]]()
-        }
       })
       
       output$uiTableDetails <- shiny::renderUI({
