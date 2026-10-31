@@ -69,10 +69,14 @@ diagramServer <- function(id, database) {
     id,
     function(input, output, session) {
 
-      output$diagram <- shiny::renderUI({
+      get_diagram_svg <- shiny::reactive({
         .schema_svg_cache[[
           ifelse(input$checkView, "with_views", "without_views")
-        ]] |>
+        ]]
+      })
+      
+      output$diagram <- shiny::renderUI({
+        get_diagram_svg() |>
           shiny::HTML()
       })
       
