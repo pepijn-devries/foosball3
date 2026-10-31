@@ -14,6 +14,8 @@ recordUI <- function(id, table, label = "Edit record") {
       widget = list({
         is_pk <- !is.na(.data$autoincrement)
         type <- .get_type_global(table, .data$column, rels$dictionary)
+        if (grepl("_DATE|_START|_END", .data$column)) type <- "DATE"
+        if (grepl("RGB", .data$column)) type <- "COLOR"
         widget_name <- paste(table, .data$column, sep = "-")
         label <-
           .data$column |>
@@ -23,8 +25,6 @@ recordUI <- function(id, table, label = "Edit record") {
         if (!is.na(.data$parent_table)) {
           lookupUI(ns(widget_name), label, ifelse(is_pk, "Identifier", "Edit record")) |>
             disab_cond(is_pk)
-        } else if (grepl("RGB", .data$column)) {
-          shinyWidgets::colorPickr(ns(widget_name), label)
         } else {
           switch(
             type,
@@ -33,6 +33,13 @@ recordUI <- function(id, table, label = "Edit record") {
             },
             TEXT = {
               shiny::textInput(ns(widget_name), label, "")
+            },
+            COLOR = {
+              shinyWidgets::colorPickr(ns(widget_name), label)
+            },
+            DATE = {
+              shinyWidgets::airDatepickerInput(
+                ns(widget_name), label)
             },
             sprintf("Type '%s' not implemented", type)
           ) |>
@@ -302,23 +309,34 @@ recordServer <- function(id, tournaments, record_picker, table_name) {
             if (!identical(as.character(val), lu$id)) {
               lu$set_selected(val)
             }
-          } else if (grepl("RGB", cl)) {
-            if (!identical(as.character(val), as.character(input[[wn]]))) {
-              shinyWidgets::updateColorPickr(
-                inputId = wn, value = val, session = session
-              )
-            }
           } else {
+            if (grepl("RGB", cl)) key_type <- "COLOR"
+            if (grepl("_DATE|_START|_END", cl)) key_type <- "DATE"
+            
             if (!identical(as.character(val), as.character(input[[wn]]))) {
               switch(
                 key_type,
                 INTEGER = {
-                  if (length(val) == 0 || is.na(val)) val <- NULL
+                  if (length(val) == 0 || is.na(val)) val <- NA_integer_
                   shiny::updateNumericInput(inputId = wn, value = val, session = session)
                 },
                 TEXT = {
                   if (length(val) == 0) val <- ""
                   shiny::updateTextInput(inputId = wn, value = val, session = session)
+                },
+                COLOR = {
+                  if (!identical(as.character(val), as.character(input[[wn]]))) {
+                    shinyWidgets::updateColorPickr(
+                      inputId = wn, value = val, session = session
+                    )
+                  }
+                },
+                DATE = {
+                  if (!identical(as.character(val), format(input[[wn]], "%Y-%m-%d"))) {
+                    shinyWidgets::updateAirDateInput(
+                      inputId = wn, value = val, session = session
+                    )
+                  }
                 }
               )
             }

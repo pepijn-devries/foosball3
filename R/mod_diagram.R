@@ -1,3 +1,5 @@
+#' @include create.R
+#' @noRd
 diagramUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::div(
@@ -37,30 +39,41 @@ diagramUI <- function(id) {
   )
 }
 
-diagramServer <- function(id, database) {
-  tf <- tempfile()
-  foosball3_create_db(tf)
-  con <- RSQLite::dbConnect(RSQLite::SQLite(), tf)
-  get_schema_static <- function(con, include_views) {
-    .foosball3_get_schema(con, include_views) |>
-      dm::dm_draw() |>
-      DiagrammeRsvg::export_svg()
-  }
-  
-  db_schemas_static <-
+.schema_svg_cache <- local({
+
+  result <- if (requireNamespace(c("dm", "DiagrammeRsvg"))) {
+    tf <- tempfile()
+    foosball3_create_db(tf)
+    con <- RSQLite::dbConnect(RSQLite::SQLite(), tf)
+    on.exit({
+      RSQLite::dbDisconnect(con)
+      unlink(tf, TRUE, TRUE)
+    }, add = TRUE)
+    
+    get_schema_static <- function(con, include_views) {
+      .foosball3_get_schema(con, include_views) |>
+        dm::dm_draw() |>
+        DiagrammeRsvg::export_svg()
+    }
+    
     lapply(c(TRUE, FALSE), get_schema_static, con = con)
-  RSQLite::dbDisconnect(con)
-  rm(con, tf)
-  
+  } else {
+    rep("dm or diagrameRsvg not installed", 2) |> as.list()
+  }
+  stats::setNames(result, c("with_views", "without_views"))
+})
+
+diagramServer <- function(id, database) {
+
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      get_diagram_svg <- shiny::reactive({
-        db_schemas_static[[ifelse(input$checkView, 1L, 2L)]]
-      })
-      
+
       output$diagram <- shiny::renderUI({
-        shiny::HTML(get_diagram_svg())
+        .schema_svg_cache[[
+          ifelse(input$checkView, "with_views", "without_views")
+        ]] |>
+          shiny::HTML()
       })
       
       shiny::observe({

@@ -1,5 +1,5 @@
 editable_tables <-
-  c("balls", "locations", "side_properties", "tables")
+  c("balls", "brands", "locations", "periods", "side_properties", "tables")
 
 recordsUI <- function(id) {
   ns <- shiny::NS(id)

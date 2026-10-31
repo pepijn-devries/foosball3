@@ -13,7 +13,7 @@
 server <- function(input, output, session) {
   db_file <- file.path(tempdir(), "foosball.sqlite")
   if (!file.exists(db_file)) foosball3::foosball3_create_db(db_file)
-  
+
   mod_db         <-  dbManagerServer("mod_db",         db_file)
   mod_avatar     <-     avatarServer("mod_avatar",     mod_db)
   mod_tournament <- tournamentServer("mod_tournament", mod_db, mod_avatar)
@@ -26,7 +26,7 @@ server <- function(input, output, session) {
   mod_coin       <-       coinServer("mod_coin",       shiny::reactive({ input$checkCoin }))
   mod_peops      <-     peopleServer("mod_peops",      mod_tournament, mod_avatar, mod_picture)
   mod_recs       <-    recordsServer("mod_recs",       mod_tournament)
-  
+
   shiny::observe({
     bslib::toggle_dark_mode(
       ifelse(input$checkLight, "light", "dark")
