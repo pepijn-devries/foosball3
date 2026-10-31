@@ -26,7 +26,8 @@ CREATE TABLE periods( --- Time periods. It is used to track when I table was loc
     PERIOD_START GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
   ),
   PERIOD_END TEXT CONSTRAINT CHECK_END_DATE CHECK ( --- End date of the period, formatted as YYYY-MM-DD
-    PERIOD_END GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
+    PERIOD_END GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]' AND
+    (PERIOD_END > PERIOD_START)
   ),
   TABLE_CODE TEXT NOT NULL, --- Table to which the period applies.
   LOCATION_CODE TEXT NOT NULL, --- Location where the table was at during the period.
