@@ -24,32 +24,68 @@ peopleServer <- function(id, tournaments, avatars, picture) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      mod_peop_pick <-
-        personPickerServer(
-          "mod_peop_pick", tournaments, avatars, NULL, 1L, allow_new = TRUE)
+      mods <- shiny::reactiveValues(
+        picker = NULL,
+        stat = NULL,
+        rec = NULL
+      )
       
-      mod_stat <- personStatServer("mod_stat", tournaments, mod_peop_pick)
-      
-      record_pick <- shiny::reactive({
-        shiny::req(mod_peop_pick())
+      shiny::observe({
+        shiny::req(avatars())
+        shiny::req(!is.null(avatars()$options))
         
-        list(
-          add = function(val) {
-            mod_peop_pick()$add(val)
-          },
-          select = function(val) {
-            mod_peop_pick()$select(val)
-          },
-          id = mod_peop_pick()$id
-        )
+        if (is.null(mods$picker) && length(avatars()$options) > 0L) {
+          mods$picker <- personPickerServer(
+            "mod_peop_pick",
+            tournaments,
+            avatars,
+            NULL,
+            1L,
+            allow_new = TRUE
+          )
+        }
       })
       
-      shiny::observeEvent(picture(), {
-        mod_peop_pick()$select(picture()$id)
-      }, ignoreNULL = TRUE, ignoreInit = TRUE)
+      shiny::observeEvent(mods$picker, {
+        shiny::req(!is.null(mods$picker))
+        avatars()$refresh_options()
+      }, ignoreNULL = FALSE)
       
-      mod_peop_rec <-
-        recordServer("mod_peop_rec", tournaments, record_pick, "persons")
+      shiny::observeEvent(tournaments(), {
+        shiny::req(tournaments())
+        shiny::req(!is.null(tournaments()$database))
+        if (!is.null(avatars())) {
+          avatars()$refresh_options()
+        }
+      }, ignoreNULL = TRUE)
+      
+      ################### TODO
+      # mod_peop_pick <-
+      #   personPickerServer(
+      #     "mod_peop_pick", tournaments, avatars, NULL, 1L, allow_new = TRUE)
+      # 
+      # mod_stat <- personStatServer("mod_stat", tournaments, mod_peop_pick)
+      # 
+      # record_pick <- shiny::reactive({
+      #   shiny::req(mod_peop_pick())
+      #   
+      #   list(
+      #     add = function(val) {
+      #       mod_peop_pick()$add(val)
+      #     },
+      #     select = function(val) {
+      #       mod_peop_pick()$select(val)
+      #     },
+      #     id = mod_peop_pick()$id
+      #   )
+      # })
+      # 
+      # shiny::observeEvent(picture(), {
+      #   mod_peop_pick()$select(picture()$id)
+      # }, ignoreNULL = TRUE, ignoreInit = TRUE)
+      # 
+      # mod_peop_rec <-
+      #   recordServer("mod_peop_rec", tournaments, record_pick, "persons")
       
       return( shiny::reactive({ }) )
     }

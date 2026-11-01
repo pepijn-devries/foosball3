@@ -34,27 +34,41 @@ matchesServer <- function(id, tournament, avatars) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      matches_cache <- shiny::reactiveVal()
-      move_detector <- shiny::reactiveVal()
+      matches_cache   <- shiny::reactiveVal()
+      move_detector   <- shiny::reactiveVal()
+      mods <- shiny::reactiveValues(
+        match  = NULL,
+        phases = NULL,
+        gen    = NULL,
+        penal  = NULL
+      )
       
-      mod_match  <- matchServer("mod_match", get_selected_match, avatars)
-      mod_phases <- phasesServer("mod_phases", tournament)
-      mod_gen    <- matchGeneratorServer("mod_gen", get_selected_match, avatars, mod_phases)
-      mod_penal  <- penaltyServer("mod_penal", tournament, avatars)
+      shiny::observeEvent(tournament(), {
+        shiny::req(tournament())
+        shiny::req(!is.null(tournament()$selected$TOURNAMENT_ID))
+        
+        if (is.null(mods$match)) {
+          mods$match  <- matchServer("mod_match", get_selected_match, avatars)
+          mods$phases <- phasesServer("mod_phases", tournament)
+          mods$gen    <- matchGeneratorServer("mod_gen", get_selected_match, avatars, mods$phases)
+          mods$penal  <- penaltyServer("mod_penal", tournament, avatars)
+        }
+      }, ignoreNULL = TRUE)
       
       shiny::observe({
-        ## We nee to observer mod_match() here to ensure that changes
+        tnmt <- shiny::req(tournament())
+        shiny::req(mods$phases())
+        ## We need to observer mods$match() here to ensure that changes
         ## to the scores are stored
-        mod_match()
-        shiny::req(mod_phases())
-        tnmt <- tournament()
+        shiny::req(mods$match())
+        
         con <- tnmt$database$connect()
         on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
         mc <- matches_cache()
         matches <-
           dplyr::tbl(con, "matches_view") |>
           dplyr::filter(
-            .data$TOURNAMENT_PHASE == !!mod_phases()$selected &
+            .data$TOURNAMENT_PHASE == !!mods$phases()$selected &
               .data$TOURNAMENT_ID == !!max(c(-1,  tnmt$selected$TOURNAMENT_ID))
           ) |>
           dplyr::collect() |>
@@ -132,7 +146,7 @@ matchesServer <- function(id, tournament, avatars) {
         list(
           tournament     = tournament(),
           matches        = matches_cache(),
-          phase          = mod_phases(),
+          phase          = mods$phases(),
           selected_id    = input$selectMatch,
           move_match     = function(direction) {
             move_detector(direction)

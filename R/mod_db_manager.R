@@ -44,9 +44,10 @@ dbManagerServer <- function(id, db_file) {
     function(input, output, session) {
       ns <- session$ns
       menu_selector <- shiny::reactiveVal()
+      db_path       <- shiny::reactiveVal( db_file )
+      mod_diagram   <- diagramServer("mod_diagram", sub_mod_react)
+      mod_details   <- tableDetailsServer("mod_details", sub_mod_react, menu_selector)
       
-      db_path <- shiny::reactiveVal( db_file )
-
       set_file <- function(f, target, pt) {
         tryCatch({
           withCallingHandlers({
@@ -141,9 +142,6 @@ dbManagerServer <- function(id, db_file) {
         list(database      = database(),
              menu_selector = men_sel)
       })
-      
-      mod_diagram <- diagramServer("mod_diagram", sub_mod_react)
-      mod_details <- tableDetailsServer("mod_details", sub_mod_react, menu_selector)
       
       shiny::observeEvent(menu_selector(), {
         bslib::nav_select("db_set", menu_selector()$item)
