@@ -36,9 +36,9 @@ diagramUI <- function(id) {
         bsicons::bs_icon("filetype-svg", "2em", title = "Download diagram svg"))
     ),
     shiny::tagList(
-      div(id = ns("diagram_with"),    .schema_svg_cache["with_views"] |>
+      shiny::div(id = ns("diagram_with"),    .schema_svg_cache["with_views"] |>
             as.character() |> shiny::HTML()) |> shinyjs::hidden(),
-      div(id = ns("diagram_without"), .schema_svg_cache["without_views"] |>
+      shiny::div(id = ns("diagram_without"), .schema_svg_cache["without_views"] |>
             as.character() |> shiny::HTML()),
     ),
     shiny::tags$script(shiny::HTML(sprintf("
