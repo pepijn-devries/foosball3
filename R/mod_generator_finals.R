@@ -154,7 +154,10 @@ finalGeneratorServer <- function(id, type, matches, btnStart, avatars, phases) {
             msg, "error"
           )
         } else {
-          tnmt <- matches()$tournament
+          m    <- matches()
+          tnmt <- m$tournament
+          sel  <- m$tournament$selected
+          
           con <- tnmt$database$connect()
           on.exit( { RSQLite::dbDisconnect(con) }, add = TRUE)
           prim_table <- .get_primary_table(con, sel$LOCATION_CODE)
@@ -167,7 +170,7 @@ finalGeneratorServer <- function(id, type, matches, btnStart, avatars, phases) {
           if (!identical(sel_table$TABLE_CODE, prim_table$TABLE_CODE)) {
             shinyWidgets::confirmSweetAlert(
               session = session,
-              ns("confirmTable"),
+              session$ns("confirmTable"),
               "Unexpected table",
               sprintf(paste("You have selected the table '%s', where the",
                             "primary table at the selected location is '%s'.",
