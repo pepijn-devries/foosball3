@@ -6,12 +6,13 @@ dbManagerUI <- function(id) {
     bslib::card(
       bslib::card_header( "Database menu" ),
       bslib::card_body(
-        shiny::fileInput(ns("uploadSQLite"), "Upload SQLite or zip"),
+        shiny::fileInput(ns("uploadSQLite"), "Upload SQLite or zip", width = "100%"),
         shiny::actionButton(ns("btnLoadExample"), "Load example",
                             icon = bsicons::bs_icon("grid-fill")),
         shiny::selectInput(
           ns("selectFormat"), "Download format",
-          c(SQLite = ".sqlite", `Zipped csv files` = ".zip"), ".sqlite"),
+          c(SQLite = ".sqlite", `Zipped csv files` = ".zip"), ".sqlite",
+          width = "100%"),
         shiny::downloadButton(ns("downloadSQLite"))
       )
     ),
