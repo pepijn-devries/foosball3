@@ -2,6 +2,7 @@ peopleUI <- function(id) {
   ns <- shiny::NS(id)
   bslib::navset_card_tab(
     full_screen = TRUE,
+    id = ns("people_tabs"),
     title =
       personPickerUI(ns("mod_peop_pick"),
                      label = "People",
@@ -58,6 +59,29 @@ peopleServer <- function(id, tournaments, avatars, picture) {
           avatars()$refresh_options()
         }
       }, ignoreNULL = TRUE)
+      
+      shiny::observeEvent(picture(), {
+        mods$picker()$select(picture()$id)
+      }, ignoreNULL = TRUE, ignoreInit = TRUE)
+      
+      shiny::observe({
+        if (!identical(input$people_tabs, "Edit records")) {
+          return()
+        }
+        
+        shiny::req(!is.null(mods$picker))
+        
+        if (is.null(mods$stat)) {
+          mods$stat <- personStatServer(
+            "mod_stat", tournaments, mods$picker
+          )
+        }
+        if (is.null(mods$rec)) {
+          mods$rec <- recordServer(
+            "mod_peop_rec", tournaments, mods$picker, "persons"
+          )
+        }
+      })
       
       return( shiny::reactive({ }) )
     }

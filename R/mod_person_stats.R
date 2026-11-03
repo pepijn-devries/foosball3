@@ -111,7 +111,7 @@ personStatServer <- function(id, tournaments, person_picker) {
           barconc =
             .get_tournament_player_stats(
               con,
-              tournaments()$selected$TOURNAMENT_ID,
+              NULL,
               NULL,
               person_picker()$id),
           barpoint = {

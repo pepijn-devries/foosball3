@@ -121,12 +121,22 @@ personPickerServer <- function(
           if (length(sel) == 0 || all(is.na(sel))) sel <- ""
           shinyWidgets::updateVirtualSelect(
             session = session,
-            inputId = "selectPeople", 
-            selected = sel, 
+            inputId = "selectPeople",
+            selected = sel,
             choices = opts
           )
         }
       }, ignoreNULL = FALSE)
+      
+      shiny::observeEvent(select_cache(), {
+        if (input$selectPeople == as.character(select_cache()))
+          return()
+        shinyWidgets::updateVirtualSelect(
+          session = session,
+          inputId = "selectPeople",
+          selected = select_cache()
+        )
+      })
       
       shiny::observeEvent(input$selectPeople, {
         add_fun(input$selectPeople)

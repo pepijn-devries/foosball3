@@ -21,6 +21,7 @@ avatarServer <- function(id, db) {
       new_job      <- shiny::reactiveVal()
       people_cache <- shiny::reactiveVal()
       refresh      <- shiny::reactiveVal(0L)
+      revision     <- shiny::reactiveVal(0L)
       
       progress_bar <- function(nf, nt) {
         if (missing(nf)) {
@@ -155,6 +156,7 @@ avatarServer <- function(id, db) {
           }
         } else if (avatar_generator$status() == "success") {
           current_generator <<- NULL
+          revision(shiny::isolate(revision()) + 1L)
           progress_bar()
           bslib::hide_toast(ns("avatar_progress"))
         }
@@ -226,6 +228,7 @@ avatarServer <- function(id, db) {
       })
       
       get_options <- shiny::reactive({
+        revision()
         peops  <- people_cache()
         opts   <- structure(peops$PERSON_ID, names = peops$PERSON_NAME)[
           order(tolower(peops$PERSON_NAME)) ]

@@ -13,6 +13,7 @@ pictureServer <- function(id, tournament, avatars) {
       shiny::observeEvent(input$faceclick, {
         face_click(input$faceclick)
       }, ignoreNULL = TRUE, ignoreInit = TRUE)
+      
       shiny::observeEvent(avatars()$click, {
         face_click(avatars()$click)
       }, ignoreNULL = TRUE, ignoreInit = TRUE)
