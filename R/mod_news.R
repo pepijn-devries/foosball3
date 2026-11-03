@@ -178,7 +178,7 @@ newsServer <- function(id, matches, mod_avatar, show) {
           return("No news while editing a tournament")
         if (length(temp$matches$tournament$selected$TOURNAMENT_ID) > 0 &&
             nrow(temp$matches$matches) == 0)
-          return("Please generate matches first")
+          return("No matches to report on...")
         tnmt <- temp$matches$tournament
         .get_filter <- function(filter_fun, con) {
           switch(
