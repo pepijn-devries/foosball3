@@ -174,9 +174,11 @@ newsServer <- function(id, matches, mod_avatar, show) {
 
         input$animation_finished # Trigger when animation has finished
         temp <- all_input() # Trigger when app state has changed
-        if (nrow(temp$matches$tournament$tournaments) > 0 &&
-            nrow(temp$matches$matches) == 0)
+        if (any(is.na(temp$matches$tournament$tournaments$LOCATION_CODE)))
           return("No news while editing a tournament")
+        if (length(temp$matches$tournament$selected$TOURNAMENT_ID) > 0 &&
+            nrow(temp$matches$matches) == 0)
+          return("Please generate matches first")
         tnmt <- temp$matches$tournament
         .get_filter <- function(filter_fun, con) {
           switch(
@@ -314,7 +316,6 @@ newsServer <- function(id, matches, mod_avatar, show) {
         nws <- tryCatch({
           get_news()
         }, error = \(e) {
-
           paste(
             "If you are seeing this, something went wrong. Please report an issue together with a reprex. Error:",
             e$message

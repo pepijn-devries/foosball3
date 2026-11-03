@@ -272,3 +272,14 @@
     ))
   }
 }
+
+.get_primary_table <- function(con, loc_code) {
+  dplyr::tbl(con, "primary_tables") |>
+    dplyr::filter(.data$LOCATION_CODE %in% !!loc_code) |>
+    dplyr::left_join(
+      dplyr::tbl(con, "tables"),
+      "TABLE_CODE"
+    ) |>
+    dplyr::select(c("TABLE_CODE", "TABLE_NAME")) |>
+    dplyr::collect()
+}

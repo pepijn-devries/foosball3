@@ -110,8 +110,79 @@ qualGeneratorServer <- function(id, matches, btnStart) {
 
       validator$enable()
       
+      proceed_generate <- shiny::reactive({
+        m   <- matches()
+        sel <- m$tournament$selected
+        con <- m$tournament$database$connect()
+        on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+        type <- switch(
+          sel$TOURNAMENT_TYPE_CODE,
+          I = "individual",
+          "Unknown"
+        )
+        
+        participants <-
+          dplyr::tbl(con, "participants") |>
+          dplyr::filter(.data$TOURNAMENT_ID == !!m$tournament$selected$TOURNAMENT_ID) |>
+          dplyr::left_join(
+            dplyr::tbl(con, "player_statistics") |>
+              dplyr::filter(.data$TOURNAMENT_PHASE == "Qualification") |>
+              dplyr::select(dplyr::any_of(c("PERSON_ID", "QUALIFICATION_RATE"))),
+            by = "PERSON_ID"
+          ) |>
+          dplyr::collect()
+        
+        new_mtch <-
+          dplyr::tbl(con, "matches") |> 
+          dplyr::summarise(
+            MATCH_ID = max(.data$MATCH_ID, na.rm = TRUE)
+          ) |>
+          dplyr::mutate(
+            MATCH_ID = ifelse(is.na(.data$MATCH_ID), 0L, .data$MATCH_ID)
+          ) |>
+          dplyr::pull("MATCH_ID")
+        
+        new_mtch <- new_mtch + seq_len(input$numRevs * nrow(participants))
+        
+        new_mtch <-
+          dplyr::tibble(
+            MATCH_ID = new_mtch,
+            TOURNAMENT_ID = m$tournament$selected$TOURNAMENT_ID,
+            TOURNAMENT_PHASE_CODE = "Q",
+            TABLE_CODE = mod_table()$id,
+            BALL_ID = as.integer(mod_ball()$id)
+          )
+        
+        dplyr::copy_to(con, new_mtch, "matches", append = TRUE, temporary = FALSE)
+        
+        new_matches(new_mtch)
+        
+        opts <- list(
+          nsim = input$numNSim,
+          revolutions = input$numRevs,
+          weights = list(
+            teamup         = input$slide_tvar,
+            opposing       = input$slide_ovar,
+            match_var      = input$slide_mvar,
+            match_bal      = input$slide_mbal,
+            match_bal_var  = input$slide_mbalvar,
+            match_bal_extr = input$slide_mbalextr,
+            part_bal       = input$slide_pbal,
+            part_bal_var   = input$slide_pbalvar,
+            part_bal_extr  = input$slide_pbalextr
+          ),
+          seed = input$numSeed
+        )
+        
+        generator$invoke(participants, type, tolower(m$phase$selected), opts)
+        
+        foosball_progress(ns("iqual_gen_progress"), "Generating matches...")
+        m$tournament$trigger_refresh() ## matches were added
+      })
+      
       shiny::observeEvent(btnStart(), {
-        sel <- matches()$tournament$selected
+        m   <- matches()
+        sel <- m$tournament$selected
         if (!validator$is_valid()) {
           msgs <- lapply(validator$validate(), `[[`, "message")
           msgs <- do.call(shiny::tagList, msgs) |> unlist() |> unique()
@@ -130,75 +201,38 @@ qualGeneratorServer <- function(id, matches, btnStart) {
             type = "warning"
           )
         } else {
-          type <- switch(
-            sel$TOURNAMENT_TYPE_CODE,
-            I = "individual",
-            "Unknown"
-          )
-          m <- matches()
           con <- m$tournament$database$connect()
           on.exit({RSQLite::dbDisconnect(con)}, add = TRUE)
+          prim_table <- .get_primary_table(con, sel$LOCATION_CODE)
 
-          participants <-
-            dplyr::tbl(con, "participants") |>
-            dplyr::filter(.data$TOURNAMENT_ID == !!m$tournament$selected$TOURNAMENT_ID) |>
-            dplyr::left_join(
-              dplyr::tbl(con, "player_statistics") |>
-                dplyr::filter(.data$TOURNAMENT_PHASE == "Qualification") |>
-                dplyr::select(dplyr::any_of(c("PERSON_ID", "QUALIFICATION_RATE"))),
-              by = "PERSON_ID"
-            ) |>
+          sel_table <- dplyr::tbl(con, "tables") |>
+            dplyr::filter(.data$TABLE_CODE %in% !!mod_table()$id) |>
+            dplyr::select(c("TABLE_CODE", "TABLE_NAME")) |>
             dplyr::collect()
           
-          new_mtch <-
-            dplyr::tbl(con, "matches") |> 
-            dplyr::summarise(
-              MATCH_ID = max(.data$MATCH_ID, na.rm = TRUE)
-            ) |>
-            dplyr::mutate(
-              MATCH_ID = ifelse(is.na(.data$MATCH_ID), 0L, .data$MATCH_ID)
-            ) |>
-            dplyr::pull("MATCH_ID")
-          
-          new_mtch <- new_mtch + seq_len(input$numRevs * nrow(participants))
-          
-          new_mtch <-
-            dplyr::tibble(
-              MATCH_ID = new_mtch,
-              TOURNAMENT_ID = m$tournament$selected$TOURNAMENT_ID,
-              TOURNAMENT_PHASE_CODE = "Q",
-              TABLE_CODE = mod_table()$id,
-              BALL_ID = as.integer(mod_ball()$id)
+          if (!identical(sel_table$TABLE_CODE, prim_table$TABLE_CODE)) {
+            shinyWidgets::confirmSweetAlert(
+              session = session,
+              ns("confirmTable"),
+              "Unexpected table",
+              sprintf(paste("You have selected the table '%s', where the",
+                            "primary table at the selected location is '%s'.",
+                            "Are you sure?"),
+                      sel_table$TABLE_NAME, prim_table$TABLE_NAME)
             )
+          } else {
+            proceed_generate()
+          }
           
-          dplyr::copy_to(con, new_mtch, "matches", append = TRUE, temporary = FALSE)
-          
-          new_matches(new_mtch)
-
-          opts <- list(
-            nsim = input$numNSim,
-            revolutions = input$numRevs,
-            weights = list(
-              teamup         = input$slide_tvar,
-              opposing       = input$slide_ovar,
-              match_var      = input$slide_mvar,
-              match_bal      = input$slide_mbal,
-              match_bal_var  = input$slide_mbalvar,
-              match_bal_extr = input$slide_mbalextr,
-              part_bal       = input$slide_pbal,
-              part_bal_var   = input$slide_pbalvar,
-              part_bal_extr  = input$slide_pbalextr
-            ),
-            seed = input$numSeed
-          )
-          
-          generator$invoke(participants, type, tolower(m$phase$selected), opts)
-          
-          foosball_progress(ns("iqual_gen_progress"), "Generating matches...")
-          m$tournament$trigger_refresh() ## matches were added
         }
       })
 
+      shiny::observeEvent(input$confirmTable, {
+        if (isTRUE(input$confirmTable)) {
+          proceed_generate()
+        }
+      })
+      
       shiny::observe({
         if (generator$status() == "running") {
           if (file.exists(progress_file)) {
