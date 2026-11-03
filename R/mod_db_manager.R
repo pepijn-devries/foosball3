@@ -6,12 +6,13 @@ dbManagerUI <- function(id) {
     bslib::card(
       bslib::card_header( "Database menu" ),
       bslib::card_body(
-        shiny::fileInput(ns("uploadSQLite"), "Upload SQLite or zip"),
+        shiny::fileInput(ns("uploadSQLite"), "Upload SQLite or zip", width = "100%"),
         shiny::actionButton(ns("btnLoadExample"), "Load example",
                             icon = bsicons::bs_icon("grid-fill")),
         shiny::selectInput(
           ns("selectFormat"), "Download format",
-          c(SQLite = ".sqlite", `Zipped csv files` = ".zip"), ".sqlite"),
+          c(SQLite = ".sqlite", `Zipped csv files` = ".zip"), ".sqlite",
+          width = "100%"),
         shiny::downloadButton(ns("downloadSQLite"))
       )
     ),
@@ -44,9 +45,10 @@ dbManagerServer <- function(id, db_file) {
     function(input, output, session) {
       ns <- session$ns
       menu_selector <- shiny::reactiveVal()
+      db_path       <- shiny::reactiveVal( db_file )
+      mod_diagram   <- diagramServer("mod_diagram", sub_mod_react)
+      mod_details   <- tableDetailsServer("mod_details", sub_mod_react, menu_selector)
       
-      db_path <- shiny::reactiveVal( db_file )
-
       set_file <- function(f, target, pt) {
         tryCatch({
           withCallingHandlers({
@@ -141,9 +143,6 @@ dbManagerServer <- function(id, db_file) {
         list(database      = database(),
              menu_selector = men_sel)
       })
-      
-      mod_diagram <- diagramServer("mod_diagram", sub_mod_react)
-      mod_details <- tableDetailsServer("mod_details", sub_mod_react, menu_selector)
       
       shiny::observeEvent(menu_selector(), {
         bslib::nav_select("db_set", menu_selector()$item)

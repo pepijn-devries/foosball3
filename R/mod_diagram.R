@@ -1,3 +1,29 @@
+.schema_svg_cache <- local({
+  
+  result <- if (requireNamespace(c("dm", "DiagrammeRsvg"))) {
+    tf <- tempfile()
+    foosball3_create_db(tf)
+    con <- RSQLite::dbConnect(RSQLite::SQLite(), tf)
+    on.exit({
+      RSQLite::dbDisconnect(con)
+      unlink(tf, TRUE, TRUE)
+    }, add = TRUE)
+    
+    get_schema_static <- function(con, include_views) {
+      .foosball3_get_schema(con, include_views) |>
+        dm::dm_draw() |>
+        DiagrammeRsvg::export_svg()
+    }
+    
+    lapply(c(TRUE, FALSE), get_schema_static, con = con)
+  } else {
+    rep("dm or diagrameRsvg not installed", 2) |> as.list()
+  }
+  stats::setNames(result, c("with_views", "without_views"))
+})
+
+#' @include create.R
+#' @noRd
 diagramUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::div(
@@ -9,7 +35,12 @@ diagramUI <- function(id) {
         ns("downloadDiagram"),
         bsicons::bs_icon("filetype-svg", "2em", title = "Download diagram svg"))
     ),
-    shiny::uiOutput(ns("diagram")),
+    shiny::tagList(
+      shiny::div(id = ns("diagram_with"),    .schema_svg_cache["with_views"] |>
+            as.character() |> shiny::HTML()) |> shinyjs::hidden(),
+      shiny::div(id = ns("diagram_without"), .schema_svg_cache["without_views"] |>
+            as.character() |> shiny::HTML()),
+    ),
     shiny::tags$script(shiny::HTML(sprintf("
         (function() {
           const bodyId = '%s';
@@ -38,31 +69,28 @@ diagramUI <- function(id) {
 }
 
 diagramServer <- function(id, database) {
-  tf <- tempfile()
-  foosball3_create_db(tf)
-  con <- RSQLite::dbConnect(RSQLite::SQLite(), tf)
-  get_schema_static <- function(con, include_views) {
-    .foosball3_get_schema(con, include_views) |>
-      dm::dm_draw() |>
-      DiagrammeRsvg::export_svg()
-  }
-  
-  db_schemas_static <-
-    lapply(c(TRUE, FALSE), get_schema_static, con = con)
-  RSQLite::dbDisconnect(con)
-  rm(con, tf)
-  
+
   shiny::moduleServer(
     id,
     function(input, output, session) {
+
       get_diagram_svg <- shiny::reactive({
-        db_schemas_static[[ifelse(input$checkView, 1L, 2L)]]
+        .schema_svg_cache[[
+          ifelse(input$checkView, "with_views", "without_views")
+        ]]
       })
       
-      output$diagram <- shiny::renderUI({
-        shiny::HTML(get_diagram_svg())
+      shiny::observe({
+        shinyjs::toggle(
+          id = "diagram_with",
+          condition = isTRUE(input$checkView)
+        )
+        shinyjs::toggle(
+          id = "diagram_without",
+          condition = !isTRUE(input$checkView)
+        )
       })
-      
+
       shiny::observe({
         shiny::req(input$diagram_node)
         database()$menu_selector("Table Details", input$diagram_node)

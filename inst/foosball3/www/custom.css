@@ -229,3 +229,14 @@ div.shinybusy .ff-image {
 .foosball-timer-danger {
   color: var(--bs-danger) !important;
 }
+
+.input-group .sw-air-picker.form-control,
+.input-group .dp-addon.btn {
+  box-sizing: border-box !important;
+  height: calc(var(--bs-body-line-height) * 1rem + 0.75rem) !important; 
+  display: inline-flex !important;
+  align-items: center !important;
+}
+.input-group .dp-addon.btn i {
+  line-height: 1 !important;
+}

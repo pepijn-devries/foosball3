@@ -11,6 +11,7 @@
 #' 
 #' ## Clean up:
 #' unlink(fl, TRUE, TRUE)
+#' @include mod_helpers.R
 #' @export
 foosball3_create_db <- function(file, ...) {
   .foosball3_create_db(file, ...)

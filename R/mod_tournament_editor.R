@@ -16,7 +16,7 @@ tournamentEditorUI <- function(id) {
                      allowNewOption = TRUE),
       lookupUI(ns("mod_loc"), "Location", "Please select tournament location"),
       lookupUI(ns("mod_ps"), "Point System"),
-      shinyWidgets::airDatepickerInput(ns("pickDate"))
+      shinyWidgets::airDatepickerInput(ns("pickDate"), "Tournament date")
     ),
     bslib::toolbar(
       shiny::actionButton(ns("btnCancel"), "Cancel"),

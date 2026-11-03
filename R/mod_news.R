@@ -31,8 +31,8 @@ newsServer <- function(id, matches, mod_avatar, show) {
       
       all_input <- shiny::reactive({
         list(
-          matches = matches,
-          avatars = mod_avatar
+          matches = matches(),
+          avatars = mod_avatar()
         )
       })
 
@@ -48,7 +48,7 @@ newsServer <- function(id, matches, mod_avatar, show) {
       
       get_param <- function(param_name) {
         inp <- all_input()
-        m <- inp$matches()
+        m <- inp$matches
         sel_tour <- m$tournament$selected
         
         switch(
@@ -90,6 +90,8 @@ newsServer <- function(id, matches, mod_avatar, show) {
       
       pivot_results <- function(tab_name, con, current) {
         tab <- dplyr::tbl(con, tab_name)
+        tal <- tab |> dplyr::tally() |> dplyr::pull("n")
+        if (tal == 0) return(data.frame())
         tab <- 
           dplyr::union(
             tab,
@@ -169,7 +171,15 @@ newsServer <- function(id, matches, mod_avatar, show) {
       }
       
       get_news <- shiny::reactive({
-        tnmt <- matches()$tournament
+
+        input$animation_finished # Trigger when animation has finished
+        temp <- all_input() # Trigger when app state has changed
+        if (any(is.na(temp$matches$tournament$tournaments$LOCATION_CODE)))
+          return("No news while editing a tournament")
+        if (length(temp$matches$tournament$selected$TOURNAMENT_ID) > 0 &&
+            nrow(temp$matches$matches) == 0)
+          return("Please generate matches first")
+        tnmt <- temp$matches$tournament
         .get_filter <- function(filter_fun, con) {
           switch(
             filter_fun,
@@ -256,6 +266,7 @@ newsServer <- function(id, matches, mod_avatar, show) {
               if (any(grepl("\\\\", param_names))) {
                 pars <- .postprocess_params(pars, param_names)
               }
+              
               do.call(sprintf, c(list(fmt = msg_row$message), pars))
             } else {
               msg_row$message
@@ -263,13 +274,10 @@ newsServer <- function(id, matches, mod_avatar, show) {
           }
         }
         
-        input$animation_finished # Trigger when animation has finished
-        all_input() # Trigger when app state has changed
         walk_tree <- function(tree, what) {
           branches <- !grepl("^chance", names(tree))
           chances <- lapply(tree[branches], \(x) {
             if ("chance" %in% names(x)) {
-              x$chance
               if (is.character(x$chance)) {
                 get_chance(x$chance_fun, x$chance_params)
               } else {

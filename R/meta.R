@@ -8,6 +8,10 @@
 #' foosball3_meta_data()
 #' @export
 foosball3_meta_data <- function(...) {
+  .foosball3_meta_data
+}
+
+.foosball3_meta_data <- local({
   sql_text <- system.file(
     "creation_script.sql",
     package = "foosball3") |>
@@ -42,4 +46,4 @@ foosball3_meta_data <- function(...) {
       !duplicated(dplyr::pick("table", "field_name"))
     ) |>
     dplyr::select(-"is_view")
-}
+})

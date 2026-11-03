@@ -47,7 +47,6 @@ lookupServer <- function(id, label, tournaments, table, fmt = "%s", validator = 
           sel <- ""
         }
         if (length(sel) == 0) sel <- ""
-        
         shiny::updateSelectizeInput(
           session = session,
           inputId = "selectLookup",

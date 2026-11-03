@@ -1,6 +1,6 @@
 Package: foosball3
 Title: An App to Manage and Organise Foosball Tournaments
-Version: 0.0.1.0006
+Version: 0.0.1.0007
 Authors@R: c(person("Pepijn", "de Vries", role = c("aut", "cre", "dtc"),
     email = "pepijn.devries@outlook.com",
     comment = c(ORCID = "0000-0002-7961-6646")))
@@ -59,8 +59,10 @@ Collate:
     'mod_record.R'
     'mod_records.R'
     'mod_table_details.R'
-    'mod_diagram.R'
+    'schema.R'
+    'mod_helpers.R'
     'create.R'
+    'mod_diagram.R'
     'mod_db_manager.R'
     'mod_warming_up.R'
     'suggests.R'
@@ -83,8 +85,6 @@ Collate:
     'mod_tournament_editor.R'
     'mod_picture.R'
     'mod_tournament.R'
-    'schema.R'
-    'mod_helpers.R'
     'app_ui.R'
     'export.R'
     'foosball3-package.R'

@@ -1,5 +1,5 @@
 editable_tables <-
-  c("balls", "locations", "side_properties", "tables")
+  c("balls", "brands", "locations", "periods", "side_properties", "tables")
 
 recordsUI <- function(id) {
   ns <- shiny::NS(id)
@@ -33,6 +33,7 @@ recordsServer <- function(id, tournaments) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+      rec_servers    <- list()
       options_cache  <- shiny::reactiveVal()
       new_record_id  <- shiny::reactiveVal()
       select_cache   <- shiny::reactiveVal()
@@ -52,12 +53,15 @@ recordsServer <- function(id, tournaments) {
         )
       })
       
-      ## Initiate recordServers
-      rec_servers <- lapply(editable_tables, \(tab) {
-        recordServer(
-          sprintf("mod_%s", tab), tournaments, record_picker, tab )
-      }) |>
-        stats::setNames(editable_tables)
+      shiny::observeEvent(input$nav_recs, {
+        shiny::req(input$nav_recs)
+        tab <- input$nav_recs
+        if (!tab %in% names(rec_servers)) {
+          rec_servers[[tab]] <<- recordServer(
+            sprintf("mod_%s", tab), tournaments, record_picker, tab
+          )
+        }
+      })
 
       shiny::observe({
         shiny::req(input$nav_recs)
@@ -108,12 +112,6 @@ recordsServer <- function(id, tournaments) {
           choices = opts,
           selected = current
         )
-      })
-      
-      shiny::observe({
-        for (nm in names(rec_servers)) {
-          rec_servers[[nm]]()
-        }
       })
       
       output$uiTableDetails <- shiny::renderUI({

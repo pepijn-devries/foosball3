@@ -80,7 +80,7 @@ tournamentServer <- function(id, db, avatars) {
       current_participants <- shiny::reactiveVal()
       
       mod_tourn_stats <- tournamentStatsServer("mod_tourn_stats", get_it_all)
-
+      
       get_tournament_people <- shiny::reactive({
         list(
           organisers = current_organisers,
@@ -98,13 +98,13 @@ tournamentServer <- function(id, db, avatars) {
           id = "foosball-tournament-header",
           html = tournament_label
         )
-
+        
       })
       
       shiny::observeEvent(get_tournaments(), {
         update_tournament_selector()
       })
-
+      
       update_tournament_selector <- shiny::reactive({
         tab <- get_tournaments()
         id_new <- new_id() %||% -1L
@@ -118,7 +118,7 @@ tournamentServer <- function(id, db, avatars) {
           selected = current_sel
         )
       })
-
+      
       trigger_refresh = function() {
         tournament_update((tournament_update() %||% 0L) + 1L)
       }
@@ -216,7 +216,7 @@ tournamentServer <- function(id, db, avatars) {
           html = "Tournament Editor"
         )
       })
-
+      
       shiny::observeEvent(input$btnNew, {
         tnmt <- get_it_all()
         con <- tnmt$database$connect()
@@ -276,7 +276,7 @@ tournamentServer <- function(id, db, avatars) {
           }
         }
       })
-
+      
       init_edit <- shiny::reactive({
         tid <- get_selected()$TOURNAMENT_ID
         con <- db()$connect()

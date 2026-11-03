@@ -135,19 +135,15 @@ avatarServer <- function(id, db) {
 
       })
 
-      shiny::observe({
-        if (is.null(current_generator) &&
-            !is.null(new_job()) &&
-            avatar_generator$status() != "running") {
-          ## This may show a warning message in the console,
-          ## when an old running task was cancelled in favour of this one
-          avatar_generator$invoke(new_job())
-          new_job(NULL)
-        } else {
-          shiny::invalidateLater(50)
-        }
-      })
-      
+      shiny::observeEvent(new_job(), {
+        shiny::req(!is.null(new_job()))
+        ## This may show a warning message in the console,
+        ## when an old running task was cancelled in favour of this one
+        shiny::req(avatar_generator$status() != "running")
+        avatar_generator$invoke(new_job())
+        new_job(NULL)
+      }, ignoreNULL = TRUE)
+
       shiny::observe({
         if (avatar_generator$status() == "running") {
           pt <- get_picture_tags()
