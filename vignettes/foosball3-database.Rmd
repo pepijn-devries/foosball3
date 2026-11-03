@@ -12,9 +12,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-old_print_max <- getOption("tibble.print_max")
-old_print_min <- getOption("tibble.print_min")
-options(tibble.print_max = 5, tibble.print_min = 5)
 ```
 
 ## Introduction
@@ -77,7 +74,7 @@ a list of tournaments and some essential information about it, such as:
   * What kind of tournament is it?
 
 ```{r tournaments}
-tbl(con, "tournaments") |> collect()
+tbl(con, "tournaments") |> collect() |> print(n = 5)
 ```
 
 Technically, the database structure is capable of handling different
@@ -96,7 +93,7 @@ is given a unique participant id. This means that a single person can
 have multiple participant ids.
 
 ```{r persons}
-tbl(con, "persons") |> collect()
+tbl(con, "persons") |> collect() |> print(n = 5)
 ```
 
 > ## Disclaimer
@@ -149,20 +146,19 @@ You can use 'participant_match_results' to find results of a specific
 participant in any match of any tournament:
 
 ```{r match_result}
-tbl(con, "participant_match_results")
+tbl(con, "participant_match_results") |> print(n = 5)
 ```
 
 But you can also look for aggregated results. For instance, player
 statistics are summarised in 'player_statistics':
 
 ```{r player_stats}
-tbl(con, "player_statistics")
+tbl(con, "player_statistics") |> print(n = 5)
 ```
 
 Have fun exploring the provided example database, or collect your own
 tournament results.
 
 ```{r cleanup, include = FALSE}
-options(tibble.print_max = old_print_max, tibble.print_min = old_print_min)
 unlink(target_file, TRUE, TRUE)
 ```
