@@ -77,10 +77,12 @@ foosball3_export_db <- function(source, destination, validate = FALSE, ...) {
   RSQLite::dbDisconnect(con)
   old_wd <- getwd()
   setwd(temp_storage)
-  on.exit( setwd(old_wd) )
+  on.exit({
+    setwd(old_wd)
+    unlink(temp_storage, TRUE, TRUE)
+    unlink(validated_file, TRUE, TRUE)
+  })
   utils::zip(destination, list.files(temp_storage, recursive = TRUE),
              extras = "-q", flags = "-q")
-  unlink(temp_storage, TRUE, TRUE)
-  unlink(validated_file, TRUE, TRUE)
   invisible()
 }

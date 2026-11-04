@@ -23,15 +23,20 @@ Returns information about the relationships between tables in the
 database used by \code{foosball3}
 }
 \examples{
-if (requireNamespace("dm")) {
-  db_file <- tempfile(fileext = ".db")
-  foosball3_create_db(db_file)
-  con <- RSQLite::dbConnect(RSQLite::SQLite(), db_file)
-  on.exit({
-    RSQLite::dbDisconnect(con)
-    unlink(db_file, TRUE, TRUE)
-  }, add = TRUE)
-  
-  foosball3_get_schema(con, TRUE)
+if (requireNamespace("dm", quietly = TRUE)) {
+  local({
+    db_file <- tempfile(fileext = ".db")
+    foosball3_create_db(db_file)
+    con <- RSQLite::dbConnect(RSQLite::SQLite(), db_file)
+
+    on.exit({
+      RSQLite::dbDisconnect(con)
+      unlink(db_file)
+    }, add = TRUE)
+
+    schema <- foosball3_get_schema(con, TRUE)
+    print(schema)
+    rm(schema)
+  })
 }
 }

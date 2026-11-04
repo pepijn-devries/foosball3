@@ -161,6 +161,8 @@ finalGeneratorServer <- function(id, type, matches, btnStart, avatars, phases) {
           con <- tnmt$database$connect()
           on.exit( { RSQLite::dbDisconnect(con) }, add = TRUE)
           prim_table <- .get_primary_table(con, sel$LOCATION_CODE)
+          if (length(prim_table) == 0)
+            prim_table <- list(TABLE_NAME = "Unknown")
           
           sel_table <- dplyr::tbl(con, "tables") |>
             dplyr::filter(.data$TABLE_CODE %in% !!mod_table()$id) |>

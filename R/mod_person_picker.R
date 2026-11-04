@@ -76,7 +76,7 @@ personPickerServer <- function(
       add_fun <- function(val) {
         if (length(val) == 0 || all(val == "")) return()
         
-        opts <- shiny::req(avatars()$options)
+        opts <- avatars()$options
         id_match   <- val %in% as.character(unname(opts))
         name_match <- tolower(val) %in% tolower(attr(opts, "PERSON_NAME"))
         
@@ -129,7 +129,7 @@ personPickerServer <- function(
       }, ignoreNULL = FALSE)
       
       shiny::observeEvent(select_cache(), {
-        if (input$selectPeople == as.character(select_cache()))
+        if (identical(input$selectPeople, as.character(select_cache())))
           return()
         shinyWidgets::updateVirtualSelect(
           session = session,

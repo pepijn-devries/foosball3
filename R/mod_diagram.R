@@ -1,6 +1,7 @@
 .schema_svg_cache <- local({
   
-  result <- if (requireNamespace(c("dm", "DiagrammeRsvg"))) {
+  result <- if (requireNamespace("dm", quietly = TRUE) &&
+                requireNamespace("DiagrammeRsvg", quietly = TRUE)) {
     tf <- tempfile()
     foosball3_create_db(tf)
     con <- RSQLite::dbConnect(RSQLite::SQLite(), tf)
