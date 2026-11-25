@@ -23,3 +23,13 @@ test_that("Source code should not have things on TODO list", {
     )
   })
 })
+
+test_that("latest NEWS heading matches DESCRIPTION version", {
+  skip_on_cran()
+  expect_true({
+    news_version <-
+      readLines(system.file("NEWS.md", package = "foosball3"), n = 1L) |>
+      stringr::str_extract("[^ ]+$")
+    utils::packageVersion("foosball3") == news_version
+  })
+})
