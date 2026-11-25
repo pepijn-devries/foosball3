@@ -1,13 +1,13 @@
 Package: foosball3
 Title: An App to Manage and Organise Foosball Tournaments
-Version: 0.0.2.0001
+Version: 0.0.3
 Authors@R: c(person("Pepijn", "de Vries", role = c("aut", "cre", "dtc"),
     email = "pepijn.devries@outlook.com",
     comment = c(ORCID = "0000-0002-7961-6646")))
 Author:
     Pepijn de Vries [aut, cre, dtc] (0000-0002-7961-6646)
 Description: A relational SQLite database used to manage leisure
-    foosball tournaments. This package provides a features and
+    foosball tournaments. This package provides features and
     a graphical user interface to easily access the database. It
     also allows to visualise (historical) data and account player
     history. It can be used to facilitate a live tournament.

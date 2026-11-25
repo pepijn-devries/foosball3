@@ -1,5 +1,6 @@
-# foosball3 0.0.2.0001
+# foosball3 0.0.3
 
+* Added `foosball3_add_picture()`.
 * A fix for CRAN compliance.
 
 # foosball3 0.0.2

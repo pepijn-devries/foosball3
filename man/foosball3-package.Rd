@@ -7,7 +7,7 @@
 \description{
 \if{html}{\figure{logo.svg}{options: style='float: right' alt='logo' width='120'}}
 
-A relational SQLite database used to manage leisure foosball tournaments. This package provides a features and a graphical user interface to easily access the database. It also allows to visualise (historical) data and account player history. It can be used to facilitate a live tournament.
+A relational SQLite database used to manage leisure foosball tournaments. This package provides features and a graphical user interface to easily access the database. It also allows to visualise (historical) data and account player history. It can be used to facilitate a live tournament.
 }
 \seealso{
 Useful links:
